@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>قطرة نقية | PureDrop - تحلية وتنقية المياه</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css" />
+
+</head>
+<body class="bg-slate-950 text-white overflow-x-hidden">
+
+  <!-- ===== ADVANCED BUBBLES CANVAS ===== -->
+  <canvas id="bubbles-canvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
+  
+  <!-- ===== FLOATING BACKGROUND ELEMENTS ===== -->
+  <div class="floating-element floating-1"></div>
+  <div class="floating-element floating-2"></div>
+  <div class="floating-element floating-3"></div>
+
+  <!-- ===== PREMIUM NOTIFICATION ===== -->
+  <div id="notification" class="notification-premium glass-elegant rounded-2xl px-6 py-4 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center flex-shrink-0">
+      <i class="fas fa-check text-white text-lg"></i>
+    </div>
+    <div>
+      <div id="notifTitle" class="font-bold text-sm"></div>
+      <div id="notifMsg" class="text-xs text-slate-400"></div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ==================== MAIN CONTENT ========================== -->
+  <!-- ============================================================ -->
+  <div id="mainContent" class="main-content">
+
+    <!-- ===== PREMIUM NAVBAR ===== -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <!-- Logo -->
+        <a href="#home" onclick="showMain()" class="flex items-center gap-3 group">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative animate-pulse-glow-elegant">
+            <i class="fas fa-tint text-2xl text-white"></i>
+            <div class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-cyan-400 rounded-full animate-pulse border-2 border-slate-900"></div>
+          </div>
+          <div>
+            <span class="text-2xl font-black gradient-text-premium">قطرة نقية</span>
+            <p class="text-[11px] text-slate-400 -mt-0.5 tracking-wide">PureDrop Water Solutions</p>
+          </div>
+        </a>
+
+        <!-- Desktop Nav -->
+        <div class="hidden md:flex items-center gap-1.5">
+          <a href="#home" onclick="showMain()" class="nav-link px-4 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all relative group">
+            الرئيسية
+            <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-cyan-400 rounded-full transition-all group-hover:w-3/4"></span>
+          </a>
+          <a href="#products" onclick="showMain()" class="nav-link px-4 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all relative group">
+            المنتجات
+            <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-cyan-400 rounded-full transition-all group-hover:w-3/4"></span>
+          </a>
+          <a href="#hydrationCalculator" onclick="showMain()" class="nav-link px-4 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all relative group">
+            <i class="fas fa-droplet mr-1"></i> حاسبة الترطيب
+            <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-cyan-400 rounded-full transition-all group-hover:w-3/4"></span>
+          </a>
+          <a href="#familyBottleAdvisor" onclick="showMain()" class="nav-link px-4 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all relative group">
+            <i class="fas fa-jug-detergent mr-1"></i> مستشار القوارير
+            <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-cyan-400 rounded-full transition-all group-hover:w-3/4"></span>
+          </a>
+          <a href="#about" onclick="showMain()" class="nav-link px-4 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all relative group">
+            من نحن
+            <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-cyan-400 rounded-full transition-all group-hover:w-3/4"></span>
+          </a>
+          <a href="#contact" onclick="showMain()" class="nav-link px-4 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all relative group">
+            تواصل معنا
+            <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-cyan-400 rounded-full transition-all group-hover:w-3/4"></span>
+          </a>
+          <a href="#" onclick="showAIChat(); return false;" class="nav-link px-4 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all relative group">
+            <i class="fas fa-robot mr-1"></i> المساعد الذكي
+            <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-cyan-400 rounded-full transition-all group-hover:w-3/4"></span>
+          </a>
+          <a href="/admin/" target="_blank" rel="noopener" class="nav-link px-4 py-2.5 rounded-xl text-sm font-medium text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-all relative group border border-amber-500/20">
+            <i class="fas fa-user-shield mr-1"></i> لوحة الإدارة
+          </a>
+        </div>
+
+        <!-- Cart + CTA -->
+        <div class="hidden md:flex items-center gap-4">
+          <button
+            type="button"
+            id="themeToggleBtn"
+            onclick="toggleTheme()"
+            class="relative group"
+            aria-label="تبديل الوضع الليلي/الفاتح"
+            title="تبديل الوضع الليلي/الفاتح"
+          >
+            <div class="w-12 h-12 rounded-xl glass-elegant flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
+              <i id="themeToggleIcon" class="fas fa-sun text-slate-300 group-hover:text-cyan-400 transition-colors text-lg"></i>
+            </div>
+          </button>
+          <button type="button" onclick="showCart()" class="relative group">
+            <div class="w-12 h-12 rounded-xl glass-elegant flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
+              <i class="fas fa-shopping-cart text-slate-300 group-hover:text-cyan-400 transition-colors text-lg"></i>
+            </div>
+            <span id="cartCount" class="absolute -top-2.5 -right-2.5 w-6.5 h-6.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-xs font-bold flex items-center justify-center hidden border-2 border-slate-900 cart-badge-premium">0</span>
+          </button>
+          <a href="#products" onclick="showMain()" class="btn-water-premium px-7 py-3 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-cyan-500/30 transition-all duration-300 flex items-center gap-2">
+            <i class="fas fa-shopping-bag"></i>
+            اطلب الآن
+          </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button type="button" onclick="toggleMobileMenu()" class="md:hidden w-11 h-11 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+          <i class="fas fa-bars text-lg"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu-premium fixed top-0 right-0 w-80 h-full z-[60] p-8 pt-24">
+      <button type="button" onclick="toggleMobileMenu()" class="absolute top-6 left-6 w-10 h-10 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+      <div class="flex flex-col gap-2 mt-4">
+        <a href="#home" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
+          <i class="fas fa-home text-cyan-400"></i> الرئيسية
+        </a>
+        <a href="#products" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
+          <i class="fas fa-boxes text-cyan-400"></i> المنتجات
+        </a>
+        <a href="#hydrationCalculator" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
+          <i class="fas fa-droplet text-cyan-400"></i> حاسبة الترطيب
+        </a>
+        <a href="#familyBottleAdvisor" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
+          <i class="fas fa-jug-detergent text-cyan-400"></i> مستشار القوارير
+        </a>
+        <a href="#about" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
+          <i class="fas fa-info-circle text-cyan-400"></i> من نحن
+        </a>
+        <a href="#contact" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
+          <i class="fas fa-phone-alt text-cyan-400"></i> تواصل معنا
+        </a>
+        <a href="#" onclick="showAIChat(); toggleMobileMenu(); return false;" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
+          <i class="fas fa-robot text-cyan-400"></i> المساعد الذكي
+        </a>
+        <a href="/admin/" target="_blank" rel="noopener" onclick="toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-all flex items-center gap-3 font-medium border border-amber-500/20">
+          <i class="fas fa-user-shield text-amber-400"></i> لوحة الإدارة
+        </a>
+        <button type="button" onclick="showCart(); toggleMobileMenu();" class="mt-6 px-6 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cyan-500/30 transition-all">
+          <i class="fas fa-shopping-cart"></i> سلة الطلبات
+          <span id="mobileCartCount" class="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-bold hidden">0</span>
+        </button>
+        <button type="button" onclick="toggleTheme()" class="mt-3 px-6 py-4 rounded-xl glass-elegant font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all w-full">
+          <i id="mobileThemeToggleIcon" class="fas fa-sun text-cyan-400 transition-colors text-lg"></i>
+          <span>تبديل الوضع الليلي / النهاري</span>
+        </button>
+      </div>
+      
+      <!-- Mobile Contact Info -->
+      <div class="mt-10 pt-6 border-t border-white/10">
+        <p class="text-xs text-slate-500 mb-3">للاستفسارات الفورية:</p>
+        <div class="flex items-center gap-3 text-sm">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center">
+            <i class="fas fa-phone-alt text-cyan-400"></i>
+          </div>
+          <span class="font-medium" dir="ltr">+962781936691</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HERO SECTION PREMIUM ===== -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center pt-24 overflow-hidden">
+      <!-- Background Elements -->
+      <div class="absolute inset-0">
+        <div class="absolute top-20 right-10 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl animate-float-elegant"></div>
+        <div class="absolute bottom-20 left-10 w-[450px] h-[450px] bg-blue-500/10 rounded-full blur-3xl animate-float-elegant" style="animation-delay: -4s;"></div>
+        <div class="absolute top-1/3 left-1/4 w-72 h-72 bg-purple-500/5 rounded-full blur-3xl animate-float-elegant" style="animation-delay: -7s;"></div>
+      </div>
+
+      <div class="relative z-10 max-w-7xl mx-auto px-6 text-center">
+        <!-- Premium Badge -->
+        <div class="inline-flex items-center gap-3 px-6 py-3 rounded-full glass-elegant mb-10 animate-slide-up-elegant border border-cyan-500/20">
+          <div class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></div>
+          <span class="text-sm font-medium text-slate-300">نقاء 99.9% • معتمد من وزارة الصحة الأردنية • معايير ISO 22000</span>
+        </div>
+
+        <!-- Main Heading -->
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-black leading-tight mb-7 animate-slide-up-elegant" style="animation-delay: 0.2s;">
+          <span class="gradient-text-premium">ماء نقي</span><br/>
+          <span class="text-white">لحياة صحية أفضل</span>
+          <span class="water-drop-premium ml-3 text-4xl md:text-5xl">💧</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto mb-12 animate-slide-up-elegant" style="animation-delay: 0.4s; line-height: 1.7;">
+          نقدم لك أجود أنواع المياه المعدنية المعبأة بتقنيات تنقية متطورة - من القوارير الصغيرة إلى القوارير الكبيرة والثلج النقي
+          <br class="hidden md:block"/>
+          مع خدمة توصيل سريعة لجميع مناطق عمان والاردن بأسعار تنافسية وضمان الجودة
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-5 mb-20 animate-slide-up-elegant" style="animation-delay: 0.6s;">
+          <a href="#products" class="btn-water-premium group px-9 py-4.5 rounded-2xl text-lg font-bold hover:shadow-2xl hover:shadow-cyan-500/30 transition-all duration-300 flex items-center gap-3">
+            تصفح منتجاتنا
+            <i class="fas fa-arrow-left group-hover:translate-x-[-4px] transition-transform"></i>
+          </a>
+          <a href="#" onclick="showAIChat(); return false;" class="group px-9 py-4.5 rounded-2xl glass-elegant text-lg font-bold hover:bg-white/10 transition-all duration-300 flex items-center gap-3 border border-white/10">
+            <i class="fas fa-robot text-cyan-400"></i> استشر المساعد الذكي
+          </a>
+        </div>
+
+        <!-- Premium Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-7 max-w-4xl mx-auto animate-slide-up-elegant" style="animation-delay: 0.8s;">
+          <div class="glass-elegant rounded-2xl p-6 hover-lift-elegant">
+            <div class="text-4xl font-black gradient-text-premium mb-1">+1,250</div>
+            <div class="text-sm text-slate-400">عميل راضٍ</div>
+            <div class="mt-2 flex items-center gap-1 text-xs text-green-400">
+              <i class="fas fa-arrow-up"></i>
+              <span>نمو 35% هذا الشهر</span>
+            </div>
+          </div>
+          <div class="glass-elegant rounded-2xl p-6 hover-lift-elegant">
+            <div class="text-4xl font-black gradient-text-premium mb-1">+65K</div>
+            <div class="text-sm text-slate-400">قارورة يومياً</div>
+            <div class="mt-2 flex items-center gap-1 text-xs text-cyan-400">
+              <i class="fas fa-truck"></i>
+              <span>توصيل فوري</span>
+            </div>
+          </div>
+          <div class="glass-elegant rounded-2xl p-6 hover-lift-elegant">
+            <div class="text-4xl font-black gradient-text-premium mb-1">99.97%</div>
+            <div class="text-sm text-slate-400">نسبة النقاء</div>
+            <div class="mt-2 flex items-center gap-1 text-xs text-blue-400">
+              <i class="fas fa-flask"></i>
+              <span>فحص مخبري يومي</span>
+            </div>
+          </div>
+          <div class="glass-elegant rounded-2xl p-6 hover-lift-elegant">
+            <div class="text-4xl font-black gradient-text-premium mb-1">28 دقيقة</div>
+            <div class="text-sm text-slate-400">متوسط التوصيل</div>
+            <div class="mt-2 flex items-center gap-1 text-xs text-purple-400">
+              <i class="fas fa-stopwatch"></i>
+              <span>أسرع في عمان</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scroll Indicator Premium -->
+      <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+        <div class="w-7 h-12 rounded-full border-2 border-slate-600 flex items-start justify-center p-2.5">
+          <div class="w-1.5 h-4 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500 animate-pulse"></div>
+        </div>
+      </div>
+
+      <!-- Wave Divider Premium -->
+      <div class="wave-divider-premium" aria-hidden="true">
+        <span class="wave-layer wave-layer-back"></span>
+        <span class="wave-layer wave-layer-front"></span>
+      </div>
+    </section>
+
+    <!-- ===== PRODUCTS SECTION PREMIUM ===== -->
+    <section id="products" class="relative py-32 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-6">
+        <!-- Section Header -->
+        <div class="text-center mb-16 reveal-elegant">
+          <span class="inline-block px-5 py-2 rounded-full bg-cyan-500/10 text-cyan-400 text-sm font-bold mb-5 border border-cyan-500/20">
+            <i class="fas fa-tint mr-1"></i> منتجاتنا المميزة
+          </span>
+          <h2 class="text-4xl md:text-5xl font-black mb-5">
+            <span class="gradient-text-premium">تشكيلة متكاملة</span> من المياه النقية
+          </h2>
+          <p class="text-slate-400 max-w-2xl mx-auto text-lg">
+            اختر ما يناسب احتياجاتك من مجموعتنا المتنوعة من المياه المعبأة والثلج النقي، مع ضمان الجودة والتوصيل السريع
+          </p>
+        </div>
+
+        <!-- Category Filter Premium -->
+        <div class="flex flex-wrap justify-center gap-3 mb-14 reveal-elegant">
+          <button onclick="filterProducts('all')" class="cat-btn active px-6 py-3 rounded-xl glass-elegant text-sm font-bold hover:bg-cyan-500/20 hover:text-cyan-400 transition-all bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" data-cat="all">
+            <i class="fas fa-th-large mr-1.5"></i> الكل
+          </button>
+          <button onclick="filterProducts('carton')" class="cat-btn px-6 py-3 rounded-xl glass-elegant text-sm font-bold hover:bg-cyan-500/20 hover:text-cyan-400 transition-all text-slate-400 border border-white/10">
+            <i class="fas fa-box-open mr-1.5"></i> كراتين
+          </button>
+          <button onclick="filterProducts('shrink')" class="cat-btn px-6 py-3 rounded-xl glass-elegant text-sm font-bold hover:bg-cyan-500/20 hover:text-cyan-400 transition-all text-slate-400 border border-white/10">
+            <i class="fas fa-cube mr-1.5"></i> شرنك
+          </button>
+          <button onclick="filterProducts('bottle')" class="cat-btn px-6 py-3 rounded-xl glass-elegant text-sm font-bold hover:bg-cyan-500/20 hover:text-cyan-400 transition-all text-slate-400 border border-white/10">
+            <i class="fas fa-wine-bottle mr-1.5"></i> قوارير كبيرة
+          </button>
+          <button onclick="filterProducts('ice')" class="cat-btn px-6 py-3 rounded-xl glass-elegant text-sm font-bold hover:bg-cyan-500/20 hover:text-cyan-400 transition-all text-slate-400 border border-white/10">
+            <i class="fas fa-icicles mr-1.5"></i> ثلج نقي
+          </button>
+          <button onclick="filterProducts('extras')" class="cat-btn px-6 py-3 rounded-xl glass-elegant text-sm font-bold hover:bg-cyan-500/20 hover:text-cyan-400 transition-all text-slate-400 border border-white/10">
+            <i class="fas fa-toolbox mr-1.5"></i> مستلزمات وخدمات
+          </button>
+        </div>
+
+        <!-- Products Grid Premium -->
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
+          <!-- Products will be rendered by JS with premium design -->
+        </div>
+        
+        <!-- Load More Button -->
+        <div id="loadMoreWrapper" class="text-center mt-16 reveal-elegant">
+          <button type="button" id="loadMoreProductsBtn" class="px-8 py-3.5 rounded-xl glass-elegant font-medium hover:bg-white/10 transition-all flex items-center gap-2 mx-auto">
+            <i class="fas fa-plus"></i>
+            عرض المزيد من المنتجات
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SMART HYDRATION CALCULATOR ===== -->
+    <section id="hydrationCalculator" class="relative py-24 overflow-hidden">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="glass-elegant rounded-[2rem] p-5 sm:p-8 lg:p-10 xl:p-12 relative overflow-hidden border border-cyan-500/30 hydration-panel">
+          <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] animate-pulse"></div>
+
+          <div class="relative z-10 hydration-shell">
+            <div>
+              <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/20 text-cyan-400 text-sm font-bold mb-4">
+                <i class="fas fa-brain"></i> الأداة الذكية
+              </span>
+              <h2 class="text-3xl md:text-4xl xl:text-5xl font-black mb-4 leading-tight"><span class="gradient-text-premium">حاسبة الترطيب</span> اليومية</h2>
+              <p class="text-slate-300 mb-8 leading-8 text-sm sm:text-base lg:text-lg">اكتشف كمية الماء الدقيقة التي يحتاجها جسمك بناءً على وزنك ومستوى نشاطك، ودعنا نقترح لك المنتج الأنسب.</p>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm text-slate-400 mb-2">وزنك (بالكيلوغرام)</label>
+                  <input type="number" id="smartWeight" placeholder="مثال: 75" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none transition-colors">
+                </div>
+                <div>
+                  <label class="block text-sm text-slate-400 mb-2">مستوى نشاطك اليومي</label>
+                  <select id="smartActivity" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none transition-colors">
+                    <option value="low">خفيف (عمل مكتبي)</option>
+                    <option value="medium">متوسط (حركة يومية عادية)</option>
+                    <option value="high">عالي (رياضي / عمل شاق)</option>
+                  </select>
+                </div>
+                <button onclick="calculateHydration()" class="w-full btn-water-premium py-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4">
+                  <i class="fas fa-tint"></i> احسب احتياجي الآن
+                </button>
+              </div>
+            </div>
+
+            <div id="smartResult" class="hidden text-center glass-light-elegant p-6 sm:p-8 lg:p-10 rounded-3xl border border-cyan-500/20 hydration-result-panel">
+              <div class="w-20 h-20 mx-auto bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center mb-4 animate-float-elegant">
+                <i class="fas fa-glass-water text-3xl text-white"></i>
+              </div>
+              <h3 class="text-base sm:text-lg text-slate-300 mb-1">احتياجك اليومي هو:</h3>
+              <div class="text-4xl md:text-5xl font-black gradient-text-premium mb-6" id="waterAmount">0 لتر</div>
+
+              <div class="bg-white/5 rounded-xl p-4 mb-6">
+                <p class="text-sm text-slate-400 mb-2">التوصية الذكية لك:</p>
+                <p class="font-bold text-cyan-400" id="smartRecommendation">شرنك 600 مل</p>
+              </div>
+
+              <button onclick="document.getElementById('products').scrollIntoView()" class="text-sm font-bold text-white hover:text-cyan-400 transition-colors">
+                تصفح المنتجات <i class="fas fa-arrow-left ml-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+<!-- ===== FAMILY BOTTLE ADVISOR ===== -->
+<section id="familyBottleAdvisor" class="relative py-24 overflow-hidden">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6">
+    <div class="glass-elegant rounded-[2rem] p-5 sm:p-8 lg:p-10 xl:p-12 relative overflow-hidden border border-cyan-500/30 advisor-panel">
+      <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] animate-pulse"></div>
+
+      <div class="relative z-10">
+        <div class="text-center mb-10 reveal-elegant">
+          <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/20 text-cyan-400 text-sm font-bold mb-4">
+            <i class="fas fa-calculator"></i> المستشار الذكي
+          </span>
+          <h2 class="text-3xl md:text-4xl xl:text-5xl font-black mb-4 leading-tight"><span class="gradient-text-premium">مستشار القوارير والكابونات</span> للعائلة</h2>
+          <p class="text-slate-300 max-w-3xl mx-auto leading-8 text-sm sm:text-base lg:text-lg">
+            أدخل متوسط استهلاك العائلة اليومي باللترات، وسنحسب لك عدد القوارير الكبيرة التي تحتاجها شهرياً،
+            ثم نرشّح لك الخطة الأنسب بشكل ذكي وواضح. إذا كان الاستهلاك أقل من <b>8 قوارير شهرياً</b> ننصحك بالدفع كاش،
+            وإذا كان الاستهلاك بحدود <b>10 لتر يومياً</b> فغالباً الأنسب لك اشتراك <b>20 كابون</b>.
+          </p>
+        </div>
+
+        <div class="family-advisor-shell">
+          <div class="space-y-5 reveal-elegant family-advisor-form glass-light-elegant rounded-3xl p-5 sm:p-6 lg:p-7 border border-white/10">
+            <div class="advisor-field-group">
+              <label class="block text-sm font-bold text-slate-300 mb-2">استهلاك العائلة اليومي (باللتر)</label>
+              <input type="number" id="familyDailyLiters" min="1" step="0.5" placeholder="مثال: 10" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white focus:border-cyan-400 focus:outline-none transition-colors">
+              <p class="advisor-helper-note">مثال: 10 لتر يومياً ≈ 16 قارورة شهرياً، وغالباً يناسبه اشتراك 20 كابون.</p>
+            </div>
+
+            <div class="advisor-field-group">
+              <label class="block text-sm font-bold text-slate-300 mb-2">نمط الخدمة المفضل</label>
+              <select id="familyServicePreference" class="w-full bg-slate-800 border border-white/10 rounded-2xl px-4 py-3.5 text-white focus:border-cyan-400 focus:outline-none transition-colors">
+                <option value="both">اعرض لي الخيارين الداخلي والخارجي</option>
+                <option value="external">أفضل الخيارات الخارجية فقط</option>
+                <option value="internal">أفضل الخيارات الداخلية فقط</option>
+              </select>
+            </div>
+
+            <div class="advisor-field-group">
+              <p class="block text-sm font-bold text-slate-300 mb-3">اختيارات سريعة</p>
+              <div class="flex flex-wrap gap-2.5">
+                <button type="button" class="advisor-chip" onclick="setFamilyConsumptionPreset(6, this)">6 لتر / يوم</button>
+                <button type="button" class="advisor-chip" onclick="setFamilyConsumptionPreset(10, this)">10 لتر / يوم</button>
+                <button type="button" class="advisor-chip" onclick="setFamilyConsumptionPreset(15, this)">15 لتر / يوم</button>
+                <button type="button" class="advisor-chip" onclick="setFamilyConsumptionPreset(18.9, this)">18.9 لتر / يوم</button>
+                <button type="button" class="advisor-chip" onclick="setFamilyConsumptionPreset(24, this)">24 لتر / يوم</button>
+              </div>
+            </div>
+
+            <div class="advisor-tips-box">
+              <div class="advisor-tip-item"><i class="fas fa-check-circle text-cyan-400"></i><span>أقل من 8 قوارير شهرياً = كاش</span></div>
+              <div class="advisor-tip-item"><i class="fas fa-ticket-alt text-cyan-400"></i><span>حوالي 10 لتر يومياً = 20 كابون غالباً</span></div>
+              <div class="advisor-tip-item"><i class="fas fa-layer-group text-cyan-400"></i><span>الاستهلاك الأعلى = 25 أو 30 كابون حسب الحاجة</span></div>
+            </div>
+
+            <button type="button" onclick="calculateFamilyBottleAdvisor()" class="w-full btn-water-premium py-4 rounded-2xl font-bold flex items-center justify-center gap-2 mt-2 text-base sm:text-lg">
+              <i class="fas fa-lightbulb"></i> احسب أفضل خطة للعائلة
+            </button>
+          </div>
+
+          <div id="familyAdvisorResult" class="hidden reveal-elegant family-advisor-result family-advisor-result-panel glass-light-elegant rounded-3xl p-5 sm:p-6 lg:p-7 border border-cyan-500/20">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-5 family-advisor-header">
+              <div>
+                <p class="text-sm text-slate-400 mb-1">التقييم الذكي</p>
+                <h3 class="text-2xl lg:text-3xl font-black gradient-text-premium" id="familyAdvisorTier">استهلاك متوسط</h3>
+              </div>
+              <span id="familyAdvisorBadge" class="family-advisor-badge">خطة مقترحة</span>
+            </div>
+
+            <div class="advisor-metrics-grid mb-6">
+              <div class="advisor-metric-card">
+                <p class="text-xs text-slate-500 mb-1">الاستهلاك الشهري</p>
+                <div class="text-xl lg:text-2xl font-black text-cyan-400" id="familyMonthlyLiters">0 لتر</div>
+              </div>
+              <div class="advisor-metric-card">
+                <p class="text-xs text-slate-500 mb-1">عدد القوارير المتوقع</p>
+                <div class="text-xl lg:text-2xl font-black text-cyan-400" id="familyMonthlyBottles">0 قارورة</div>
+              </div>
+              <div class="advisor-metric-card">
+                <p class="text-xs text-slate-500 mb-1">الخيار الأقرب</p>
+                <div class="text-xl lg:text-2xl font-black text-cyan-400" id="familyAdvisorBestFit">دفع كاش</div>
+              </div>
+            </div>
+
+            <div class="bg-white/5 rounded-2xl p-4 sm:p-5 mb-5 border border-white/10 advisor-summary-box">
+              <p class="text-sm text-slate-400 mb-2">الخلاصة الذكية</p>
+              <p id="familyAdvisorSummary" class="text-sm sm:text-base leading-7 text-slate-200"></p>
+            </div>
+
+            <div id="familyAdvisorRecommendations" class="advisor-recommendations-grid"></div>
+
+            <div class="mt-5 text-center">
+              <button type="button" onclick="goToExtrasProducts()" class="text-sm font-bold text-cyan-400 hover:text-white transition-colors">
+                تصفح دفاتر الكابونات والمستلزمات <i class="fas fa-arrow-left ml-1"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <!-- ===== ABOUT SECTION PREMIUM ===== -->
+    <section id="about" class="relative py-32 overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent"></div>
+
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <!-- Content -->
+          <div class="reveal-elegant">
+            <span class="inline-block px-5 py-2 rounded-full bg-cyan-500/10 text-cyan-400 text-sm font-bold mb-7 border border-cyan-500/20">
+              <i class="fas fa-building mr-1.5"></i> عن شركتنا
+            </span>
+            <h2 class="text-4xl md:text-5xl font-black mb-7">
+              <span class="gradient-text-premium">قطرة نقية</span> - التزام بالجودة والتميز
+            </h2>
+            <p class="text-slate-300 leading-relaxed mb-6 text-lg">
+              نحن شركة رائدة في مجال تحلية وتنقية وتعبئة المياه في الأردن، نستخدم أحدث تقنيات التناضح العكسي (RO) والأشعة فوق البنفسجية (UV) والأوزون لضمان نقاء كل قطرة ماء نقدمها لعملائنا.
+            </p>
+            <p class="text-slate-300 leading-relaxed mb-8">
+              جميع منتجاتنا معتمدة من وزارة الصحة الأردنية وتخضع لفحوصات مخبرية يومية في مختبراتنا المعتمدة. نوفر تشكيلة واسعة من الأحجام والتغليف لتناسب جميع الاحتياجات - من الأكواب الصغيرة للمناسبات إلى القوارير الكبيرة للمنازل والمكاتب والثلج النقي.
+            </p>
+
+            <!-- Premium Features Grid -->
+            <div class="grid grid-cols-2 gap-4 mb-10">
+              <div class="glass-elegant rounded-2xl p-5 hover-lift-elegant border border-white/10">
+                <div class="text-3xl mb-3 text-cyan-400"><i class="fas fa-industry"></i></div>
+                <div class="font-bold text-lg mb-1">+7 سنوات</div>
+                <div class="text-sm text-slate-400">خبرة في التحلية والتنقية</div>
+              </div>
+              <div class="glass-elegant rounded-2xl p-5 hover-lift-elegant border border-white/10">
+                <div class="text-3xl mb-3 text-cyan-400"><i class="fas fa-vial"></i></div>
+                <div class="font-bold text-lg mb-1">فحص يومي</div>
+                <div class="text-sm text-slate-400">مختبر معتمد ومعتمد دولياً</div>
+              </div>
+              <div class="glass-elegant rounded-2xl p-5 hover-lift-elegant border border-white/10">
+                <div class="text-3xl mb-3 text-cyan-400"><i class="fas fa-truck-fast"></i></div>
+                <div class="font-bold text-lg mb-1">توصيل فوري</div>
+                <div class="text-sm text-slate-400">خلال 30 دقيقة في عمان</div>
+              </div>
+              <div class="glass-elegant rounded-2xl p-5 hover-lift-elegant border border-white/10">
+                <div class="text-3xl mb-3 text-cyan-400"><i class="fas fa-certificate"></i></div>
+                <div class="font-bold text-lg mb-1">معتمد صحياً</div>
+                <div class="text-sm text-slate-400">ترخيص رسمي ومواصفات قياسية</div>
+              </div>
+            </div>
+            
+            <!-- Quality Assurance -->
+            <div class="glass-elegant rounded-2xl p-6 border border-cyan-500/20">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-shield-alt text-cyan-400 text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg mb-2">ضمان الجودة الشامل</h4>
+                  <p class="text-slate-400 text-sm leading-relaxed">
+                    كل دفعة من منتجاتنا تمر بـ 9 مراحل فحص وجودة قبل التعبئة، مع توثيق رقمي يمكن للعميل تتبعه عبر رمز الاستجابة السريع على كل منتج.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual Premium -->
+          <div class="reveal-elegant reveal-delay-2">
+            <div class="relative">
+              <div class="w-full max-w-md mx-auto aspect-square rounded-3xl bg-gradient-to-br from-cyan-500/15 via-blue-500/15 to-purple-500/15 flex items-center justify-center animate-float-elegant border border-white/10">
+                <div class="text-center p-6">
+                  <div class="text-9xl mb-6 animate-drop-elegant">💧</div>
+                  <div class="text-3xl font-black gradient-text-premium mb-2">قطرة نقية</div>
+                  <div class="text-slate-300 text-lg">نقاء في كل قطرة، جودة في كل يوم</div>
+                  
+                  <!-- Orbiting Elements -->
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-64 h-64 rounded-full border border-dashed border-cyan-500/20 animate-orbit" style="animation-duration: 30s;"></div>
+                  </div>
+                  <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center animate-float-orbit">
+                    <i class="fas fa-tint text-white text-sm"></i>
+                  </div>
+                  <div class="absolute bottom-8 right-8 w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center animate-float-orbit" style="animation-delay: -5s;">
+                    <i class="fas fa-leaf text-white text-xs"></i>
+                  </div>
+                  <div class="absolute top-12 left-8 w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center animate-float-orbit" style="animation-delay: -10s;">
+                    <i class="fas fa-microchip text-white text-xs"></i>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Floating Premium Badges -->
+              <div class="absolute -top-5 -right-5 glass-elegant rounded-2xl px-5 py-3.5 animate-float-elegant border border-cyan-500/30" style="animation-delay: -3s;">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-600/20 flex items-center justify-center">
+                    <i class="fas fa-check text-green-400 text-sm"></i>
+                  </div>
+                  <span class="text-sm font-bold">معتمد 100%</span>
+                </div>
+              </div>
+              <div class="absolute -bottom-5 -left-5 glass-elegant rounded-2xl px-5 py-3.5 animate-float-elegant border border-blue-500/30" style="animation-delay: -6s;">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center">
+                    <i class="fas fa-truck text-cyan-400 text-sm"></i>
+                  </div>
+                  <span class="text-sm font-bold">توصيل مجاني</span>
+                </div>
+              </div>
+              <div class="absolute top-1/2 -right-8 glass-elegant rounded-2xl px-4 py-3 animate-float-elegant border border-purple-500/30" style="animation-delay: -9s;">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-medal text-yellow-400"></i>
+                  <span class="text-xs font-bold">جائزة الجودة 2024</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CONTACT SECTION PREMIUM ===== -->
+    <section id="contact" class="relative py-32 overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent"></div>
+
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16 reveal-elegant">
+          <span class="inline-block px-5 py-2 rounded-full bg-cyan-500/10 text-cyan-400 text-sm font-bold mb-5 border border-cyan-500/20">
+            <i class="fas fa-headset mr-1.5"></i> تواصل معنا
+          </span>
+          <h2 class="text-4xl md:text-5xl font-black mb-5">
+            <span class="gradient-text-premium">فريق الدعم</span> جاهز لخدمتك
+          </h2>
+          <p class="text-slate-400 max-w-2xl mx-auto text-lg">
+            نحن هنا للإجابة على استفساراتك وتلقي طلباتك على مدار الساعة
+          </p>
+        </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+          <div class="reveal-elegant space-y-6">
+            
+            <a href="tel:0781936691" class="block glass-elegant rounded-2xl p-6 hover-lift-elegant border border-white/10 transition-all cursor-pointer">
+              <div class="flex items-center gap-5">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400/20 to-cyan-600/20 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-phone-alt text-2xl text-cyan-400"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg mb-1">خط الدعم المباشر</h4>
+                  <p class="text-slate-300 font-medium" dir="ltr">0781936691</p>
+                  <p class="text-xs text-cyan-400/80 mt-1">اضغط للاتصال المباشر</p>
+                </div>
+              </div>
+            </a>
+
+            <div class="block glass-elegant rounded-2xl p-6 hover-lift-elegant border border-white/10 transition-all">
+              <div class="flex items-center gap-5">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-600/20 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-database text-2xl text-emerald-400"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg mb-1">نظام الطلبات المباشر</h4>
+                  <p class="text-slate-300 font-medium">الطلب يحفظ داخل قاعدة البيانات فوراً</p>
+                  <p class="text-xs text-slate-500 mt-1">لوحة إدارة • متابعة حالة الطلب • دفع عند الاستلام</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-elegant rounded-2xl p-6 hover-lift-elegant border border-white/10">
+              <div class="flex items-center gap-5">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400/20 to-purple-600/20 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-map-marker-alt text-2xl text-purple-400"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg mb-1">المقر الرئيسي</h4>
+                  <p class="text-slate-300">الأردن - عمان - مرج الحمام</p>
+                  <p class="text-xs text-slate-500 mt-1">مرحباً بزيارتكم</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-elegant rounded-2xl p-6 hover-lift-elegant border border-white/10">
+              <div class="flex items-center gap-5">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-400/20 to-yellow-600/20 flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-clock text-2xl text-yellow-400"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-lg mb-1">ساعات الخدمة</h4>
+                  <p class="text-slate-300">الطلب والتوصيل: 24/7</p>
+                  <p class="text-xs text-slate-500 mt-1">الدعم الفني: 8 صباحاً - 10 مساءً</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="glass-elegant rounded-2xl p-6 border border-white/10">
+              <h4 class="font-bold text-lg mb-4">تابعنا على وسائل التواصل</h4>
+              <div class="flex gap-3">
+                <a href="#" class="w-11 h-11 rounded-xl glass-light-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+                  <i class="fab fa-facebook-f text-lg"></i>
+                </a>
+                <a href="#" class="w-11 h-11 rounded-xl glass-light-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+                  <i class="fab fa-instagram text-lg"></i>
+                </a>
+                <a href="#" class="w-11 h-11 rounded-xl glass-light-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+                  <i class="fab fa-twitter text-lg"></i>
+                </a>
+                <a href="#" class="w-11 h-11 rounded-xl glass-light-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+                  <i class="fab fa-tiktok text-lg"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="reveal-elegant reveal-delay-2 glass-elegant rounded-3xl p-8 border border-white/10">
+            <form onsubmit="handleContactSubmit(event)" class="space-y-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-sm font-medium mb-2 text-slate-300">الاسم الكامل</label>
+                  <input type="text" required placeholder="أدخل اسمك" class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"/>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-2 text-slate-300">رقم الهاتف</label>
+                  <input type="tel" required placeholder="07XXXXXXXX" pattern="^07\d{8}$" maxlength="10" inputmode="numeric" class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all" dir="ltr"/>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2 text-slate-300">عنوان التوصيل <span class="text-slate-500 text-xs">(اختياري)</span></label>
+                <input type="text" placeholder="المنطقة، الشارع، رقم المنزل" class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"/>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2 text-slate-300">نوع الاستفسار</label>
+                <select class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all">
+                  <option>استفسار عام</option>
+                  <option>طلب منتجات</option>
+                  <option>شكوى أو ملاحظة</option>
+                  <option>طلب تعاون تجاري</option>
+                  <option>استفسار فني</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2 text-slate-300">تفاصيل الرسالة</label>
+                <textarea required rows="4" placeholder="اكتب رسالتك هنا..." class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all resize-none"></textarea>
+              </div>
+              <button type="submit" class="w-full py-4.5 rounded-xl btn-water-premium font-bold text-lg hover:shadow-lg hover:shadow-cyan-500/30 transition-all flex items-center justify-center gap-2">
+                <i class="fas fa-paper-plane"></i>
+                إرسال الرسالة
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PREMIUM FOOTER ===== -->
+    <footer class="relative py-14 border-t border-slate-800/70">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+          <!-- Brand -->
+          <div class="md:col-span-2">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
+                <i class="fas fa-tint text-xl text-white"></i>
+              </div>
+              <span class="text-2xl font-black gradient-text-premium">قطرة نقية</span>
+            </div>
+            <p class="text-slate-400 mb-6 max-w-md leading-relaxed">
+              نلتزم بتقديم مياه نقية 100% بأسعار مناسبة وجودة لا تُضاهى، مع خدمة توصيل سريعة وخدمة عملاء متميزة على مدار الساعة.
+            </p>
+            <div class="flex gap-3">
+              <a href="#" class="w-10 h-10 rounded-xl glass-light-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a href="#" class="w-10 h-10 rounded-xl glass-light-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a href="#" class="w-10 h-10 rounded-xl glass-light-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+                <i class="fab fa-twitter"></i>
+              </a>
+              <a href="#" class="w-10 h-10 rounded-xl glass-light-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+                <i class="fas fa-envelope"></i>
+              </a>
+            </div>
+          </div>
+          
+          <!-- Legal -->
+          <div>
+            <h4 class="font-bold text-lg mb-5">معلومات قانونية</h4>
+            <ul class="space-y-3">
+              <li><a href="#" class="text-slate-400 hover:text-cyan-400 transition-colors">شروط الاستخدام</a></li>
+              <li><a href="#" class="text-slate-400 hover:text-cyan-400 transition-colors">سياسة الخصوصية</a></li>
+              <li><a href="#" class="text-slate-400 hover:text-cyan-400 transition-colors">سياسة الاسترجاع</a></li>
+              <li><a href="#" class="text-slate-400 hover:text-cyan-400 transition-colors">الشهادات والتراخيص</a></li>
+              <li><a href="#" class="text-slate-400 hover:text-cyan-400 transition-colors">الأسئلة الشائعة</a></li>
+              <li><a href="/admin/" target="_blank" rel="noopener" class="text-amber-400/90 hover:text-amber-300 transition-colors">لوحة إدارة الطلبات</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- Bottom Bar -->
+        <div class="pt-8 border-t border-slate-800/70 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p class="text-slate-500 text-sm">© 2024 قطرة نقية PureDrop. جميع الحقوق محفوظة. مرخصة من وزارة الصحة الأردنية رقم: IQ-WATER-2024-789</p>
+          <div class="flex items-center gap-4">
+            <span class="text-xs text-slate-600">طرق الدفع المقبولة:</span>
+            <div class="flex gap-2">
+              <div class="w-8 h-6 rounded bg-slate-800 flex items-center justify-center text-xs font-bold">VISA</div>
+              <div class="w-8 h-6 rounded bg-slate-800 flex items-center justify-center text-xs font-bold">MC</div>
+              <div class="w-8 h-6 rounded bg-slate-800 flex items-center justify-center text-xs font-bold">ZAIN</div>
+              <div class="w-8 h-6 rounded bg-slate-800 flex items-center justify-center text-xs font-bold">CASH</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ==================== CART PAGE PREMIUM ===================== -->
+  <!-- ============================================================ -->
+  <div id="cartPage" class="cart-page-premium pt-28 pb-20">
+    <div class="max-w-5xl mx-auto px-6">
+      <!-- Back Button Premium -->
+      <button onclick="showMain()" class="mb-10 flex items-center gap-2.5 text-slate-400 hover:text-cyan-400 transition-colors group">
+        <div class="w-10 h-10 rounded-xl glass-elegant flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
+          <i class="fas fa-arrow-right"></i>
+        </div>
+        <span class="font-medium">العودة للمتجر</span>
+      </button>
+
+      <h2 class="text-3xl md:text-4xl font-black mb-10 gradient-text-premium flex items-center gap-3">
+        <i class="fas fa-shopping-cart"></i>
+        سلة الطلبات
+      </h2>
+
+      <!-- Cart Items Premium -->
+      <div id="cartItems" class="space-y-5 mb-10">
+        <!-- Rendered by JS with premium design -->
+      </div>
+
+      <!-- Empty Cart Premium -->
+      <div id="emptyCart" class="text-center py-24 hidden">
+        <div class="w-24 h-24 rounded-3xl glass-elegant flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-shopping-cart text-4xl text-slate-500"></i>
+        </div>
+        <h3 class="text-2xl font-bold mb-3">سلة الطلبات فارغة</h3>
+        <p class="text-slate-400 mb-8 max-w-md mx-auto">لم تضف أي منتجات بعد. تصفح مجموعتنا من المياه النقية والثلج وأضف ما تحتاجه لسلة طلباتك</p>
+        <button onclick="showMain()" class="btn-water-premium px-9 py-4 rounded-xl font-bold flex items-center gap-2 mx-auto">
+          <i class="fas fa-boxes"></i>
+          تصفح المنتجات
+        </button>
+      </div>
+
+      <!-- Cart Summary Premium -->
+      <div id="cartSummary" class="glass-elegant rounded-3xl p-8 max-w-lg ml-auto border border-white/10 hidden">
+        <h3 class="text-xl font-bold mb-7 flex items-center gap-2">
+          <i class="fas fa-receipt text-cyan-400"></i>
+          ملخص الطلب
+        </h3>
+        <div class="space-y-4 mb-8">
+          <div class="flex justify-between text-slate-300 py-2 border-b border-slate-800/50">
+            <span>المجموع الفرعي</span>
+<span id="subtotal" class="font-medium">0 JOD</span>          </div>
+          <div class="flex justify-between text-slate-300 py-2 border-b border-slate-800/50">
+            <span>رسوم التوصيل</span>
+            <span id="deliveryFee" class="text-green-400 font-medium">مجاني ✓</span>
+          </div>
+          <div class="flex justify-between text-slate-300 py-2 border-b border-slate-800/50">
+            <span>الضريبة (0%)</span>
+            <span>0 JOD</span>
+          </div>
+          <div class="flex justify-between text-xl font-bold pt-3">
+            <span>الإجمالي النهائي</span>
+            <span id="totalPrice" class="gradient-text-premium">0 JOD</span>
+          </div>
+        </div>
+
+        <!-- Delivery Info Premium -->
+        <div class="space-y-5 mb-8">
+          <div>
+            <label class="block text-sm font-medium mb-2 text-slate-300">الاسم الكامل <span class="text-red-400">*</span></label>
+            <input type="text" id="customerName" required placeholder="أدخل اسمك كما في الهوية" class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2 text-slate-300">رقم الهاتف <span class="text-red-400">*</span></label>
+            <input type="tel" id="customerPhone" required placeholder="07XXXXXXXXX" class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all" dir="ltr"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2 text-slate-300">عنوان التوصيل <span class="text-red-400">*</span></label>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input type="text" id="customerAddress" required placeholder="اكتب العنوان نصياً أو حدّد موقعك عبر GPS" class="flex-1 px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all"/>
+              <button type="button" id="useGpsBtn" onclick="useCurrentLocation()" class="shrink-0 px-4 py-3.5 rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/25 transition-all font-bold text-sm flex items-center justify-center gap-2">
+                <i class="fas fa-location-crosshairs"></i>
+                موقعي GPS
+              </button>
+            </div>
+            <input type="hidden" id="customerLat" value="" />
+            <input type="hidden" id="customerLng" value="" />
+            <p id="gpsStatus" class="mt-2 text-xs text-slate-500">يمكنك كتابة العنوان يدوياً أو الضغط على GPS لتحديد الموقع الجغرافي.</p>
+            <a id="gpsMapsLink" href="#" target="_blank" rel="noopener" class="hidden mt-2 inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300">
+              <i class="fas fa-map-marker-alt"></i>
+              فتح الموقع على الخريطة
+            </a>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2 text-slate-300">ملاحظات إضافية (اختياري)</label>
+            <textarea id="customerNotes" placeholder="مثلاً: اتصل قبل الوصول، اترك الطلب عند البوابة، إلخ." rows="3" class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all resize-none"></textarea>
+          </div>
+          
+          <!-- Preferred Time -->
+          <div>
+            <label class="block text-sm font-medium mb-2 text-slate-300">وقت التوصيل المفضل</label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="flex items-center gap-2.5 p-3.5 rounded-xl bg-white/5 border border-slate-700 cursor-pointer hover:border-cyan-500/50 transition-colors">
+                <input type="radio" name="deliveryTime" value="asap" checked class="text-cyan-500 focus:ring-cyan-500">
+                <span class="text-sm">في أقرب وقت</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-3.5 rounded-xl bg-white/5 border border-slate-700 cursor-pointer hover:border-cyan-500/50 transition-colors">
+                <input type="radio" name="deliveryTime" value="evening" class="text-cyan-500 focus:ring-cyan-500">
+                <span class="text-sm">مساءً (6-10)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="confirmOrder()" class="w-full py-4.5 rounded-xl btn-water-premium font-bold text-lg hover:shadow-lg hover:shadow-cyan-500/30 transition-all flex items-center justify-center gap-2">
+          <i class="fas fa-check-circle"></i>
+          تأكيد الطلب وحفظه مباشرة
+        </button>
+        
+        <p class="text-center text-xs text-slate-500 mt-4 flex items-center justify-center gap-1.5">
+          <i class="fas fa-lock"></i>
+          معالج آمن • بياناتك محمية • دفع عند الاستلام
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ==================== ORDER CONFIRMATION ==================== -->
+  <!-- ============================================================ -->
+  <div id="orderConfirmPage" class="cart-page-premium min-h-screen flex items-center justify-center">
+    <div class="text-center max-w-lg mx-auto px-6">
+      <div class="glass-elegant rounded-3xl p-10 animate-fade-scale border border-cyan-500/20 relative overflow-hidden">
+        <!-- Confetti Container -->
+        <div id="confettiContainer" class="absolute inset-0 pointer-events-none"></div>
+        
+        <div class="relative z-10">
+          <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center mx-auto mb-7 animate-float-elegant">
+            <i class="fas fa-check text-3xl text-white"></i>
+          </div>
+          <h2 class="text-3xl font-black mb-4 gradient-text-premium">تم تأكيد طلبك بنجاح!</h2>
+          <p class="text-slate-300 mb-3">رقم الطلب: <span id="orderNumber" class="text-cyan-400 font-bold text-lg"></span></p>
+          <p class="text-slate-400 mb-8 leading-relaxed">
+            تم حفظ طلبك مباشرة في قاعدة البيانات ولوحة الإدارة. سيتم التواصل معك على الرقم المسجل خلال <span class="text-cyan-400 font-medium">5-10 دقائق</span> لتأكيد تفاصيل التوصيل.
+          </p>
+          
+          <!-- Order Summary Mini -->
+          <div class="glass-light-elegant rounded-2xl p-5 mb-8 text-right">
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-slate-400">عدد المنتجات:</span>
+              <span id="confirmItemsCount" class="font-medium">0</span>
+            </div>
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-slate-400">الإجمالي:</span>
+              <span id="confirmTotal" class="font-bold gradient-text-premium">0 JOD</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">وقت التوصيل المتوقع:</span>
+              <span class="font-medium text-green-400">28 دقيقة</span>
+            </div>
+          </div>
+          
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <button onclick="showMain()" class="btn-water-premium px-8 py-3.5 rounded-xl font-bold flex items-center gap-2">
+              <i class="fas fa-store"></i>
+              العودة للمتجر
+            </button>
+            <button onclick="showAIChat()" class="px-8 py-3.5 rounded-xl glass-elegant font-bold hover:bg-white/10 transition-all flex items-center gap-2 border border-white/10">
+              <i class="fas fa-robot text-cyan-400"></i>
+              استشر المساعد الذكي
+            </button>
+          </div>
+          
+          <div class="mt-8 pt-6 border-t border-slate-800/50">
+            <p class="text-xs text-emerald-400 mb-2 flex items-center justify-center gap-2">
+              <i class="fas fa-database"></i>
+              تم تسجيل الطلب في قاعدة البيانات مباشرة
+            </p>
+            <p class="text-xs text-slate-500">احتفظ برقم الطلب للمتابعة مع خدمة العملاء.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ==================== AI FAQ ASSISTANT ====================== -->
+  <!-- ============================================================ -->
+  <div id="aiChatPage" class="ai-chat-full-premium fixed inset-0 z-[70] flex-col">
+    <div class="p-5 bg-gradient-to-r from-cyan-500/10 to-blue-600/10 border-b border-white/5 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button type="button" onclick="showMain()" class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+          <i class="fas fa-arrow-right"></i>
+        </button>
+        <div class="flex items-center gap-3.5">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center relative">
+            <i class="fas fa-robot text-2xl text-white"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg">مساعد قطرة نقية</h4>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400">اضغط على السؤال لعرض الإجابة الجاهزة</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button type="button" onclick="showMain()" class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-5 md:p-8">
+      <div class="max-w-3xl mx-auto">
+        <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+          اختر أحد الأسئلة التالية لعرض الإجابة مباشرة — بدون كتابة أو دردشة.
+        </p>
+        <div id="aiFaqList" class="space-y-3"></div>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-white/5 text-center">
+      <p class="text-xs text-slate-500">
+        <i class="fas fa-info-circle text-cyan-400 mr-1"></i>
+        إجابات جاهزة ومخزنة • لأي استفسار إضافي تواصل معنا عبر النموذج أو الهاتف
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== PREMIUM JAVASCRIPT ===== -->
+    <script src="script.js"></script>
+
+</body>
+</html>

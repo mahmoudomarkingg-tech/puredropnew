@@ -1,0 +1,488 @@
+'use strict';
+
+const { all, get, run, withTransaction } = require('../db/query');
+const { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } = require('../utils/constants');
+const { addAdminEventClient, broadcastAdminEvent } = require('../utils/sse');
+const {
+  sanitizeText,
+  translateOrderStatus,
+  translatePaymentStatus,
+  translatePaymentMethod,
+  translateDeliveryTime,
+  normalizeDeliveryStatus
+} = require('../utils/helpers');
+
+async function getAdminOrderItems(orderId) {
+  return all(
+    `SELECT id,
+            product_id AS "productId",
+            product_option_id AS "productOptionId",
+            product_name_snapshot AS "productName",
+            option_label_snapshot AS "optionLabel",
+            quantity,
+            unit_price AS "unitPrice",
+            line_total AS "lineTotal",
+            created_at AS "createdAt"
+     FROM order_items
+     WHERE order_id = ?
+     ORDER BY id ASC`,
+    [orderId]
+  );
+}
+
+async function getAdminOrderStatusCounts() {
+  const rows = await all(
+    `SELECT os.status, os.label_ar AS "labelAr", os.color, os.sort_order AS "sortOrder",
+            COALESCE(COUNT(o.id), 0)::int AS total
+     FROM order_statuses os
+     LEFT JOIN orders o ON o.status = os.status
+     GROUP BY os.status, os.label_ar, os.color, os.sort_order
+     ORDER BY os.sort_order ASC`
+  );
+
+  // Cancelled orders stay in history/filters, but are excluded from business KPIs.
+  const allOrders = Number(
+    (await get("SELECT COUNT(*)::int AS total FROM orders WHERE status <> 'cancelled'"))?.total || 0
+  );
+  const todayOrders = Number(
+    (await get(
+      `SELECT COUNT(*)::int AS total
+       FROM orders
+       WHERE created_at::date = CURRENT_DATE
+         AND status <> 'cancelled'`
+    ))?.total || 0
+  );
+  const totalSales = Number(
+    (await get(
+      `SELECT COALESCE(SUM(total), 0) AS total
+       FROM orders
+       WHERE status <> 'cancelled'`
+    ))?.total || 0
+  );
+  const deliveredOrders = Number(
+    (await get(
+      `SELECT COUNT(*)::int AS total
+       FROM orders
+       WHERE delivery_status = 'تم التسليم'
+         AND status <> 'cancelled'`
+    ))?.total || 0
+  );
+  const notDeliveredOrders = Number(
+    (await get(
+      `SELECT COUNT(*)::int AS total
+       FROM orders
+       WHERE delivery_status = 'لم يتم التسليم'
+         AND status <> 'cancelled'`
+    ))?.total || 0
+  );
+  const cancelledOrders = Number(
+    (await get("SELECT COUNT(*)::int AS total FROM orders WHERE status = 'cancelled'"))?.total || 0
+  );
+
+  return {
+    all: allOrders,
+    today: todayOrders,
+    totalSales,
+    delivered: deliveredOrders,
+    notDelivered: notDeliveredOrders,
+    cancelled: cancelledOrders,
+    byStatus: rows
+  };
+}
+
+async function listOrders(req, res) {
+  const params = [];
+  const where = [];
+  const status = sanitizeText(req.query.status, 80);
+  const queryText = sanitizeText(req.query.q, 160);
+  const limit = Math.min(Math.max(Number.parseInt(req.query.limit || '100', 10) || 100, 1), 500);
+
+  if (status && status !== 'all') {
+    where.push('o.status = ?');
+    params.push(status);
+  } else {
+    // Default "all" view = active orders only; open the ملغي filter to see cancelled.
+    where.push("o.status <> 'cancelled'");
+  }
+
+  if (queryText) {
+    where.push(
+      `(o.order_number ILIKE ? OR COALESCE(o.customer_name_snapshot, c.full_name) ILIKE ? OR COALESCE(o.customer_phone_snapshot, c.phone) ILIKE ? OR COALESCE(o.customer_address_snapshot, c.address) ILIKE ?)`
+    );
+    const like = `%${queryText}%`;
+    params.push(like, like, like, like);
+  }
+
+  params.push(limit);
+
+  const rows = await all(
+    `SELECT o.id,
+            o.order_number AS "orderNumber",
+            o.status,
+            COALESCE(os.label_ar, o.status) AS "statusLabel",
+            COALESCE(os.color, '#06b6d4') AS "statusColor",
+            o.delivery_time_preference AS "deliveryTimePreference",
+            o.subtotal,
+            o.delivery_fee AS "deliveryFee",
+            o.tax,
+            o.total,
+            o.currency,
+            o.source,
+            o.payment_method AS "paymentMethod",
+            o.payment_status AS "paymentStatus",
+            COALESCE(t."هل تم التسليم", o.delivery_status, 'لم يتم التسليم') AS "deliveryStatus",
+            COALESCE(t."تاريخ التسليم", o.delivered_at) AS "deliveryDate",
+            COALESCE(t."ملاحظات التسليم", o.delivery_notes) AS "deliveryNotes",
+            t."آخر تحديث" AS "deliveryStatusUpdatedAt",
+            o.notes,
+            o.admin_notes AS "adminNotes",
+            o.confirmed_at AS "confirmedAt",
+            o.delivered_at AS "deliveredAt",
+            o.cancelled_at AS "cancelledAt",
+            o.created_at AS "createdAt",
+            o.updated_at AS "updatedAt",
+            o.location_lat AS "locationLat",
+            o.location_lng AS "locationLng",
+            o.location_maps_url AS "locationMapsUrl",
+            c.id AS "customerId",
+            COALESCE(o.customer_name_snapshot, c.full_name) AS "customerName",
+            COALESCE(o.customer_phone_snapshot, c.phone) AS "customerPhone",
+            COALESCE(o.customer_address_snapshot, c.address) AS "customerAddress",
+            c.city AS "customerCity",
+            c.notes AS "customerNotes",
+            COALESCE((SELECT SUM(quantity) FROM order_items oi WHERE oi.order_id = o.id), 0)::int AS "itemsCount"
+     FROM orders o
+     JOIN customers c ON c.id = o.customer_id
+     LEFT JOIN order_statuses os ON os.status = o.status
+     LEFT JOIN "متابعة_تسليم_الطلبات" t ON t."معرف الطلب" = o.id
+     ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+     ORDER BY o.created_at DESC, o.id DESC
+     LIMIT ?`,
+    params
+  );
+
+  const orders = [];
+  for (const row of rows) {
+    orders.push({
+      ...row,
+      subtotal: Number(row.subtotal),
+      deliveryFee: Number(row.deliveryFee),
+      tax: Number(row.tax),
+      total: Number(row.total),
+      statusLabel: row.statusLabel || translateOrderStatus(row.status),
+      statusColor: row.statusColor || ORDER_STATUS_COLORS[row.status] || '#06b6d4',
+      deliveryTimeLabel: translateDeliveryTime(row.deliveryTimePreference),
+      paymentMethodLabel: translatePaymentMethod(row.paymentMethod),
+      paymentStatusLabel: translatePaymentStatus(row.paymentStatus),
+      sourceLabel: row.source === 'website' ? 'الموقع الإلكتروني' : row.source,
+      deliveryStatus: row.deliveryStatus || (row.status === 'delivered' ? 'تم التسليم' : 'لم يتم التسليم'),
+      deliveryDate: row.deliveryDate || row.deliveredAt || null,
+      deliveryNotes: row.deliveryNotes || '',
+      items: await getAdminOrderItems(row.id)
+    });
+  }
+
+  const statuses = (await all(
+    `SELECT status, label_ar AS "labelAr", description_ar AS "descriptionAr", color,
+            sort_order AS "sortOrder", is_final AS "isFinal"
+     FROM order_statuses
+     ORDER BY sort_order ASC`
+  )).map(row => ({ ...row, isFinal: Boolean(row.isFinal) }));
+
+  res.json({
+    success: true,
+    generatedAt: new Date().toISOString(),
+    counts: await getAdminOrderStatusCounts(),
+    statuses,
+    orders
+  });
+}
+
+async function listOrderStatuses(req, res) {
+  const statuses = (await all(
+    `SELECT status, label_ar AS "labelAr", description_ar AS "descriptionAr", color,
+            sort_order AS "sortOrder", is_final AS "isFinal"
+     FROM order_statuses
+     ORDER BY sort_order ASC`
+  )).map(row => ({ ...row, isFinal: Boolean(row.isFinal) }));
+
+  res.json({ success: true, statuses });
+}
+
+async function syncDeliveryTracking(client, orderId, orderNumber, deliveryStatus, deliveryNotes = null) {
+  await run(
+    `INSERT INTO "متابعة_تسليم_الطلبات"
+     ("معرف الطلب", "رقم الطلب", "هل تم التسليم", "تاريخ التسليم", "ملاحظات التسليم")
+     VALUES (?, ?, ?, CASE WHEN ? = 'تم التسليم' THEN NOW() ELSE NULL END, ?)
+     ON CONFLICT ("معرف الطلب") DO NOTHING`,
+    [orderId, orderNumber, deliveryStatus, deliveryStatus, deliveryNotes],
+    client
+  );
+
+  await run(
+    `UPDATE "متابعة_تسليم_الطلبات"
+     SET
+       "هل تم التسليم" = ?,
+       "تاريخ التسليم" = CASE
+         WHEN ? = 'تم التسليم' THEN COALESCE((SELECT delivered_at FROM orders WHERE id = ?), NOW())
+         ELSE NULL
+       END,
+       "ملاحظات التسليم" = COALESCE(?, "ملاحظات التسليم"),
+       "آخر تحديث" = NOW()
+     WHERE "معرف الطلب" = ?`,
+    [deliveryStatus, deliveryStatus, orderId, deliveryNotes, orderId],
+    client
+  );
+}
+
+async function updateOrderStatus(req, res) {
+  const orderId = Number(req.params.id);
+  const newStatus = sanitizeText(req.body?.status, 80);
+  const note = sanitizeText(req.body?.note, 1000);
+  const adminNotes = sanitizeText(req.body?.adminNotes, 1200);
+  const changedBy = sanitizeText(req.body?.changedBy, 120) || 'لوحة الإدارة';
+
+  if (!Number.isInteger(orderId) || orderId <= 0) {
+    return res.status(400).json({ success: false, error: 'معرّف الطلب غير صالح' });
+  }
+
+  if (!ORDER_STATUS_LABELS[newStatus]) {
+    return res.status(400).json({ success: false, error: 'حالة الطلب غير صالحة' });
+  }
+
+  const order = await get('SELECT id, order_number, status FROM orders WHERE id = ?', [orderId]);
+  if (!order) {
+    return res.status(404).json({ success: false, error: 'الطلب غير موجود' });
+  }
+
+  if (order.status === newStatus && !note && !adminNotes) {
+    return res.json({
+      success: true,
+      unchanged: true,
+      orderId,
+      orderNumber: order.order_number,
+      oldStatus: order.status,
+      newStatus,
+      statusLabel: translateOrderStatus(newStatus),
+      deliveryStatus: newStatus === 'delivered' ? 'تم التسليم' : 'لم يتم التسليم',
+      message: 'الحالة لم تتغير'
+    });
+  }
+
+  const deliveryStatus = newStatus === 'delivered' ? 'تم التسليم' : 'لم يتم التسليم';
+
+  await withTransaction(async client => {
+    const setParts = [
+      'status = ?',
+      'delivery_status = ?',
+      'delivery_status_updated_at = NOW()'
+    ];
+    const params = [newStatus, deliveryStatus];
+
+    if (adminNotes) {
+      setParts.push('admin_notes = ?');
+      params.push(adminNotes);
+    }
+
+    if (newStatus === 'confirmed') {
+      setParts.push('confirmed_at = COALESCE(confirmed_at, NOW())');
+    }
+    if (newStatus === 'delivered') {
+      setParts.push('delivered_at = COALESCE(delivered_at, NOW())');
+    } else {
+      setParts.push('delivered_at = NULL');
+    }
+    if (newStatus === 'cancelled') {
+      setParts.push('cancelled_at = COALESCE(cancelled_at, NOW())');
+    } else {
+      setParts.push('cancelled_at = NULL');
+    }
+
+    params.push(orderId);
+    await run(`UPDATE orders SET ${setParts.join(', ')} WHERE id = ?`, params, client);
+    await syncDeliveryTracking(client, orderId, order.order_number, deliveryStatus, null);
+
+    await run(
+      `INSERT INTO order_status_history (order_id, old_status, new_status, note, changed_by)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        orderId,
+        order.status,
+        newStatus,
+        note || `تم تغيير الحالة إلى ${translateOrderStatus(newStatus)}`,
+        changedBy
+      ],
+      client
+    );
+  });
+
+  broadcastAdminEvent('orders-updated', {
+    orderId,
+    orderNumber: order.order_number,
+    status: newStatus,
+    deliveryStatus
+  });
+
+  return res.json({
+    success: true,
+    orderId,
+    orderNumber: order.order_number,
+    oldStatus: order.status,
+    newStatus,
+    statusLabel: translateOrderStatus(newStatus),
+    deliveryStatus
+  });
+}
+
+async function updateOrderDeliveryStatus(req, res) {
+  const orderId = Number(req.params.id);
+  const payload = req.body || {};
+  const deliveryStatus = normalizeDeliveryStatus(
+    payload.deliveryStatus || payload.delivery_status || payload.status || payload.value
+  );
+  const deliveryNotes = sanitizeText(payload.deliveryNotes || payload.delivery_notes || payload.note, 1200);
+  const changedBy = sanitizeText(payload.changedBy, 120) || 'لوحة الإدارة';
+
+  if (!Number.isInteger(orderId) || orderId <= 0) {
+    return res.status(400).json({ success: false, error: 'معرّف الطلب غير صالح' });
+  }
+
+  if (!deliveryStatus) {
+    return res.status(400).json({
+      success: false,
+      error: 'قيمة حالة التسليم غير صالحة. استخدم: تم التسليم أو لم يتم التسليم'
+    });
+  }
+
+  const order = await get(
+    'SELECT id, order_number, status, delivery_status FROM orders WHERE id = ?',
+    [orderId]
+  );
+  if (!order) {
+    return res.status(404).json({ success: false, error: 'الطلب غير موجود' });
+  }
+
+  // Keep order status and delivery flag aligned.
+  let nextStatus = order.status;
+  if (deliveryStatus === 'تم التسليم') {
+    nextStatus = 'delivered';
+  } else if (order.status === 'delivered') {
+    nextStatus = 'out_for_delivery';
+  }
+
+  await withTransaction(async client => {
+    await run(
+      `UPDATE orders
+       SET delivery_status = ?,
+           delivery_notes = ?,
+           delivery_status_updated_at = NOW(),
+           status = ?,
+           delivered_at = CASE
+             WHEN ? = 'تم التسليم' THEN COALESCE(delivered_at, NOW())
+             ELSE NULL
+           END,
+           cancelled_at = CASE
+             WHEN ? = 'cancelled' THEN COALESCE(cancelled_at, NOW())
+             ELSE NULL
+           END
+       WHERE id = ?`,
+      [deliveryStatus, deliveryNotes || null, nextStatus, deliveryStatus, nextStatus, orderId],
+      client
+    );
+
+    await syncDeliveryTracking(
+      client,
+      orderId,
+      order.order_number,
+      deliveryStatus,
+      deliveryNotes || null
+    );
+
+    await run(
+      `INSERT INTO order_status_history (order_id, old_status, new_status, note, changed_by)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        orderId,
+        order.status,
+        nextStatus,
+        `تم تحديث التسليم إلى: ${deliveryStatus}${
+          nextStatus !== order.status ? ` — الحالة: ${translateOrderStatus(nextStatus)}` : ''
+        }`,
+        changedBy
+      ],
+      client
+    );
+  });
+
+  broadcastAdminEvent('orders-updated', {
+    orderId,
+    orderNumber: order.order_number,
+    deliveryStatus,
+    status: nextStatus
+  });
+
+  return res.json({
+    success: true,
+    orderId,
+    orderNumber: order.order_number,
+    deliveryStatus,
+    deliveryNotes: deliveryNotes || null,
+    status: nextStatus,
+    statusLabel: translateOrderStatus(nextStatus)
+  });
+}
+
+async function deleteOrder(req, res) {
+  const orderId = Number(req.params.id);
+  const changedBy = sanitizeText(req.body?.changedBy, 120) || 'لوحة الإدارة';
+
+  if (!Number.isInteger(orderId) || orderId <= 0) {
+    return res.status(400).json({ success: false, error: 'معرّف الطلب غير صالح' });
+  }
+
+  const order = await get(
+    'SELECT id, order_number, status FROM orders WHERE id = ?',
+    [orderId]
+  );
+  if (!order) {
+    return res.status(404).json({ success: false, error: 'الطلب غير موجود' });
+  }
+
+  await withTransaction(async client => {
+    // Related rows (items, history, delivery tracking) cascade via schema FKs.
+    const result = await run('DELETE FROM orders WHERE id = ?', [orderId], client);
+    if (!result.rowCount) {
+      const err = new Error('تعذر حذف الطلب');
+      err.statusCode = 500;
+      throw err;
+    }
+  });
+
+  broadcastAdminEvent('orders-updated', {
+    orderId,
+    orderNumber: order.order_number,
+    deleted: true,
+    deletedBy: changedBy
+  });
+
+  return res.json({
+    success: true,
+    deleted: true,
+    orderId,
+    orderNumber: order.order_number,
+    message: `تم حذف الطلب ${order.order_number}`
+  });
+}
+
+function streamOrderEvents(req, res) {
+  addAdminEventClient(req, res);
+}
+
+module.exports = {
+  listOrders,
+  listOrderStatuses,
+  updateOrderStatus,
+  updateOrderDeliveryStatus,
+  deleteOrder,
+  streamOrderEvents
+};

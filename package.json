@@ -1,0 +1,35 @@
+{
+  "name": "puredrop-family-advisor-site",
+  "version": "3.1.0",
+  "private": true,
+  "description": "PureDrop Express API with PostgreSQL and JWT admin auth.",
+  "main": "backend/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node backend/server.js",
+    "start:local": "node scripts/start-local.js",
+    "start:prod": "node scripts/start-prod.js",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:reload": "pm2 reload ecosystem.config.cjs",
+    "secrets": "node scripts/generate-secrets.js",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "check": "node --check script.js && node --check backend/server.js && node --check backend/middleware/auth.js && node --check backend/middleware/rateLimit.js && node --check backend/config/env.js && node --check backend/controllers/adminController.js && node --check backend/controllers/ordersController.js && node --check backend/db/init.js && node --check scripts/start-local.js && node --check scripts/start-prod.js && node --check scripts/generate-secrets.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.3"
+  },
+  "optionalDependencies": {
+    "embedded-postgres": "^18.4.0-beta.17"
+  }
+}

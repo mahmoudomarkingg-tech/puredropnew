@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة إدارة الطلبات | قطرة نقية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(15, 23, 42, 0.9);
+      --panel-2: rgba(30, 41, 59, 0.78);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --line: rgba(148, 163, 184, 0.18);
+      --cyan: #06b6d4;
+      --blue: #2563eb;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.32);
+      --radius: 20px;
+      --font: "Cairo", Tahoma, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background:
+        radial-gradient(circle at top right, rgba(6, 182, 212, 0.2), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.16), transparent 36%),
+        linear-gradient(180deg, #081526 0%, var(--bg) 48%, #050b14 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(1420px, calc(100% - 32px)); margin: 0 auto; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(7, 17, 31, 0.86);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      box-shadow: 0 14px 36px rgba(6, 182, 212, 0.25);
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .brand h1 { margin: 0; font-size: clamp(18px, 2.6vw, 28px); font-weight: 900; }
+    .brand p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .admin-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .btn {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      padding: 11px 15px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 800;
+      font-family: inherit;
+      transition: transform 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.1); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .btn.primary { background: linear-gradient(135deg, var(--cyan), var(--blue)); border: 0; }
+    .btn.danger { background: rgba(239, 68, 68, 0.14); color: #fecaca; border-color: rgba(239, 68, 68, 0.28); }
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: rgba(16, 185, 129, 0.1);
+      color: #bbf7d0;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .live-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.14);
+      animation: pulse 1.8s ease infinite;
+    }
+    main { padding: 16px 0 32px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: none;
+    }
+    .stat-card span { display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+    .stat-card strong { font-size: 18px; line-height: 1.1; }
+    .controls {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    .control-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .search {
+      flex: 1 1 260px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0 10px;
+    }
+    .search input {
+      width: 100%;
+      background: transparent;
+      color: var(--text);
+      border: 0;
+      outline: 0;
+      padding: 10px 4px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .filter-btn {
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 999px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 800;
+      font-family: inherit;
+      font-size: 12px;
+      transition: 0.18s ease;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      color: var(--text);
+      border-color: rgba(6, 182, 212, 0.45);
+      background: rgba(6, 182, 212, 0.13);
+    }
+    .orders-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-head h2 { margin: 0; font-size: 16px; }
+    .panel-head p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 980px; }
+    th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { color: #cbd5e1; font-size: 12px; background: rgba(255, 255, 255, 0.03); white-space: nowrap; }
+    td { color: #e2e8f0; font-size: 13px; }
+    tr:hover td { background: rgba(255, 255, 255, 0.025); }
+    tr.order-row.expanded td { vertical-align: top; background: rgba(6, 182, 212, 0.04); }
+    .order-number { font-weight: 900; color: #67e8f9; direction: ltr; display: inline-block; font-size: 13px; }
+    .muted { color: var(--muted); font-size: 11px; }
+    .customer strong { display: block; margin-bottom: 2px; font-size: 13px; }
+    .items-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+    .items-list li { color: #cbd5e1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+    .price { font-weight: 900; color: #bbf7d0; direction: ltr; display: inline-block; font-size: 13px; }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); }
+    select, textarea, input[type="text"], input[type="password"], input[type="search"] {
+      width: 100%;
+      color: var(--text);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      outline: 0;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    textarea { resize: vertical; min-height: 44px; margin-top: 0; }
+    .status-actions { display: grid; gap: 6px; }
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .btn.sm {
+      padding: 5px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      flex: 0 1 auto;
+    }
+    .btn.success {
+      background: rgba(16, 185, 129, 0.16);
+      color: #bbf7d0;
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+    .btn.success.active, .btn.primary.active {
+      outline: 2px solid rgba(6, 182, 212, 0.45);
+    }
+    .btn.warn {
+      background: rgba(245, 158, 11, 0.14);
+      color: #fde68a;
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+    .manage-box {
+      display: grid;
+      gap: 6px;
+      min-width: 220px;
+    }
+    .manage-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .manage-details {
+      display: none;
+      gap: 8px;
+      padding-top: 6px;
+      border-top: 1px solid var(--line);
+    }
+    .manage-details.show { display: grid; }
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .detail-block {
+      display: grid;
+      gap: 6px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+    }
+    .detail-block h4 {
+      margin: 0;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+    .order-extra {
+      display: none;
+      grid-column: 1 / -1;
+    }
+    tr.order-row.expanded .order-extra,
+    .order-card.expanded .order-extra {
+      display: block;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .one-line {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: rgba(2, 8, 18, 0.72);
+      display: none;
+      place-items: center;
+      padding: 20px;
+    }
+    .confirm-overlay.show { display: grid; }
+    .confirm-card {
+      width: min(420px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .confirm-card h3 { margin: 0 0 8px; font-size: 20px; }
+    .confirm-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.7; }
+    .confirm-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .confirm-actions .btn { flex: 1; }
+    .empty, .error, .loading { padding: 38px; text-align: center; color: var(--muted); }
+    .error { color: #fecaca; }
+    .toast {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      min-width: 260px;
+      max-width: 420px;
+      z-index: 50;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      display: none;
+    }
+    .toast.show { display: block; animation: pop 0.2s ease; }
+    .login-gate {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .login-gate::before {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.22), transparent 70%);
+      top: -80px;
+      left: -60px;
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+    .login-gate::after {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.18), transparent 70%);
+      bottom: -40px;
+      right: -40px;
+      animation: drift 12s ease-in-out infinite alternate-reverse;
+    }
+    .login-card {
+      width: min(440px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 0.4s ease;
+    }
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .login-brand h2 { margin: 0; font-size: 24px; }
+    .login-brand p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .login-card > p.lead { margin: 0 0 18px; color: var(--muted); }
+    .login-card label { display: block; margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 700; }
+    .field { margin-bottom: 14px; }
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-left: 52px; }
+    .toggle-pass {
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 6px 8px;
+    }
+    .login-card .btn { width: 100%; margin-top: 4px; }
+    .form-error {
+      display: none;
+      margin: 0 0 14px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fecaca;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .form-error.show { display: block; }
+    .login-hint {
+      margin: 16px 0 0;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .cards-view { display: none; padding: 10px; gap: 8px; }
+    .order-card {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+    .order-card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .order-card-grid {
+      display: grid;
+      gap: 4px;
+      font-size: 13px;
+    }
+    .dashboard.hidden, .login-gate.hidden { display: none !important; }
+    .dashboard.is-open { display: block !important; }
+    @keyframes pop { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fadeUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.14); }
+      50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.08); }
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0); }
+      to { transform: translate(24px, 18px); }
+    }
+    @media (max-width: 1100px) {
+      .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .details-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 920px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .topbar-inner { align-items: flex-start; flex-direction: column; }
+      .table-wrap table { display: none; }
+      .cards-view { display: grid; }
+    }
+    @media (max-width: 560px) {
+      .container { width: min(100% - 18px, 1420px); }
+      .stats { grid-template-columns: 1fr; }
+      .brand-icon { width: 42px; height: 42px; }
+      .top-actions { width: 100%; }
+      .btn { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-gate" id="loginGate">
+    <form class="login-card" id="loginForm" novalidate autocomplete="off">
+      <div class="login-brand">
+        <div class="brand-icon" aria-hidden="true">💧</div>
+        <div>
+          <h2>دخول محمي</h2>
+          <p>لوحة إدارة الطلبات</p>
+        </div>
+      </div>
+      <p class="lead">هذه الصفحة محمية. لا يمكن عرض الطلبات أو تعديلها إلا بعد إدخال اسم المستخدم وكلمة المرور الصحيحة.</p>
+      <div class="form-error" id="loginError" role="alert"></div>
+      <div class="field">
+        <label for="loginUsername">اسم المستخدم</label>
+        <input id="loginUsername" name="username" autocomplete="off" autocapitalize="off" spellcheck="false" required placeholder="أدخل اسم المستخدم" value="" />
+      </div>
+      <div class="field">
+        <label for="loginPassword">كلمة المرور</label>
+        <div class="password-wrap">
+          <input id="loginPassword" name="password" type="password" autocomplete="new-password" required placeholder="أدخل كلمة المرور" value="" />
+          <button class="toggle-pass" type="button" id="togglePassword" aria-label="إظهار كلمة المرور">إظهار</button>
+        </div>
+      </div>
+      <button class="btn primary" type="submit" id="loginSubmit">تسجيل الدخول</button>
+      <p class="login-hint">بدون بيانات صحيحة لن يتم فتح لوحة الإدارة. الجلسة تنتهي تلقائياً بعد انتهاء صلاحية التوكن.</p>
+    </form>
+  </div>
+
+  <div class="dashboard hidden" id="dashboard" style="display:none" aria-hidden="true">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <div class="brand-icon">💧</div>
+        <div>
+          <h1>لوحة إدارة الطلبات</h1>
+          <p>كل طلب جديد يظهر هنا مباشرة بعد إرساله من الموقع إلى قاعدة البيانات</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="admin-chip" id="adminChip">الأدمن</span>
+        <span class="live-badge"><span class="live-dot"></span><span id="liveText">تحديث فوري مفعل</span></span>
+        <button class="btn primary" id="refreshBtn">تحديث الآن</button>
+        <a class="btn" href="/" target="_blank" rel="noopener">فتح الموقع</a>
+        <button class="btn danger" id="logoutBtn" type="button">خروج</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="stats" id="stats"></section>
+
+    <section class="controls">
+      <div class="control-row">
+        <div class="search">
+          <span aria-hidden="true">🔎</span>
+          <input id="searchInput" type="search" placeholder="ابحث برقم الطلب أو اسم العميل أو الهاتف أو العنوان" />
+        </div>
+        <button class="btn" id="clearBtn">مسح البحث</button>
+      </div>
+      <div class="filters" id="filters"></div>
+    </section>
+
+    <section class="orders-panel">
+      <div class="panel-head">
+        <div>
+          <h2>الطلبات</h2>
+          <p id="lastUpdate">لم يتم التحميل بعد</p>
+        </div>
+        <div class="muted" id="ordersCount">0 طلب</div>
+      </div>
+      <div class="table-wrap" id="ordersTable">
+        <div class="loading">جاري تحميل الطلبات...</div>
+      </div>
+    </section>
+  </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="confirm-overlay" id="confirmOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="confirm-card">
+      <h3 id="confirmTitle">تأكيد العملية</h3>
+      <p id="confirmMessage">هل أنت متأكد؟</p>
+      <div class="confirm-actions">
+        <button class="btn" type="button" id="confirmCancel">إلغاء</button>
+        <button class="btn danger" type="button" id="confirmOk">تأكيد</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TOKEN_KEY = 'puredrop_admin_token';
+    const ADMIN_KEY = 'puredrop_admin_user';
+    const state = {
+      orders: [],
+      statuses: [],
+      counts: { all: 0, today: 0, totalSales: 0, byStatus: [] },
+      activeStatus: 'all',
+      search: '',
+      isLoading: false,
+      token: localStorage.getItem(TOKEN_KEY) || '',
+      adminUsername: localStorage.getItem(ADMIN_KEY) || '',
+      events: null,
+      pollTimer: null
+    };
+
+    const statusFallback = [
+      { status: 'pending', labelAr: 'طلب جديد', color: '#f59e0b' },
+      { status: 'confirmed', labelAr: 'تم التأكيد', color: '#06b6d4' },
+      { status: 'preparing', labelAr: 'قيد التجهيز', color: '#3b82f6' },
+      { status: 'out_for_delivery', labelAr: 'خرج للتوصيل', color: '#8b5cf6' },
+      { status: 'delivered', labelAr: 'تم التسليم', color: '#10b981' },
+      { status: 'cancelled', labelAr: 'ملغي', color: '#ef4444' }
+    ];
+
+    const statsEl = document.getElementById('stats');
+    const filtersEl = document.getElementById('filters');
+    const ordersTableEl = document.getElementById('ordersTable');
+    const lastUpdateEl = document.getElementById('lastUpdate');
+    const ordersCountEl = document.getElementById('ordersCount');
+    const searchInput = document.getElementById('searchInput');
+    const toastEl = document.getElementById('toast');
+    const loginErrorEl = document.getElementById('loginError');
+    const loginSubmit = document.getElementById('loginSubmit');
+    const adminChip = document.getElementById('adminChip');
+
+    function money(value, currency = 'JOD') {
+      const number = Number(value || 0).toFixed(2);
+      return `${number} ${currency}`;
+    }
+
+    function fmtDate(value) {
+      if (!value) return 'غير محدد';
+      const normalized = value.includes('T') ? value : value.replace(' ', 'T') + 'Z';
+      const date = new Date(normalized);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toLocaleString('ar-JO', { dateStyle: 'short', timeStyle: 'short' });
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function showToast(message, type = 'success') {
+      toastEl.textContent = message;
+      toastEl.style.borderColor = type === 'error' ? 'rgba(239,68,68,.45)' : 'rgba(16,185,129,.35)';
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 3200);
+    }
+
+    function setLoginError(message) {
+      if (!message) {
+        loginErrorEl.textContent = '';
+        loginErrorEl.classList.remove('show');
+        return;
+      }
+      loginErrorEl.textContent = message;
+      loginErrorEl.classList.add('show');
+    }
+
+    function updateAdminChip() {
+      adminChip.textContent = state.adminUsername
+        ? `مسجّل: ${state.adminUsername}`
+        : 'الأدمن';
+    }
+
+    async function requestJson(path, options = {}) {
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+      };
+      if (state.token) headers.Authorization = `Bearer ${state.token}`;
+
+      const response = await fetch(path, {
+        ...options,
+        headers
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        logout(false);
+        throw new Error(data.error || 'يلزم تسجيل الدخول');
+      }
+      if (!response.ok || data.success === false) throw new Error(data.error || 'تعذر تنفيذ العملية');
+      return data;
+    }
+
+    function showDashboard() {
+      if (!state.token) {
+        showLogin();
+        return;
+      }
+      const gate = document.getElementById('loginGate');
+      const dash = document.getElementById('dashboard');
+      gate.classList.add('hidden');
+      dash.classList.remove('hidden');
+      dash.classList.add('is-open');
+      dash.style.display = '';
+      dash.setAttribute('aria-hidden', 'false');
+      updateAdminChip();
+    }
+
+    function clearLoginFields() {
+      const user = document.getElementById('loginUsername');
+      const pass = document.getElementById('loginPassword');
+      if (user) user.value = '';
+      if (pass) {
+        pass.value = '';
+        pass.type = 'password';
+      }
+      const toggle = document.getElementById('togglePassword');
+      if (toggle) toggle.textContent = 'إظهار';
+    }
+
+    function showLogin() {
+      const gate = document.getElementById('loginGate');
+      const dash = document.getElementById('dashboard');
+      dash.classList.add('hidden');
+      dash.classList.remove('is-open');
+      dash.style.display = 'none';
+      dash.setAttribute('aria-hidden', 'true');
+      gate.classList.remove('hidden');
+      // Never leave order data visible after logout / failed auth.
+      state.orders = [];
+      ordersTableEl.innerHTML = '';
+      statsEl.innerHTML = '';
+      filtersEl.innerHTML = '';
+      clearLoginFields();
+      // Browsers sometimes autofill after paint — clear again shortly.
+      setTimeout(clearLoginFields, 50);
+      setTimeout(clearLoginFields, 300);
+    }
+
+    function stopPolling() {
+      if (state.pollTimer) {
+        clearInterval(state.pollTimer);
+        state.pollTimer = null;
+      }
+    }
+
+    function logout(showMessage = true) {
+      state.token = '';
+      state.adminUsername = '';
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(ADMIN_KEY);
+      stopPolling();
+      if (state.events) {
+        state.events.close();
+        state.events = null;
+      }
+      showLogin();
+      if (showMessage) showToast('تم تسجيل الخروج');
+    }
+
+    async function login(username, password) {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success === false || !data.token) {
+        throw new Error(data.error || 'اسم المستخدم أو كلمة المرور غير صحيحة');
+      }
+      state.token = data.token;
+      state.adminUsername = data.admin?.username || username;
+      localStorage.setItem(TOKEN_KEY, data.token);
+      localStorage.setItem(ADMIN_KEY, state.adminUsername);
+      showDashboard();
+      connectLiveUpdates();
+      startPolling();
+      await loadOrders();
+      clearLoginFields();
+      showToast('تم تسجيل الدخول بنجاح');
+    }
+
+    function startPolling() {
+      stopPolling();
+      state.pollTimer = setInterval(() => {
+        if (state.token) loadOrders(false);
+      }, 10000);
+    }
+
+    async function bootstrapSession() {
+      showLogin();
+      if (!state.token) return;
+      try {
+        const data = await requestJson('/api/admin/me');
+        if (!data?.success) throw new Error('unauthorized');
+        state.adminUsername = data.admin?.username || state.adminUsername || '';
+        localStorage.setItem(ADMIN_KEY, state.adminUsername);
+        showDashboard();
+        connectLiveUpdates();
+        startPolling();
+        await loadOrders();
+      } catch {
+        logout(false);
+      }
+    }
+
+    async function loadOrders(showLoading = true) {
+      if (!state.token) {
+        showLogin();
+        return;
+      }
+      if (state.isLoading) return;
+      state.isLoading = true;
+      if (showLoading) ordersTableEl.innerHTML = '<div class="loading">جاري تحميل الطلبات...</div>';
+      try {
+        const params = new URLSearchParams({ limit: '200' });
+        if (state.activeStatus !== 'all') params.set('status', state.activeStatus);
+        if (state.search.trim()) params.set('q', state.search.trim());
+        const data = await requestJson(`/api/admin/orders?${params.toString()}`);
+        state.orders = data.orders || [];
+        state.statuses = data.statuses && data.statuses.length ? data.statuses : statusFallback;
+        state.counts = data.counts || state.counts;
+        render();
+        lastUpdateEl.textContent = `آخر تحديث: ${fmtDate(data.generatedAt)}`;
+      } catch (error) {
+        ordersTableEl.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+        showToast(error.message, 'error');
+      } finally {
+        state.isLoading = false;
+      }
+    }
+
+    function render() {
+      renderStats();
+      renderFilters();
+      renderOrders();
+    }
+
+    function renderStats() {
+      statsEl.innerHTML = `
+        <article class="stat-card"><span>الطلبات النشطة</span><strong>${state.counts.all || 0}</strong></article>
+        <article class="stat-card"><span>طلبات اليوم</span><strong>${state.counts.today || 0}</strong></article>
+        <article class="stat-card"><span>تم تسليمها</span><strong>${state.counts.delivered || 0}</strong></article>
+        <article class="stat-card"><span>لم تسلم بعد</span><strong>${state.counts.notDelivered || 0}</strong></article>
+        <article class="stat-card"><span>إجمالي المبيعات</span><strong class="price">${money(state.counts.totalSales || 0)}</strong></article>
+        <article class="stat-card"><span>ملغاة</span><strong>${state.counts.cancelled || 0}</strong></article>
+      `;
+    }
+
+    function renderFilters() {
+      const byStatus = new Map((state.counts.byStatus || []).map(row => [row.status, row.total]));
+      const buttons = [
+        `<button class="filter-btn ${state.activeStatus === 'all' ? 'active' : ''}" data-status="all">النشطة (${state.counts.all || 0})</button>`,
+        ...state.statuses.map(status => {
+          const active = state.activeStatus === status.status ? 'active' : '';
+          return `<button class="filter-btn ${active}" data-status="${escapeHtml(status.status)}">${escapeHtml(status.labelAr)} (${byStatus.get(status.status) || 0})</button>`;
+        })
+      ];
+      filtersEl.innerHTML = buttons.join('');
+      filtersEl.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+          state.activeStatus = button.dataset.status;
+          loadOrders();
+        });
+      });
+    }
+
+    function orderMetaHtml(order) {
+      return `
+        <span class="order-number">${escapeHtml(order.orderNumber)}</span>
+        <div class="muted">${fmtDate(order.createdAt)}</div>
+      `;
+    }
+
+    function customerHtml(order) {
+      return `
+        <strong>${escapeHtml(order.customerName)}</strong>
+        <div class="muted" dir="ltr">${escapeHtml(order.customerPhone)}</div>
+      `;
+    }
+
+    function itemsHtml(order) {
+      const items = order.items || [];
+      const preview = items.slice(0, 2).map(item => `
+        <li>${escapeHtml(item.quantity)} × ${escapeHtml(item.productName)}${item.optionLabel ? ' - ' + escapeHtml(item.optionLabel) : ''}</li>
+      `).join('');
+      const more = items.length > 2 ? `<li class="muted">+${items.length - 2} أخرى</li>` : '';
+      return preview + more;
+    }
+
+    function orderExtraHtml(order) {
+      const mapsUrl = order.locationMapsUrl || (
+        order.locationLat != null && order.locationLng != null
+          ? `https://www.google.com/maps?q=${order.locationLat},${order.locationLng}`
+          : ''
+      );
+      return `
+        <div class="order-extra">
+          <div><strong>العنوان:</strong> ${escapeHtml(order.customerAddress || 'بدون عنوان')}</div>
+          ${mapsUrl ? `<div><strong>الموقع:</strong> <a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener" style="color:#67e8f9">فتح على الخريطة</a> <span class="muted" dir="ltr">(${escapeHtml(order.locationLat)}, ${escapeHtml(order.locationLng)})</span></div>` : ''}
+          <div><strong>وقت التوصيل:</strong> ${escapeHtml(order.deliveryTimeLabel || 'غير محدد')}</div>
+          <div><strong>الدفع:</strong> ${escapeHtml(order.paymentMethodLabel || 'الدفع عند الاستلام')} — ${escapeHtml(order.paymentStatusLabel || 'غير مدفوع')}</div>
+          ${order.notes ? `<div><strong>ملاحظات العميل:</strong> ${escapeHtml(order.notes)}</div>` : ''}
+          ${order.adminNotes ? `<div><strong>ملاحظة الإدارة:</strong> ${escapeHtml(order.adminNotes)}</div>` : ''}
+          ${order.deliveryNotes ? `<div><strong>ملاحظة التسليم:</strong> ${escapeHtml(order.deliveryNotes)}</div>` : ''}
+          ${order.deliveryDate ? `<div><strong>تاريخ التسليم:</strong> ${fmtDate(order.deliveryDate)}</div>` : ''}
+        </div>
+      `;
+    }
+
+    function manageOrderHtml(order) {
+      const statuses = state.statuses.map(status => `
+        <option value="${escapeHtml(status.status)}" ${status.status === order.status ? 'selected' : ''}>${escapeHtml(status.labelAr)}</option>
+      `).join('');
+      const deliveryOptions = ['لم يتم التسليم', 'تم التسليم'].map(value => `
+        <option value="${value}" ${value === (order.deliveryStatus || 'لم يتم التسليم') ? 'selected' : ''}>${value}</option>
+      `).join('');
+      const quick = [
+        { status: 'confirmed', label: 'تأكيد', cls: 'btn sm' },
+        { status: 'preparing', label: 'تجهيز', cls: 'btn sm' },
+        { status: 'out_for_delivery', label: 'توصيل', cls: 'btn sm warn' },
+        { status: 'delivered', label: 'تسليم', cls: 'btn sm success' },
+        { status: 'cancelled', label: 'إلغاء', cls: 'btn sm danger' }
+      ].map(item => `
+        <button
+          class="${item.cls}${order.status === item.status ? ' active' : ''}"
+          type="button"
+          data-quick-status="${order.id}"
+          data-status="${item.status}"
+        >${item.label}</button>
+      `).join('');
+
+      return `
+        <div class="manage-box">
+          <div class="manage-top">
+            <div class="quick-actions">${quick}</div>
+            <button class="btn sm" type="button" data-toggle-details="${order.id}">تفاصيل</button>
+            <button class="btn sm danger" type="button" data-delete-order="${order.id}" data-order-number="${escapeHtml(order.orderNumber)}">حذف</button>
+          </div>
+          <div class="manage-details" data-details="${order.id}">
+            <div class="details-grid">
+              <div class="detail-block">
+                <h4>تغيير الحالة</h4>
+                <select data-field="status">${statuses}</select>
+                <textarea data-field="note" placeholder="ملاحظة اختيارية"></textarea>
+                <button class="btn primary sm" type="button" data-save-status="${order.id}">حفظ الحالة</button>
+              </div>
+              <div class="detail-block">
+                <h4>التسليم</h4>
+                <select data-field="delivery">${deliveryOptions}</select>
+                <textarea data-field="delivery-note" placeholder="ملاحظة تسليم">${escapeHtml(order.deliveryNotes || '')}</textarea>
+                <button class="btn success sm" type="button" data-save-delivery="${order.id}">حفظ التسليم</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindOrderActions(root) {
+      root.querySelectorAll('[data-save-status]').forEach(button => {
+        button.addEventListener('click', () => saveStatus(button.dataset.saveStatus, button));
+      });
+      root.querySelectorAll('[data-save-delivery]').forEach(button => {
+        button.addEventListener('click', () => saveDelivery(button.dataset.saveDelivery, button));
+      });
+      root.querySelectorAll('[data-quick-status]').forEach(button => {
+        button.addEventListener('click', () => {
+          applyQuickStatus(button.dataset.quickStatus, button.dataset.status);
+        });
+      });
+      root.querySelectorAll('[data-toggle-details]').forEach(button => {
+        button.addEventListener('click', () => {
+          const host = button.closest('tr.order-row, article.order-card');
+          if (!host) return;
+          const panel = host.querySelector('.manage-details');
+          const open = panel?.classList.toggle('show');
+          host.classList.toggle('expanded', Boolean(open));
+          button.textContent = open ? 'إخفاء' : 'تفاصيل';
+        });
+      });
+      root.querySelectorAll('[data-delete-order]').forEach(button => {
+        button.addEventListener('click', () => {
+          confirmAction({
+            title: 'حذف الطلب',
+            message: `سيتم حذف الطلب ${button.dataset.orderNumber} نهائياً مع منتجاته وسجل حالته. لا يمكن التراجع.`,
+            okText: 'حذف نهائي',
+            okClass: 'btn danger',
+            onConfirm: () => deleteOrder(button.dataset.deleteOrder)
+          });
+        });
+      });
+    }
+
+    function renderOrders() {
+      ordersCountEl.textContent = `${state.orders.length} طلب`;
+      if (!state.orders.length) {
+        ordersTableEl.innerHTML = '<div class="empty">لا توجد طلبات مطابقة حالياً. عند إرسال أي عميل طلباً من الموقع سيظهر هنا مباشرة.</div>';
+        return;
+      }
+
+      ordersTableEl.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>الطلب</th>
+              <th>العميل</th>
+              <th>المنتجات</th>
+              <th>الإجمالي</th>
+              <th>الحالة</th>
+              <th>إدارة</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${state.orders.map(order => `
+              <tr class="order-row" data-order-id="${order.id}">
+                <td>
+                  ${orderMetaHtml(order)}
+                  ${orderExtraHtml(order)}
+                </td>
+                <td class="customer">
+                  ${customerHtml(order)}
+                  <div class="muted one-line">${escapeHtml(order.customerAddress || '')}</div>
+                </td>
+                <td><ul class="items-list">${itemsHtml(order)}</ul></td>
+                <td><span class="price">${money(order.total, order.currency)}</span></td>
+                <td>
+                  <span class="status-pill"><span class="status-dot" style="background:${escapeHtml(order.statusColor || '#06b6d4')}"></span>${escapeHtml(order.statusLabel)}</span>
+                  <div class="muted" style="margin-top:4px">${escapeHtml(order.deliveryStatus || 'لم يتم التسليم')}</div>
+                </td>
+                <td>${manageOrderHtml(order)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div class="cards-view">
+          ${state.orders.map(order => `
+            <article class="order-card" data-order-id="${order.id}">
+              <div class="order-card-head">
+                <div>${orderMetaHtml(order)}</div>
+                <span class="status-pill"><span class="status-dot" style="background:${escapeHtml(order.statusColor || '#06b6d4')}"></span>${escapeHtml(order.statusLabel)}</span>
+              </div>
+              <div class="order-card-grid">
+                <div class="customer">${customerHtml(order)}</div>
+                <div class="muted one-line">${escapeHtml(order.customerAddress || '')}</div>
+                <ul class="items-list">${itemsHtml(order)}</ul>
+                <div class="price">${money(order.total, order.currency)}</div>
+              </div>
+              ${orderExtraHtml(order)}
+              ${manageOrderHtml(order)}
+            </article>
+          `).join('')}
+        </div>
+      `;
+
+      bindOrderActions(ordersTableEl);
+    }
+
+    let confirmResolver = null;
+
+    function confirmAction({ title, message, okText = 'تأكيد', okClass = 'btn danger', onConfirm }) {
+      const overlay = document.getElementById('confirmOverlay');
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMessage').textContent = message;
+      const okBtn = document.getElementById('confirmOk');
+      okBtn.textContent = okText;
+      okBtn.className = okClass;
+      overlay.classList.add('show');
+      confirmResolver = onConfirm;
+    }
+
+    function closeConfirm() {
+      document.getElementById('confirmOverlay').classList.remove('show');
+      confirmResolver = null;
+    }
+
+    document.getElementById('confirmCancel').addEventListener('click', closeConfirm);
+    document.getElementById('confirmOk').addEventListener('click', async () => {
+      const action = confirmResolver;
+      closeConfirm();
+      if (typeof action === 'function') {
+        await action();
+      }
+    });
+
+    async function applyQuickStatus(orderId, status) {
+      const run = async () => {
+        try {
+          await requestJson(`/api/admin/orders/${orderId}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status, changedBy: 'لوحة الإدارة' })
+          });
+          showToast(status === 'delivered' ? 'تم تعليم الطلب كمُسلَّم' : 'تم تحديث حالة الطلب');
+          await loadOrders(false);
+        } catch (error) {
+          showToast(error.message, 'error');
+        }
+      };
+
+      if (status === 'delivered' || status === 'cancelled') {
+        confirmAction({
+          title: status === 'delivered' ? 'تأكيد التسليم' : 'تأكيد الإلغاء',
+          message: status === 'delivered'
+            ? 'سيتم تعليم الطلب كـ «تم التسليم» ومزامنة خانة التسليم تلقائياً.'
+            : 'سيتم إلغاء الطلب. يمكنك لاحقاً تغيير الحالة إن لزم.',
+          okText: status === 'delivered' ? 'تأكيد التسليم' : 'تأكيد الإلغاء',
+          okClass: status === 'delivered' ? 'btn success' : 'btn danger',
+          onConfirm: run
+        });
+        return;
+      }
+
+      await run();
+    }
+
+    async function saveStatus(orderId, button) {
+      const box = button.closest('.manage-box');
+      const status = box.querySelector('[data-field="status"]').value;
+      const note = box.querySelector('[data-field="note"]').value.trim();
+      if (status === 'delivered' || status === 'cancelled') {
+        confirmAction({
+          title: status === 'delivered' ? 'تأكيد التسليم' : 'تأكيد الإلغاء',
+          message: status === 'delivered'
+            ? 'سيتم حفظ الحالة كـ «تم التسليم» مع تحديث خانة التسليم.'
+            : 'سيتم حفظ الحالة كـ «ملغي».',
+          okText: 'حفظ',
+          okClass: status === 'delivered' ? 'btn success' : 'btn danger',
+          onConfirm: async () => {
+            try {
+              await requestJson(`/api/admin/orders/${orderId}/status`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status, note, changedBy: 'لوحة الإدارة' })
+              });
+              showToast('تم تحديث حالة الطلب بنجاح');
+              await loadOrders(false);
+            } catch (error) {
+              showToast(error.message, 'error');
+            }
+          }
+        });
+        return;
+      }
+
+      try {
+        await requestJson(`/api/admin/orders/${orderId}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status, note, changedBy: 'لوحة الإدارة' })
+        });
+        showToast('تم تحديث حالة الطلب بنجاح');
+        await loadOrders(false);
+      } catch (error) {
+        showToast(error.message, 'error');
+      }
+    }
+
+    async function saveDelivery(orderId, button) {
+      const box = button.closest('.manage-box');
+      const deliveryStatus = box.querySelector('[data-field="delivery"]').value;
+      const deliveryNotes = box.querySelector('[data-field="delivery-note"]').value.trim();
+      const run = async () => {
+        try {
+          await requestJson(`/api/admin/orders/${orderId}/delivery`, {
+            method: 'PATCH',
+            body: JSON.stringify({ deliveryStatus, deliveryNotes, changedBy: 'لوحة الإدارة' })
+          });
+          showToast('تم تحديث التسليم ومزامنة حالة الطلب');
+          await loadOrders(false);
+        } catch (error) {
+          showToast(error.message, 'error');
+        }
+      };
+
+      if (deliveryStatus === 'تم التسليم') {
+        confirmAction({
+          title: 'تأكيد التسليم',
+          message: 'سيتم تعليم الطلب كمُسلَّم وتحديث حالته إلى «تم التسليم».',
+          okText: 'تأكيد التسليم',
+          okClass: 'btn success',
+          onConfirm: run
+        });
+        return;
+      }
+
+      await run();
+    }
+
+    async function deleteOrder(orderId) {
+      try {
+        await requestJson(`/api/admin/orders/${orderId}`, {
+          method: 'DELETE',
+          body: JSON.stringify({ changedBy: 'لوحة الإدارة' })
+        });
+        showToast('تم حذف الطلب بنجاح');
+        await loadOrders(false);
+      } catch (error) {
+        showToast(error.message, 'error');
+      }
+    }
+
+    function connectLiveUpdates() {
+      if (!state.token) return;
+      if (state.events) {
+        state.events.close();
+        state.events = null;
+      }
+      if (!('EventSource' in window)) {
+        document.getElementById('liveText').textContent = 'تحديث تلقائي كل 10 ثوانٍ';
+        return;
+      }
+      const events = new EventSource(`/api/admin/orders/events?token=${encodeURIComponent(state.token)}`);
+      state.events = events;
+      events.addEventListener('connected', () => {
+        document.getElementById('liveText').textContent = 'تحديث فوري مفعل';
+      });
+      events.addEventListener('orders-updated', () => {
+        loadOrders(false);
+        showToast('وصل تحديث جديد للطلبات');
+      });
+      events.onerror = () => {
+        document.getElementById('liveText').textContent = 'إعادة الاتصال بالتحديث الفوري...';
+      };
+    }
+
+    let searchTimer = null;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        state.search = searchInput.value;
+        loadOrders();
+      }, 350);
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => loadOrders());
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      searchInput.value = '';
+      state.search = '';
+      loadOrders();
+    });
+    document.getElementById('logoutBtn').addEventListener('click', () => logout());
+    document.getElementById('togglePassword').addEventListener('click', () => {
+      const input = document.getElementById('loginPassword');
+      const button = document.getElementById('togglePassword');
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      button.textContent = show ? 'إخفاء' : 'إظهار';
+    });
+    document.getElementById('loginForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setLoginError('');
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (!username || !password) {
+        setLoginError('اسم المستخدم وكلمة المرور مطلوبان');
+        return;
+      }
+      loginSubmit.disabled = true;
+      loginSubmit.textContent = 'جاري الدخول...';
+      try {
+        await login(username, password);
+        document.getElementById('loginPassword').value = '';
+      } catch (error) {
+        setLoginError(error.message);
+        showToast(error.message, 'error');
+      } finally {
+        loginSubmit.disabled = false;
+        loginSubmit.textContent = 'دخول';
+      }
+    });
+
+    bootstrapSession();
+  </script>
+</body>
+</html>
