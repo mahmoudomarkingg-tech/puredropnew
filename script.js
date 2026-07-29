@@ -1037,14 +1037,16 @@ function renderProducts(filter = 'all') {
           </div>
         ` : ''}
 
-        <div class="mt-auto pt-3 border-t border-white/5 flex items-center justify-between">
-          <div>
+        <div class="mt-auto pt-3 border-t border-white/5 flex items-center justify-between gap-3">
+          <div class="min-w-0">
             <span class="text-2xl font-black gradient-text-premium" id="price-${p.id}">${formatPrice(displayPrice)}</span>
             <span class="text-xs text-slate-500 block mt-0.5">دينار أردني</span>
           </div>
-          <button type="button" onclick="addToCart(${p.id})" class="btn-water-premium w-13 h-13 rounded-xl flex items-center justify-center hover:shadow-lg hover:shadow-cyan-500/30 transition-all group">
-            <i class="fas fa-plus text-white text-lg group-hover:scale-110 transition-transform"></i>
-          </button>
+          <div class="product-qty-stepper" data-product-qty="${p.id}">
+            <button type="button" class="product-qty-btn" data-qty-minus="${p.id}" onclick="adjustProductQty(${p.id}, -1)" aria-label="إنقاص الكمية">−</button>
+            <span class="product-qty-value" id="qty-display-${p.id}">0</span>
+            <button type="button" class="product-qty-btn product-qty-btn-plus" data-qty-plus="${p.id}" onclick="adjustProductQty(${p.id}, 1)" aria-label="زيادة الكمية">+</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1067,6 +1069,7 @@ function renderProducts(filter = 'all') {
       if (!el.classList.contains('active')) observer.observe(el);
     });
     init3DTilt();
+    syncProductCardQuantities();
   }, 100);
 }
 
@@ -1123,6 +1126,7 @@ function showMoreProducts() {
 
       // Store selected option in product object for cart logic
       product.selectedOptionIdx = optIdx;
+      syncProductCardQuantities(productId);
     }
 
     function formatPrice(price) {
@@ -1131,6 +1135,102 @@ function showMoreProducts() {
         maximumFractionDigits: 2
       }).format(price);
     }
+
+    function getSelectedOptionMeta(product) {
+      if (!product?.options?.length) {
+        return { optionId: null, optionLabel: null, price: Number(product?.price || 0) };
+      }
+      const optIdx = product.selectedOptionIdx !== undefined
+        ? product.selectedOptionIdx
+        : getDefaultOptionIndex(product);
+      const selectedOption = product.options[Math.max(0, optIdx)];
+      return {
+        optionId: selectedOption.id,
+        optionLabel: selectedOption.label,
+        price: Number(selectedOption.price)
+      };
+    }
+
+    function getCartQtyForProduct(productId, optionId = null) {
+      const item = cart.find(entry =>
+        entry.id === productId &&
+        (optionId == null ? entry.optionId == null : entry.optionId === optionId)
+      );
+      return item ? item.qty : 0;
+    }
+
+    function syncProductCardQuantities(productId = null) {
+      const list = productId == null
+        ? products
+        : products.filter(p => p.id === Number(productId));
+
+      list.forEach(product => {
+        const qtyEl = document.getElementById(`qty-display-${product.id}`);
+        if (!qtyEl) return;
+        const { optionId } = getSelectedOptionMeta(product);
+        const qty = getCartQtyForProduct(product.id, optionId);
+        qtyEl.textContent = String(qty);
+        qtyEl.classList.toggle('has-qty', qty > 0);
+
+        const minusBtn = document.querySelector(`[data-qty-minus="${product.id}"]`);
+        if (minusBtn) {
+          minusBtn.disabled = qty <= 0;
+          minusBtn.classList.toggle('is-disabled', qty <= 0);
+        }
+
+        const stepper = document.querySelector(`[data-product-qty="${product.id}"]`);
+        if (stepper) stepper.classList.toggle('is-active', qty > 0);
+      });
+    }
+
+    function adjustProductQty(productId, delta) {
+      const product = products.find(p => p.id === productId);
+      if (!product || !delta) return;
+
+      const { optionId, optionLabel, price } = getSelectedOptionMeta(product);
+      const existingIndex = cart.findIndex(item =>
+        item.id === productId && item.optionId === optionId
+      );
+
+      if (delta > 0) {
+        if (existingIndex === -1) {
+          cart.push({
+            id: product.id,
+            name: product.name,
+            price,
+            qty: 1,
+            image: product.image,
+            emoji: product.emoji,
+            optionLabel,
+            optionId,
+            basePrice: product.basePrice || product.price,
+            category: product.category
+          });
+          showNotification('✅ تمت الإضافة', `${product.name}${optionLabel ? ` (${optionLabel})` : ''} — الكمية 1`, 'success');
+        } else {
+          cart[existingIndex].qty += 1;
+        }
+      } else if (existingIndex !== -1) {
+        cart[existingIndex].qty -= 1;
+        if (cart[existingIndex].qty <= 0) {
+          cart.splice(existingIndex, 1);
+        }
+      } else {
+        return;
+      }
+
+      const qtyEl = document.getElementById(`qty-display-${productId}`);
+      if (qtyEl) {
+        qtyEl.classList.add('qty-pulse');
+        setTimeout(() => qtyEl.classList.remove('qty-pulse'), 280);
+      }
+
+      updateCartUI();
+      syncProductCardQuantities(productId);
+    }
+
+    window.adjustProductQty = adjustProductQty;
+    window.syncProductCardQuantities = syncProductCardQuantities;
 
 
 // ==================== FILTER PRODUCTS ====================
@@ -1211,7 +1311,8 @@ function filterProducts(category) {
       }
 
       updateCartUI();
-      
+      syncProductCardQuantities(productId);
+
       // Add subtle animation to cart badge
       ['cartCount', 'cartCountCompact'].forEach((id) => {
         const badge = document.getElementById(id);
@@ -1240,6 +1341,8 @@ function filterProducts(category) {
           badge.classList.remove('flex', 'cart-badge-premium');
         }
       });
+
+      syncProductCardQuantities();
     }
 
     function showCart() {
@@ -1677,16 +1780,15 @@ window.confirmOrder = confirmOrder;
 
       try {
         await saveContactMessageToDatabase(contactPayload);
+        showNotification('✅ تم إرسال رسالتك!', 'تم حفظ الرسالة في قاعدة البيانات وسنتواصل معك قريباً', 'success');
+        e.target.reset();
+        e.target.querySelectorAll('input, textarea').forEach(el => {
+          el.classList.remove('border-red-500');
+        });
       } catch (error) {
-        console.warn('Contact database save fallback:', error.message);
+        console.error('Contact database save failed:', error);
+        showNotification('❌ تعذر حفظ الرسالة', error.message || 'يرجى التأكد من تشغيل الموقع ثم المحاولة مرة أخرى', 'error');
       }
-
-      showNotification('✅ تم إرسال رسالتك!', 'سنتواصل معك خلال 15 دقيقة للرد على استفسارك', 'success');
-
-      e.target.reset();
-      e.target.querySelectorAll('input, textarea').forEach(el => {
-        el.classList.remove('border-red-500');
-      });
     }
 
     function showAIChat() {

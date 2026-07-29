@@ -598,6 +598,62 @@
       .controls .control-row { display: grid; gap: 8px; }
       .search { width: 100%; }
     }
+
+    .support-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(168, 85, 247, 0.16);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      color: #e9d5ff;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .support-code {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 4px 8px;
+      border-radius: 10px;
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.28);
+      color: #d8b4fe;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+    .support-card {
+      border-color: rgba(168, 85, 247, 0.28) !important;
+      background:
+        linear-gradient(135deg, rgba(168, 85, 247, 0.08), transparent 42%),
+        var(--panel) !important;
+    }
+    .support-message-body {
+      margin: 8px 0 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: #e2e8f0;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .support-status {
+      display: inline-flex;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(245, 158, 11, 0.14);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.28);
+    }
+    .support-status.seen { background: rgba(6,182,212,.14); color: #67e8f9; border-color: rgba(6,182,212,.28); }
+    .support-status.replied { background: rgba(16,185,129,.14); color: #6ee7b7; border-color: rgba(16,185,129,.28); }
+    .support-status.closed { background: rgba(148,163,184,.14); color: #cbd5e1; border-color: rgba(148,163,184,.28); }
   </style>
 </head>
 <body>
@@ -635,7 +691,7 @@
         <div class="brand-icon">💧</div>
         <div>
           <h1>لوحة إدارة الطلبات</h1>
-          <p>كل طلب جديد يظهر هنا مباشرة بعد إرساله من الموقع إلى قاعدة البيانات</p>
+          <p>الطلبات ورسائل الدعم تصل هنا مباشرة بعد الحفظ في قاعدة البيانات</p>
         </div>
       </div>
       <div class="top-actions">
@@ -655,7 +711,7 @@
       <div class="control-row">
         <div class="search">
           <span aria-hidden="true">🔎</span>
-          <input id="searchInput" type="search" placeholder="ابحث برقم الطلب أو اسم العميل أو الهاتف أو العنوان" />
+          <input id="searchInput" type="search" placeholder="ابحث برقم الطلب أو رسالة الدعم أو اسم العميل أو الهاتف" />
         </div>
         <button class="btn" id="clearBtn">مسح البحث</button>
       </div>
@@ -674,6 +730,19 @@
         <div class="loading">جاري تحميل الطلبات...</div>
       </div>
     </section>
+
+    <section class="orders-panel support-panel" style="margin-top:14px">
+      <div class="panel-head">
+        <div>
+          <h2>رسائل الدعم</h2>
+          <p id="supportLastUpdate">منفصلة عن الطلبات — بدون ترقيم الطلبات</p>
+        </div>
+        <div class="muted" id="supportCount">0 رسالة</div>
+      </div>
+      <div class="table-wrap" id="supportTable">
+        <div class="loading">جاري تحميل رسائل الدعم...</div>
+      </div>
+    </section>
   </main>
   </div>
 
@@ -684,11 +753,14 @@
     const ADMIN_KEY = 'puredrop_admin_user';
     const state = {
       orders: [],
+      contactMessages: [],
+      contactCounts: { total: 0, new: 0, today: 0 },
       statuses: [],
       counts: { all: 0, today: 0, totalSales: 0, byStatus: [] },
       activeStatus: 'all',
       search: '',
       isLoading: false,
+      isLoadingSupport: false,
       token: localStorage.getItem(TOKEN_KEY) || '',
       adminUsername: localStorage.getItem(ADMIN_KEY) || '',
       events: null,
@@ -707,13 +779,23 @@
     const statsEl = document.getElementById('stats');
     const filtersEl = document.getElementById('filters');
     const ordersTableEl = document.getElementById('ordersTable');
+    const supportTableEl = document.getElementById('supportTable');
     const lastUpdateEl = document.getElementById('lastUpdate');
+    const supportLastUpdateEl = document.getElementById('supportLastUpdate');
     const ordersCountEl = document.getElementById('ordersCount');
+    const supportCountEl = document.getElementById('supportCount');
     const searchInput = document.getElementById('searchInput');
     const toastEl = document.getElementById('toast');
     const loginErrorEl = document.getElementById('loginError');
     const loginSubmit = document.getElementById('loginSubmit');
     const adminChip = document.getElementById('adminChip');
+
+    const CONTACT_STATUS_OPTIONS = [
+      { status: 'new', labelAr: 'جديدة' },
+      { status: 'seen', labelAr: 'تمت المشاهدة' },
+      { status: 'replied', labelAr: 'تم الرد' },
+      { status: 'closed', labelAr: 'مغلقة' }
+    ];
 
     function money(value, currency = 'JOD') {
       const number = Number(value || 0).toFixed(2);
@@ -865,6 +947,7 @@
       connectLiveUpdates();
       startPolling();
       await loadOrders();
+      await loadContactMessages();
       clearLoginFields();
       showToast('تم تسجيل الدخول بنجاح');
     }
@@ -872,7 +955,10 @@
     function startPolling() {
       stopPolling();
       state.pollTimer = setInterval(() => {
-        if (state.token) loadOrders(false);
+        if (state.token) {
+          loadOrders(false);
+          loadContactMessages(false);
+        }
       }, 10000);
     }
 
@@ -888,6 +974,7 @@
         connectLiveUpdates();
         startPolling();
         await loadOrders();
+        await loadContactMessages();
       } catch {
         logout(false);
       }
@@ -919,10 +1006,32 @@
       }
     }
 
+    async function loadContactMessages(showLoading = true) {
+      if (!state.token) return;
+      if (state.isLoadingSupport) return;
+      state.isLoadingSupport = true;
+      if (showLoading) supportTableEl.innerHTML = '<div class="loading">جاري تحميل رسائل الدعم...</div>';
+      try {
+        const params = new URLSearchParams({ limit: '200' });
+        if (state.search.trim()) params.set('q', state.search.trim());
+        const data = await requestJson(`/api/admin/contact-messages?${params.toString()}`);
+        state.contactMessages = data.messages || [];
+        state.contactCounts = data.counts || state.contactCounts;
+        renderSupportMessages();
+        renderStats();
+        supportLastUpdateEl.textContent = `آخر تحديث: ${fmtDate(data.generatedAt)} — منفصلة عن الطلبات`;
+      } catch (error) {
+        supportTableEl.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+      } finally {
+        state.isLoadingSupport = false;
+      }
+    }
+
     function render() {
       renderStats();
       renderFilters();
       renderOrders();
+      renderSupportMessages();
     }
 
     function renderStats() {
@@ -932,7 +1041,7 @@
         <article class="stat-card"><span>تم تسليمها</span><strong>${state.counts.delivered || 0}</strong></article>
         <article class="stat-card"><span>لم تسلم بعد</span><strong>${state.counts.notDelivered || 0}</strong></article>
         <article class="stat-card"><span>إجمالي المبيعات</span><strong class="price">${money(state.counts.totalSales || 0)}</strong></article>
-        <article class="stat-card"><span>ملغاة</span><strong>${state.counts.cancelled || 0}</strong></article>
+        <article class="stat-card"><span>رسائل دعم جديدة</span><strong>${state.contactCounts.new || 0}</strong></article>
       `;
     }
 
@@ -1177,6 +1286,102 @@
       bindOrderActions(ordersTableEl);
     }
 
+    function renderSupportMessages() {
+      if (!supportTableEl) return;
+      const total = state.contactMessages.length;
+      supportCountEl.textContent = `${total} رسالة • جديدة ${state.contactCounts.new || 0}`;
+
+      if (!total) {
+        supportTableEl.innerHTML = '<div class="empty">لا توجد رسائل دعم حالياً. رسائل «فريق الدعم» تظهر هنا بعلامة مختلفة وبدون أرقام الطلبات.</div>';
+        return;
+      }
+
+      supportTableEl.innerHTML = `
+        <div class="cards-view" style="display:grid">
+          ${state.contactMessages.map(msg => `
+            <article class="order-card support-card" data-support-id="${msg.id}">
+              <div class="order-card-head">
+                <div>
+                  <span class="support-badge">🎧 رسالة دعم</span>
+                  <div class="support-code">${escapeHtml(msg.supportCode || ('دعم-' + msg.id))}</div>
+                  <div class="muted" style="margin-top:6px">${fmtDate(msg.createdAt)}</div>
+                </div>
+                <span class="support-status ${escapeHtml(msg.status || 'new')}">${escapeHtml(msg.statusLabel || msg.status)}</span>
+              </div>
+              <div class="order-card-grid">
+                <div class="customer">
+                  <strong>${escapeHtml(msg.fullName)}</strong>
+                  <div class="muted phone-line" dir="ltr">${escapeHtml(msg.phone)}</div>
+                </div>
+                <div class="muted">${escapeHtml(msg.address || 'بدون عنوان')}</div>
+                <div><strong>نوع الاستفسار:</strong> ${escapeHtml(msg.serviceType || 'استفسار عام')}</div>
+              </div>
+              <div class="support-message-body">${escapeHtml(msg.message)}</div>
+              <div class="manage-box" style="margin-top:10px">
+                <div class="manage-meta-actions">
+                  <select data-support-status="${msg.id}" aria-label="حالة رسالة الدعم">
+                    ${CONTACT_STATUS_OPTIONS.map(opt => `
+                      <option value="${opt.status}" ${opt.status === msg.status ? 'selected' : ''}>${escapeHtml(opt.labelAr)}</option>
+                    `).join('')}
+                  </select>
+                  <button type="button" class="btn" data-support-save="${msg.id}">حفظ الحالة</button>
+                  <a class="btn" href="tel:${escapeHtml(msg.phone)}" dir="ltr">اتصال</a>
+                  <button type="button" class="btn danger" data-support-delete="${msg.id}" data-support-code="${escapeHtml(msg.supportCode || ('دعم-' + msg.id))}">حذف</button>
+                </div>
+                <div class="inline-confirm" data-inline-confirm hidden></div>
+              </div>
+            </article>
+          `).join('')}
+        </div>
+      `;
+
+      bindSupportActions(supportTableEl);
+    }
+
+    function bindSupportActions(root) {
+      root.querySelectorAll('[data-support-save]').forEach(button => {
+        button.addEventListener('click', async () => {
+          const id = button.dataset.supportSave;
+          const select = root.querySelector(`select[data-support-status="${id}"]`);
+          if (!select) return;
+          try {
+            await requestJson(`/api/admin/contact-messages/${id}/status`, {
+              method: 'PATCH',
+              body: JSON.stringify({ status: select.value })
+            });
+            showToast('تم تحديث حالة رسالة الدعم');
+            await loadContactMessages(false);
+          } catch (error) {
+            showToast(error.message, 'error');
+          }
+        });
+      });
+
+      root.querySelectorAll('[data-support-delete]').forEach(button => {
+        button.addEventListener('click', () => {
+          const id = button.dataset.supportDelete;
+          const code = button.dataset.supportCode || `دعم-${id}`;
+          const card = button.closest('.support-card');
+          const panel = card?.querySelector('.inline-confirm');
+          confirmDangerAction({
+            anchor: panel || button,
+            title: 'حذف رسالة الدعم',
+            message: `سيتم حذف ${code} نهائياً. هذه ليست طلباً ولن تؤثر على أرقام الطلبات.`,
+            okText: 'حذف الرسالة',
+            onConfirm: async () => {
+              try {
+                await requestJson(`/api/admin/contact-messages/${id}`, { method: 'DELETE' });
+                showToast('تم حذف رسالة الدعم');
+                await loadContactMessages(false);
+              } catch (error) {
+                showToast(error.message, 'error');
+              }
+            }
+          });
+        });
+      });
+    }
+
     let confirmResolver = null;
     let activeConfirmPanel = null;
 
@@ -1332,6 +1537,10 @@
         loadOrders(false);
         showToast('وصل تحديث جديد للطلبات');
       });
+      events.addEventListener('contact-messages-updated', () => {
+        loadContactMessages(false);
+        showToast('وصلت رسالة دعم جديدة');
+      });
       events.onerror = () => {
         document.getElementById('liveText').textContent = 'إعادة الاتصال بالتحديث الفوري...';
       };
@@ -1343,14 +1552,19 @@
       searchTimer = setTimeout(() => {
         state.search = searchInput.value;
         loadOrders();
+        loadContactMessages();
       }, 350);
     });
 
-    document.getElementById('refreshBtn').addEventListener('click', () => loadOrders());
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      loadOrders();
+      loadContactMessages();
+    });
     document.getElementById('clearBtn').addEventListener('click', () => {
       searchInput.value = '';
       state.search = '';
       loadOrders();
+      loadContactMessages();
     });
     document.getElementById('logoutBtn').addEventListener('click', () => logout());
     document.getElementById('togglePassword').addEventListener('click', () => {

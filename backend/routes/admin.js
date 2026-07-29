@@ -19,4 +19,10 @@ router.post('/orders/:id/delivery', asyncHandler(adminController.updateOrderDeli
 router.delete('/orders/:id', asyncHandler(adminController.deleteOrder));
 router.post('/orders/:id/delete', asyncHandler(adminController.deleteOrder));
 
+router.get('/contact-messages', asyncHandler(adminController.listContactMessages));
+router.patch('/contact-messages/:id/status', asyncHandler(adminController.updateContactMessageStatus));
+router.post('/contact-messages/:id/status', asyncHandler(adminController.updateContactMessageStatus));
+router.delete('/contact-messages/:id', asyncHandler(adminController.deleteContactMessage));
+router.post('/contact-messages/:id/delete', asyncHandler(adminController.deleteContactMessage));
+
 module.exports = router;

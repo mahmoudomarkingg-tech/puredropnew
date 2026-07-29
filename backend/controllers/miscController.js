@@ -1,6 +1,7 @@
 'use strict';
 
 const { run } = require('../db/query');
+const { broadcastAdminEvent } = require('../utils/sse');
 const {
   sanitizeText,
   normalizePhone,
@@ -12,7 +13,7 @@ async function createContactMessage(req, res) {
   const name = sanitizeText(payload.name || payload.fullName, 160);
   const phone = normalizePhone(payload.phone);
   const address = sanitizeText(payload.address, 500);
-  const serviceType = sanitizeText(payload.serviceType, 160);
+  const serviceType = sanitizeText(payload.serviceType, 160) || 'استفسار عام';
   const message = sanitizeText(payload.message, 2000);
 
   if (!name || !phone || !message) {
@@ -29,13 +30,24 @@ async function createContactMessage(req, res) {
   const result = await run(
     `INSERT INTO contact_messages (full_name, phone, address, service_type, message)
      VALUES (?, ?, ?, ?, ?)
-     RETURNING id`,
+     RETURNING id, created_at`,
     [name, phone, address, serviceType, message]
   );
 
+  const messageId = result.rows[0].id;
+
+  broadcastAdminEvent('contact-messages-updated', {
+    messageId,
+    supportCode: `دعم-${messageId}`,
+    kind: 'support_message',
+    status: 'new'
+  });
+
   return res.status(201).json({
     success: true,
-    messageId: result.rows[0].id,
+    messageId,
+    supportCode: `دعم-${messageId}`,
+    kind: 'support_message',
     status: 'new'
   });
 }

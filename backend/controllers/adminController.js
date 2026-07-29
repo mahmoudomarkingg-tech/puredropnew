@@ -478,11 +478,167 @@ function streamOrderEvents(req, res) {
   addAdminEventClient(req, res);
 }
 
+const CONTACT_STATUS_LABELS = {
+  new: 'جديدة',
+  seen: 'تمت المشاهدة',
+  replied: 'تم الرد',
+  closed: 'مغلقة'
+};
+
+async function listContactMessages(req, res) {
+  const params = [];
+  const where = [];
+  const status = sanitizeText(req.query.status, 40);
+  const queryText = sanitizeText(req.query.q, 160);
+  const limit = Math.min(Math.max(Number.parseInt(req.query.limit || '100', 10) || 100, 1), 500);
+
+  if (status && status !== 'all') {
+    where.push('status = ?');
+    params.push(status);
+  }
+
+  if (queryText) {
+    where.push(`(
+      full_name ILIKE ?
+      OR phone ILIKE ?
+      OR COALESCE(address, '') ILIKE ?
+      OR COALESCE(service_type, '') ILIKE ?
+      OR message ILIKE ?
+      OR ('دعم-' || id::text) ILIKE ?
+    )`);
+    const like = `%${queryText}%`;
+    params.push(like, like, like, like, like, like);
+  }
+
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  params.push(limit);
+
+  const messages = await all(
+    `SELECT id,
+            ('دعم-' || id::text) AS "supportCode",
+            full_name AS "fullName",
+            phone,
+            address,
+            service_type AS "serviceType",
+            message,
+            status,
+            created_at AS "createdAt",
+            updated_at AS "updatedAt"
+     FROM contact_messages
+     ${whereSql}
+     ORDER BY created_at DESC
+     LIMIT ?`,
+    params
+  );
+
+  const countsRow = await get(
+    `SELECT
+       COUNT(*)::int AS total,
+       COUNT(*) FILTER (WHERE status = 'new')::int AS "newCount",
+       COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE)::int AS today
+     FROM contact_messages`
+  );
+
+  return res.json({
+    success: true,
+    kind: 'support_messages',
+    messages: messages.map(row => ({
+      ...row,
+      kind: 'support_message',
+      statusLabel: CONTACT_STATUS_LABELS[row.status] || row.status
+    })),
+    counts: {
+      total: Number(countsRow?.total || 0),
+      new: Number(countsRow?.newCount || 0),
+      today: Number(countsRow?.today || 0)
+    },
+    statuses: Object.entries(CONTACT_STATUS_LABELS).map(([statusKey, labelAr]) => ({
+      status: statusKey,
+      labelAr
+    })),
+    generatedAt: new Date().toISOString()
+  });
+}
+
+async function updateContactMessageStatus(req, res) {
+  const messageId = Number.parseInt(req.params.id, 10);
+  const nextStatus = sanitizeText(req.body?.status, 40);
+
+  if (!Number.isInteger(messageId) || messageId <= 0) {
+    return res.status(400).json({ success: false, error: 'معرّف الرسالة غير صالح' });
+  }
+
+  if (!CONTACT_STATUS_LABELS[nextStatus]) {
+    return res.status(400).json({ success: false, error: 'حالة الرسالة غير صالحة' });
+  }
+
+  const existing = await get('SELECT id, status FROM contact_messages WHERE id = ?', [messageId]);
+  if (!existing) {
+    return res.status(404).json({ success: false, error: 'الرسالة غير موجودة' });
+  }
+
+  await run(
+    `UPDATE contact_messages
+     SET status = ?, updated_at = NOW()
+     WHERE id = ?`,
+    [nextStatus, messageId]
+  );
+
+  broadcastAdminEvent('contact-messages-updated', {
+    messageId,
+    supportCode: `دعم-${messageId}`,
+    kind: 'support_message',
+    status: nextStatus
+  });
+
+  return res.json({
+    success: true,
+    messageId,
+    supportCode: `دعم-${messageId}`,
+    kind: 'support_message',
+    status: nextStatus,
+    statusLabel: CONTACT_STATUS_LABELS[nextStatus]
+  });
+}
+
+async function deleteContactMessage(req, res) {
+  const messageId = Number.parseInt(req.params.id, 10);
+  if (!Number.isInteger(messageId) || messageId <= 0) {
+    return res.status(400).json({ success: false, error: 'معرّف الرسالة غير صالح' });
+  }
+
+  const existing = await get('SELECT id FROM contact_messages WHERE id = ?', [messageId]);
+  if (!existing) {
+    return res.status(404).json({ success: false, error: 'الرسالة غير موجودة' });
+  }
+
+  await run('DELETE FROM contact_messages WHERE id = ?', [messageId]);
+
+  broadcastAdminEvent('contact-messages-updated', {
+    messageId,
+    supportCode: `دعم-${messageId}`,
+    kind: 'support_message',
+    deleted: true
+  });
+
+  return res.json({
+    success: true,
+    deleted: true,
+    messageId,
+    supportCode: `دعم-${messageId}`,
+    kind: 'support_message',
+    message: `تم حذف رسالة الدعم دعم-${messageId}`
+  });
+}
+
 module.exports = {
   listOrders,
   listOrderStatuses,
   updateOrderStatus,
   updateOrderDeliveryStatus,
   deleteOrder,
-  streamOrderEvents
+  streamOrderEvents,
+  listContactMessages,
+  updateContactMessageStatus,
+  deleteContactMessage
 };
