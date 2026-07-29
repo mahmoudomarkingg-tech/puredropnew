@@ -3,7 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>قطرة نقية | PureDrop - تحلية وتنقية المياه</title>
+  <title>قطرة نقية | طلب مياه وثلج مع توصيل في الأردن - PureDrop</title>
+  <meta name="description" content="قطرة نقية: طلب مياه معبأة وقوارير 18.9 لتر وثلج مع توصيل سريع في عمّان وجميع محافظات الأردن. أسعار واضحة وطلب إلكتروني مباشر." />
+  <meta name="keywords" content="مياه الأردن, توصيل مياه عمان, قوارير مياه 18.9, ثلج, شرنك مياه, كرتونة مياه, قطرة نقية, PureDrop" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="author" content="قطرة نقية PureDrop" />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="canonical" href="https://puredropnew.onrender.com/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ar_JO" />
+  <meta property="og:site_name" content="قطرة نقية PureDrop" />
+  <meta property="og:title" content="قطرة نقية | مياه وثلج مع توصيل في الأردن" />
+  <meta property="og:description" content="اطلب مياه معبأة وقوارير وثلج أونلاين مع توصيل سريع في الأردن." />
+  <meta property="og:url" content="https://puredropnew.onrender.com/" />
+  <meta property="og:image" content="https://puredropnew.onrender.com/images/carton-250.jfif" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="قطرة نقية | مياه وثلج مع توصيل في الأردن" />
+  <meta name="twitter:description" content="طلب مياه وقوارير وثلج أونلاين مع توصيل داخل الأردن." />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "قطرة نقية PureDrop",
+    "description": "متجر إلكتروني لطلب المياه المعبأة والقوارير والثلج مع خدمة التوصيل في الأردن.",
+    "url": "https://puredropnew.onrender.com/",
+    "telephone": "+962781936691",
+    "areaServed": {
+      "@type": "Country",
+      "name": "Jordan"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "JO",
+      "addressLocality": "Amman"
+    },
+    "sameAs": []
+  }
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -38,21 +78,21 @@
 
     <!-- ===== PREMIUM NAVBAR ===== -->
     <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
-      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
         <!-- Logo -->
-        <a href="#home" onclick="showMain()" class="flex items-center gap-3 group">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative animate-pulse-glow-elegant">
-            <i class="fas fa-tint text-2xl text-white"></i>
+        <a href="#home" onclick="showMain()" class="flex items-center gap-2 sm:gap-3 group min-w-0 flex-shrink">
+          <div class="w-11 h-11 sm:w-14 sm:h-14 flex-shrink-0 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative animate-pulse-glow-elegant">
+            <i class="fas fa-tint text-xl sm:text-2xl text-white"></i>
             <div class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-cyan-400 rounded-full animate-pulse border-2 border-slate-900"></div>
           </div>
-          <div>
-            <span class="text-2xl font-black gradient-text-premium">قطرة نقية</span>
-            <p class="text-[11px] text-slate-400 -mt-0.5 tracking-wide">PureDrop Water Solutions</p>
+          <div class="min-w-0">
+            <span class="text-xl sm:text-2xl font-black gradient-text-premium truncate block">قطرة نقية</span>
+            <p class="text-[10px] sm:text-[11px] text-slate-400 -mt-0.5 tracking-wide truncate">PureDrop Water Solutions</p>
           </div>
         </a>
 
-        <!-- Desktop Nav -->
-        <div class="hidden md:flex items-center gap-1.5">
+        <!-- Desktop Nav (large screens only — tablet uses compact menu) -->
+        <div class="hidden xl:flex items-center gap-1.5 flex-shrink min-w-0">
           <a href="#home" onclick="showMain()" class="nav-link px-4 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all relative group">
             الرئيسية
             <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-cyan-400 rounded-full transition-all group-hover:w-3/4"></span>
@@ -86,8 +126,8 @@
           </a>
         </div>
 
-        <!-- Cart + CTA -->
-        <div class="hidden md:flex items-center gap-4">
+        <!-- Desktop Cart + CTA -->
+        <div class="hidden xl:flex items-center gap-4 flex-shrink-0">
           <button
             type="button"
             id="themeToggleBtn"
@@ -112,15 +152,35 @@
           </a>
         </div>
 
-        <!-- Mobile Menu Button -->
-        <button type="button" onclick="toggleMobileMenu()" class="md:hidden w-11 h-11 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
-          <i class="fas fa-bars text-lg"></i>
-        </button>
+        <!-- Tablet / Mobile actions: theme + cart + menu -->
+        <div class="xl:hidden flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            id="themeToggleBtnMobile"
+            onclick="toggleTheme()"
+            class="relative group"
+            aria-label="تبديل الوضع الليلي/الفاتح"
+            title="تبديل الوضع الليلي/الفاتح"
+          >
+            <div class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
+              <i id="themeToggleIconCompact" class="fas fa-sun text-slate-300 group-hover:text-cyan-400 transition-colors text-lg"></i>
+            </div>
+          </button>
+          <button type="button" onclick="showCart()" class="relative group" aria-label="سلة الطلبات">
+            <div class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
+              <i class="fas fa-shopping-cart text-slate-300 group-hover:text-cyan-400 transition-colors text-lg"></i>
+            </div>
+            <span id="cartCountCompact" class="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-[10px] font-bold flex items-center justify-center hidden border-2 border-slate-900 cart-badge-premium">0</span>
+          </button>
+          <button type="button" onclick="toggleMobileMenu()" class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors" aria-label="فتح القائمة">
+            <i class="fas fa-bars text-lg"></i>
+          </button>
+        </div>
       </div>
     </nav>
 
     <!-- Mobile Menu -->
-    <div id="mobileMenu" class="mobile-menu-premium fixed top-0 right-0 w-80 h-full z-[60] p-8 pt-24">
+    <div id="mobileMenu" class="mobile-menu-premium fixed top-0 right-0 w-[min(24rem,86vw)] h-full z-[60] p-8 pt-24">
       <button type="button" onclick="toggleMobileMenu()" class="absolute top-6 left-6 w-10 h-10 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
         <i class="fas fa-times text-lg"></i>
       </button>
@@ -223,7 +283,7 @@
             </div>
           </div>
           <div class="glass-elegant rounded-2xl p-6 hover-lift-elegant">
-            <div class="text-4xl font-black gradient-text-premium mb-1">+65K</div>
+            <div class="text-4xl font-black gradient-text-premium mb-1">+3K</div>
             <div class="text-sm text-slate-400">قارورة يومياً</div>
             <div class="mt-2 flex items-center gap-1 text-xs text-cyan-400">
               <i class="fas fa-truck"></i>

@@ -6,15 +6,15 @@
         nameEn: "Carton Water 250ml",
         description: "40 كاسة ورقية مع غطاء محكم × 250 مل - مثالية للمناسبات والرحلات والاجتماعات",
         fullDescription: "كرتونة مياه نقية معبأة في أكواب ورقية صديقة للبيئة مع أغطية محكمة الإغلاق. مثالية للمناسبات الاجتماعية، الرحلات، المؤتمرات، والمدارس. كل كوب معبأ بمياه نقية 99.97% بعد 7 مراحل تنقية.",
-        price: 3.00,
-        basePrice: 2.50,
-        chilledPrice: 3.00,
+        price: 1.50,
+        basePrice: 1.25,
+        chilledPrice: 1.50,
         category: "carton",
         emoji: "🥤",
         image: "images/carton-250.jfif",
         options: [
-          { id: "cold", label: "مبردة ❄️", price: 3.00, description: "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً" },
-          { id: "normal", label: "عادية 🌡️", price: 2.50, description: "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل" }
+          { id: "cold", label: "مبردة ❄️", price: 1.50, description: "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً (+0.25 دينار)" },
+          { id: "normal", label: "عادية 🌡️", price: 1.25, description: "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل" }
         ],
         badge: "الأكثر مبيعاً",
         specs: {
@@ -37,15 +37,15 @@
         nameEn: "Carton Water 200ml",
         description: "40 كاسة × 200 مل - مثالية للأطفال والمدارس والفعاليات الصغيرة",
         fullDescription: "كرتونة مياه نقية بحجم صغير مناسب للأطفال والاستخدام الفردي. معبأة في أكواب ورقية عالية الجودة مع أغطية محكمة. خيار مثالي للمدارس، الحضانات، والفعاليات التي تتطلب أحجاماً صغيرة.",
-        price: 2.50,
-        basePrice: 2.00,
-        chilledPrice: 2.50,
+        price: 1.25,
+        basePrice: 1.00,
+        chilledPrice: 1.25,
         category: "carton",
         emoji: "🥤",
         image: "images/carton-200.jfif",
         options: [
-          { id: "cold", label: "مبردة ❄️", price: 2.50, description: "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً" },
-          { id: "normal", label: "عادية 🌡️", price: 2.00, description: "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل" }
+          { id: "cold", label: "مبردة ❄️", price: 1.25, description: "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً (+0.25 دينار)" },
+          { id: "normal", label: "عادية 🌡️", price: 1.00, description: "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل" }
         ],
         badge: "مثالية للأطفال",
         specs: {
@@ -68,7 +68,7 @@
         nameEn: "Shrink Water 250ml",
         description: "12 زجاجة بلاستيكية × 250 مل - سهلة الحمل والنقل، مثالية للاستخدام الشخصي",
         fullDescription: "مجموعة من 12 زجاجة مياه نقية معبأة في زجاجات بلاستيكية عالية الجودة (بولي إيثيلين تيرفثالات) مع أغطية محكمة. مغلفة بشرنك لحماية المنتج وسهولة النقل. مثالية للاستخدام الشخصي، الرحلات، والسيارات.",
-        price: 2.00,
+        price: 1.25,
         category: "shrink",
         emoji: "📦",
         image: "images/shrink-250.jfif",
@@ -90,28 +90,28 @@
       },
       {
         id: 4,
-        name: "شرنك مياه 600 مل",
-        nameEn: "Shrink Water 600ml",
-        description: "12 زجاجة × 600 مل - الحجم المثالي للاستهلاك اليومي والعائلي",
-        fullDescription: "مجموعة من 12 زجاجة مياه نقية بحجم 600 مل، معبأة في زجاجات بلاستيكية عالية الجودة مع أغطية محكمة. الحجم المثالي الذي يوازن بين الكفاية وسهولة الحمل. مثالي للاستهلاك العائلي اليومي، الصالات الرياضية، والرحلات المتوسطة.",
-        price: 3.50,
+        name: "شرنك مياه 125 مل",
+        nameEn: "Shrink Water 125ml",
+        description: "12 زجاجة × 125 مل - حجم عملي وخفيف للاستخدام اليومي",
+        fullDescription: "مجموعة من 12 زجاجة مياه نقية بحجم 125 مل، معبأة في زجاجات بلاستيكية عالية الجودة مع أغطية محكمة. مناسبة للاستخدام اليومي والرحلات القصيرة.",
+        price: 1.25,
         category: "shrink",
         emoji: "📦",
         image: "images/shrink-600.jfif",
         options: null,
         badge: "شعبي",
         specs: {
-          volume: "600 مل × 12 زجاجة",
+          volume: "125 مل × 12 زجاجة",
           material: "بلاستيك PET آمن للاستخدام الغذائي، خالي من BPA",
           shelfLife: "12 شهر من تاريخ التعبئة",
           storage: "يحفظ في مكان بارد وجاف، بعيداً عن أشعة الشمس المباشرة",
           certifications: ["المؤسسة العامة للغذاء والدواء الأردنية", "مواصفة قياسية أردنية", "شهادة خلو من BPA"]
         },
         usageTips: [
-          "حجم مثالي لاحتياجات الفرد اليومية",
-          "مناسب للرياضيين والنشاطات البدنية",
-          "اقتصادي للعائلات الصغيرة",
-          "سهل الحمل في الحقائب المتوسطة"
+          "حجم خفيف وسهل الحمل",
+          "مناسب للأطفال والاستخدام اليومي",
+          "اقتصادي للكميات الصغيرة",
+          "سهل التخزين في الحقائب"
         ]
       },
       {
@@ -120,7 +120,7 @@
         nameEn: "Shrink Water 1.5L",
         description: "6 زجاجات × 1.5 لتر - للعائلة والمنزل والمكاتب",
         fullDescription: "مجموعة من 6 زجاجات مياه نقية بحجم 1.5 لتر، معبأة في زجاجات بلاستيكية متينة مع أغطية محكمة. الحجم الكبير المثالي للعائلات والمكاتب، يقلل من عدد المرات التي تحتاج فيها لشراء المياه. معبأة بتقنية تحافظ على النقاء والطعم النقي.",
-        price: 3.00,
+        price: 1.00,
         category: "shrink",
         emoji: "📦",
         image: "images/shrink-1.5.png",
@@ -146,7 +146,7 @@
         nameEn: "Saudi Bottle 18.9L",
         description: "قارورة كبيرة 18.9 لتر من مصادر سعودية معتمدة - للاستخدام المنزلي والمكتبي مع أجهزة التبريد",
         fullDescription: "قارورة مياه معدنية نقية سعة 18.9 لتر من مصادر مياه سعودية معتمدة، معبأة بتقنيات حديثة تحافظ على المعادن الطبيعية والنقاء. مصممة للاستخدام مع أجهزة تبريد المياه المنزلية والمكتبية. تمر بـ 9 مراحل تنقية وفحص مخبري قبل التعبئة.",
-        price: 4.00,
+        price: 5.00,
         category: "bottle",
         emoji: "🫙",
         image: "images/bottle-saudi-18l.png",
@@ -198,7 +198,7 @@
         nameEn: "Ice 1kg",
         description: "كيلو ثلج نقي معبأ في أكياس محكمة - مثالي للمشروبات الباردة اليومية",
         fullDescription: "كيلو واحد من الثلج النقي المصنوع من مياه نقية 99.97%، معبأ في أكياس بلاستيكية محكمة الإغلاق. مثالي لتبريد المشروبات اليومية، العصائر، والكوكتيلات. يمر بعملية تجميد سريعة تحافظ على نقاء الثلج وتمنع تكون البلورات الكبيرة.",
-        price: 1.00,
+        price: 0.75,
         category: "ice",
         emoji: "🧊",
         image: "images/ice-1kg.png",
@@ -224,7 +224,7 @@
         nameEn: "Ice 3kg",
         description: "3 كيلو ثلج نقي - مثالي للتجمعات الصغيرة والحفلات المنزلية",
         fullDescription: "3 كيلوجرام من الثلج النقي المصنوع من مياه نقية 99.97%، معبأ في أكياس بلاستيكية متينة محكمة الإغلاق. مثالي للتجمعات العائلية الصغيرة، الحفلات المنزلية، والمناسبات الاجتماعية. يتم إنتاجه بتقنية التجميد السريع التي تضمن نقاء الثلج وجودة البلورات.",
-        price: 2.50,
+        price: 2.00,
         category: "ice",
         emoji: "🧊",
         image: "images/ice-3kg.png",
@@ -250,7 +250,7 @@
         nameEn: "Ice 5kg",
         description: "5 كيلو ثلج نقي - للاستخدام التجاري والمناسبات الكبيرة والحفلات",
         fullDescription: "5 كيلوجرام من الثلج النقي المصنوع من مياه نقية 99.97%، معبأ في أكياس بلاستيكية صناعية متينة محكمة الإغلاق. مثالي للاستخدام التجاري في المقاهي والمطاعم، والمناسبات الكبيرة مثل الأعراس والحفلات. يتم إنتاجه بمعايير صناعية تضمن الجودة والنقاء.",
-        price: 4.00,
+        price: 3.00,
         category: "ice",
         emoji: "🧊",
         image: "images/ice-5kg.png",
@@ -669,19 +669,18 @@
       document.documentElement.setAttribute('data-theme', safeTheme);
 
       const desktopIcon = document.getElementById('themeToggleIcon');
+      const compactIcon = document.getElementById('themeToggleIconCompact');
       const mobileIcon = document.getElementById('mobileThemeToggleIcon');
+      const iconClass = safeTheme === 'light'
+        ? 'fas fa-moon text-slate-300 group-hover:text-cyan-400 transition-colors text-lg'
+        : 'fas fa-sun text-slate-300 group-hover:text-cyan-400 transition-colors text-lg';
+      const mobileIconClass = safeTheme === 'light'
+        ? 'fas fa-moon text-cyan-400 transition-colors text-lg'
+        : 'fas fa-sun text-cyan-400 transition-colors text-lg';
 
-      if (desktopIcon) {
-        desktopIcon.className = safeTheme === 'light'
-          ? 'fas fa-moon text-slate-300 group-hover:text-cyan-400 transition-colors text-lg'
-          : 'fas fa-sun text-slate-300 group-hover:text-cyan-400 transition-colors text-lg';
-      }
-
-      if (mobileIcon) {
-        mobileIcon.className = safeTheme === 'light'
-          ? 'fas fa-moon text-cyan-400 transition-colors text-lg'
-          : 'fas fa-sun text-cyan-400 transition-colors text-lg';
-      }
+      if (desktopIcon) desktopIcon.className = iconClass;
+      if (compactIcon) compactIcon.className = iconClass;
+      if (mobileIcon) mobileIcon.className = mobileIconClass;
 
       if (typeof initializeBubbles === 'function') {
         initializeBubbles();
@@ -1151,29 +1150,33 @@ function filterProducts(category) {
       updateCartUI();
       
       // Add subtle animation to cart badge
-      const badge = document.getElementById('cartCount');
-      if (badge && !badge.classList.contains('hidden')) {
-        badge.classList.add('animate-cart-pulse');
-        setTimeout(() => badge.classList.remove('animate-cart-pulse'), 600);
-      }
+      ['cartCount', 'cartCountCompact'].forEach((id) => {
+        const badge = document.getElementById(id);
+        if (badge && !badge.classList.contains('hidden')) {
+          badge.classList.add('animate-cart-pulse');
+          setTimeout(() => badge.classList.remove('animate-cart-pulse'), 600);
+        }
+      });
     }
 
     function updateCartUI() {
       const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-      const badge = document.getElementById('cartCount');
-      const mobileBadge = document.getElementById('mobileCartCount');
+      const badges = [
+        document.getElementById('cartCount'),
+        document.getElementById('cartCountCompact'),
+        document.getElementById('mobileCartCount')
+      ].filter(Boolean);
 
-      if (totalItems > 0) {
-        badge.textContent = totalItems;
-        badge.classList.remove('hidden');
-        badge.classList.add('flex', 'cart-badge-premium');
-        mobileBadge.textContent = totalItems;
-        mobileBadge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-        badge.classList.remove('flex', 'cart-badge-premium');
-        mobileBadge.classList.add('hidden');
-      }
+      badges.forEach((badge) => {
+        if (totalItems > 0) {
+          badge.textContent = totalItems;
+          badge.classList.remove('hidden');
+          badge.classList.add('flex', 'cart-badge-premium');
+        } else {
+          badge.classList.add('hidden');
+          badge.classList.remove('flex', 'cart-badge-premium');
+        }
+      });
     }
 
     function showCart() {
@@ -1303,7 +1306,7 @@ function filterProducts(category) {
         document.getElementById('customerLat').value = String(lat);
         document.getElementById('customerLng').value = String(lng);
 
-        const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
         if (mapsLink) {
           mapsLink.href = mapsUrl;
           mapsLink.classList.remove('hidden');
@@ -1415,7 +1418,10 @@ function filterProducts(category) {
         address,
         notes,
         lat: Number.isFinite(lat) ? lat : undefined,
-        lng: Number.isFinite(lng) ? lng : undefined
+        lng: Number.isFinite(lng) ? lng : undefined,
+        mapsUrl: (Number.isFinite(lat) && Number.isFinite(lng))
+          ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+          : undefined
       },
       deliveryTime: deliveryTimeValue,
       items: cartSnapshot.map(item => ({
@@ -1566,7 +1572,7 @@ window.confirmOrder = confirmOrder;
         id: 'prices',
         icon: 'fas fa-tag',
         question: 'ما هي أسعار المنتجات؟',
-        answer: 'أسعار منتجات قطرة نقية:\n\n• كرتونة 250مل مبردة: 3.00 دينار\n• كرتونة 250مل عادية: 2.50 دينار\n• كرتونة 200مل مبردة: 2.50 دينار\n• كرتونة 200مل عادية: 2.00 دينار\n• شرنك 250مل (12 زجاجة): 2.00 دينار\n• شرنك 600مل (12 زجاجة): 3.50 دينار\n• شرنك 1.5 لتر (6 زجاجات): 3.00 دينار\n• قارورة 18.9 لتر: 4.00 دينار\n• ثلج 1 كغم: 1.00 دينار | 3 كغم: 2.50 دينار | 5 كغم: 4.00 دينار\n\nالتوصيل مجاني لجميع مناطق الأردن.'
+        answer: 'أسعار منتجات قطرة نقية:\n\n• كرتونة 250مل عادية: 1.25 دينار | مبردة: 1.50 دينار (+0.25)\n• كرتونة 200مل عادية: 1.00 دينار | مبردة: 1.25 دينار (+0.25)\n• شرنك 250مل: 1.25 دينار\n• شرنك 125مل: 1.25 دينار\n• شرنك 1.5 لتر: 1.00 دينار\n• قارورة سعودية 18.9 لتر: 5.00 دينار\n• قارورة أردنية 18.9 لتر: 4.00 دينار\n\nالتوصيل مجاني لجميع مناطق الأردن.'
       },
       {
         id: 'delivery',
@@ -1584,7 +1590,7 @@ window.confirmOrder = confirmOrder;
         id: 'recommend',
         icon: 'fas fa-lightbulb',
         question: 'ما المنتج الأنسب لي؟',
-        answer: 'اختَر حسب احتياجك:\n\n• مناسبات وتجمعات: كرتونة 250مل مبردة + ثلج\n• منزل وعائلة: شرنك 1.5 لتر أو قارورة 18.9 لتر\n• مكتب/شركة: قارورة 18.9 لتر + كراتين عادية\n• رحلات: شرنك 600مل أو كرتونة 200مل مبردة\n\nيمكنك أيضاً تصفح المنتجات وإضافتها للسلة مباشرة.'
+    answer: 'اختَر حسب احتياجك:\n\n• مناسبات وتجمعات: كرتونة 250مل مبردة + ثلج\n• منزل وعائلة: شرنك 1.5 لتر أو قارورة 18.9 لتر\n• مكتب/شركة: قارورة 18.9 لتر + كراتين عادية\n• رحلات: شرنك 125مل أو كرتونة 200مل مبردة\n\nيمكنك أيضاً تصفح المنتجات وإضافتها للسلة مباشرة.'
       },
       {
         id: 'quality',
@@ -1868,8 +1874,8 @@ function calculateHydration() {
     recommendedProduct = 'شرنك مياه 250 مل';
     recText.innerHTML = "ننصحك بـ <b>شرنك مياه 250 مل</b> لسهولة شرب الكميات الصغيرة.";
   } else if (finalLiters >= 2 && finalLiters <= 3) {
-    recommendedProduct = 'شرنك مياه 600 مل';
-    recText.innerHTML = "ننصحك بـ <b>شرنك مياه 600 مل</b>، الحجم المثالي للاستهلاك اليومي الفردي.";
+    recommendedProduct = 'شرنك مياه 125 مل';
+    recText.innerHTML = "ننصحك بـ <b>شرنك مياه 125 مل</b>، الحجم العملي للاستهلاك اليومي الفردي.";
   } else {
     recommendedProduct = 'شرنك مياه 1.5 لتر أو قارورة 18.9 لتر';
     recText.innerHTML = "ننصحك بـ <b>شرنك مياه 1.5 لتر</b> أو <b>قارورة 18.9 لتر</b> لتغطية احتياجك العالي.";
