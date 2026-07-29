@@ -740,26 +740,24 @@ class Bubble {
     const w = window.innerWidth || 1;
     const h = window.innerHeight || 1;
     this.x = Math.random() * w;
-    this.y = initial ? Math.random() * h : h + Math.random() * 130;
-    this.size = Math.random() * 4.2 + 2.2;
-    this.speedY = Math.random() * 42 + 48;
-    this.speedX = (Math.random() - 0.5) * 18;
-    this.opacity = Math.random() * 0.28 + 0.35;
-    this.phase = Math.random() * Math.PI * 2;
-    this.phaseSpeed = Math.random() * 1.2 + 0.9;
-    this.wobbleAmplitude = Math.random() * 16 + 8;
+    this.y = initial ? Math.random() * h : h + Math.random() * 40;
+    this.size = Math.random() * 3.6 + 2.4;
+    // Constant vertical speed for every drop (no accel / no slowdown)
+    this.speedY = 68;
+    this.speedX = 0;
+    this.opacity = Math.random() * 0.22 + 0.38;
   }
 
   update(dt) {
     const w = window.innerWidth || 1;
     const h = window.innerHeight || 1;
-    this.phase += this.phaseSpeed * dt;
-    this.x += (this.speedX + Math.sin(this.phase) * this.wobbleAmplitude * 0.5) * dt;
+    // Linear motion only — no wobble / sine (those feel like hitching)
     this.y -= this.speedY * dt;
+    this.x += this.speedX * dt;
 
     if (this.y < -36 || this.x < -48 || this.x > w + 48) {
-      this.reset();
-      if (this.y > h + 140) this.y = h + Math.random() * 80;
+      this.reset(false);
+      if (this.y > h + 80) this.y = h + Math.random() * 40;
     }
   }
 
@@ -845,8 +843,9 @@ function animateBubbles(timestamp) {
   if (!lastBubbleFrame) lastBubbleFrame = timestamp;
   let dt = (timestamp - lastBubbleFrame) / 1000;
   lastBubbleFrame = timestamp;
-  // Keep motion continuous even if a few scroll frames are dropped
-  if (dt > 0.064) dt = 0.064;
+  // Stable real-time step: ignore tiny jitter, clamp only huge pauses (tab switch)
+  if (dt < 0.008) dt = 0.008;
+  if (dt > 0.033) dt = 0.033; // ~30fps max step — prevents speed spikes, keeps motion linear
 
   ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
   for (let i = 0; i < bubbles.length; i++) {

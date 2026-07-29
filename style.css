@@ -288,7 +288,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gradient-shift-elegant 5s ease infinite;
+  animation: gradient-shift-elegant 5s linear infinite;
   position: relative;
   display: inline-block;
 }
@@ -958,11 +958,18 @@ body {
     padding-bottom: 120px !important;
   }
 
-  #home h1 {
+  #home h1,
+  #home h1.hero-title {
     font-size: clamp(1.85rem, 8vw, 2.4rem) !important;
-    line-height: 1.25 !important;
+    line-height: 1.5 !important;
     margin-bottom: 0.85rem !important;
     word-break: break-word;
+  }
+
+  #home h1 .hero-title-line {
+    display: block;
+    padding-block: 0.1em 0.16em;
+    line-height: 1.4;
   }
 
   #home p {
@@ -1063,6 +1070,36 @@ body {
   .max-w-lg {
     padding-left: 1rem;
     padding-right: 1rem;
+  }
+}
+
+/* Hero title spacing (all sizes) */
+#home h1.hero-title {
+  line-height: 1.45 !important;
+  overflow: visible;
+}
+
+#home h1.hero-title .hero-title-line {
+  display: inline-block;
+  padding-block: 0.1em 0.14em;
+  line-height: 1.35;
+}
+
+/* Tablet: fix "ماء نقي" overlapping the next line */
+@media (min-width: 768px) and (max-width: 1279px) {
+  #home h1.hero-title {
+    font-size: clamp(2.4rem, 5vw, 3.35rem) !important;
+    line-height: 1.55 !important;
+  }
+
+  #home h1.hero-title .hero-title-line {
+    display: block;
+    padding-block: 0.12em 0.18em;
+    line-height: 1.45;
+  }
+
+  #home h1.hero-title .gradient-text-premium {
+    margin-bottom: 0.18em;
   }
 }
 
