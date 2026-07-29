@@ -42,7 +42,7 @@ async function createOrder(req, res) {
   const locationLng = Number.isFinite(rawLng) ? rawLng : null;
   const locationMapsUrl =
     locationLat !== null && locationLng !== null
-      ? `https://www.google.com/maps?q=${locationLat},${locationLng}`
+      ? `https://www.google.com/maps/dir/?api=1&destination=${locationLat},${locationLng}`
       : sanitizeText(customerPayload.mapsUrl || payload.mapsUrl, 500) || null;
 
   const itemsPayload = Array.isArray(payload.items) ? payload.items : [];

@@ -202,8 +202,24 @@
     .order-number { font-weight: 900; color: #67e8f9; direction: ltr; display: inline-block; font-size: 13px; }
     .muted { color: var(--muted); font-size: 11px; }
     .customer strong { display: block; margin-bottom: 2px; font-size: 13px; }
-    .items-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
-    .items-list li { color: #cbd5e1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+    .customer-block { display: grid; gap: 2px; min-width: 0; }
+    .phone-line {
+      direction: ltr;
+      unicode-bidi: isolate;
+      text-align: right;
+      word-break: break-word;
+    }
+    .items-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+    .items-list li {
+      color: #cbd5e1;
+      font-size: 12px;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      max-width: none;
+      line-height: 1.45;
+      word-break: break-word;
+    }
     .price { font-weight: 900; color: #bbf7d0; direction: ltr; display: inline-block; font-size: 13px; }
     .status-pill {
       display: inline-flex;
@@ -232,15 +248,18 @@
     textarea { resize: vertical; min-height: 44px; margin-top: 0; }
     .status-actions { display: grid; gap: 6px; }
     .quick-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      width: 100%;
     }
     .btn.sm {
-      padding: 5px 8px;
+      padding: 8px 10px;
       border-radius: 8px;
-      font-size: 11px;
-      flex: 0 1 auto;
+      font-size: 12px;
+      flex: 1 1 auto;
+      justify-content: center;
+      min-height: 36px;
     }
     .btn.success {
       background: rgba(16, 185, 129, 0.16);
@@ -257,14 +276,40 @@
     }
     .manage-box {
       display: grid;
-      gap: 6px;
-      min-width: 220px;
+      gap: 8px;
+      min-width: 0;
+      width: 100%;
     }
     .manage-top {
-      display: flex;
+      display: grid;
+      gap: 8px;
+      width: 100%;
+    }
+    .manage-meta-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 6px;
+    }
+    .maps-btn {
+      background: rgba(6, 182, 212, 0.16) !important;
+      color: #67e8f9 !important;
+      border-color: rgba(6, 182, 212, 0.45) !important;
+      text-decoration: none;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .location-actions {
+      display: flex;
       gap: 6px;
       flex-wrap: wrap;
+    }
+    .maps-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
     }
     .manage-details {
       display: none;
@@ -308,6 +353,29 @@
     }
     .one-line {
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    @media (min-width: 921px) {
+      .quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        width: auto;
+      }
+      .manage-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .manage-meta-actions {
+        display: flex;
+        width: auto;
+      }
+      .manage-box {
+        min-width: 240px;
+      }
+    }
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 180px;
@@ -445,21 +513,24 @@
       background: var(--panel-2);
       border: 1px solid var(--line);
       border-radius: 12px;
-      padding: 10px;
+      padding: 12px;
       display: grid;
-      gap: 8px;
+      gap: 10px;
+      min-width: 0;
+      overflow: hidden;
     }
     .order-card-head {
       display: flex;
       justify-content: space-between;
       gap: 8px;
-      align-items: center;
+      align-items: flex-start;
       flex-wrap: wrap;
     }
     .order-card-grid {
       display: grid;
-      gap: 4px;
+      gap: 8px;
       font-size: 13px;
+      min-width: 0;
     }
     .dashboard.hidden, .login-gate.hidden { display: none !important; }
     .dashboard.is-open { display: block !important; }
@@ -476,19 +547,41 @@
     @media (max-width: 1100px) {
       .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .details-grid { grid-template-columns: 1fr; }
+      .quick-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
     @media (max-width: 920px) {
       .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .topbar-inner { align-items: flex-start; flex-direction: column; }
       .table-wrap table { display: none; }
       .cards-view { display: grid; }
+      .one-line {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+      }
+      .order-extra {
+        display: grid;
+        gap: 6px;
+        font-size: 12px;
+        line-height: 1.6;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+      }
     }
     @media (max-width: 560px) {
-      .container { width: min(100% - 18px, 1420px); }
+      .container { width: min(100% - 16px, 1420px); }
       .stats { grid-template-columns: 1fr; }
       .brand-icon { width: 42px; height: 42px; }
-      .top-actions { width: 100%; }
-      .btn { flex: 1; }
+      .top-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .top-actions .live-badge,
+      .top-actions .admin-chip { grid-column: 1 / -1; justify-content: center; }
+      .btn { width: 100%; justify-content: center; }
+      .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .manage-meta-actions { grid-template-columns: 1fr 1fr; }
+      .order-card { padding: 12px; }
+      .order-number { font-size: 12px; word-break: break-all; }
+      .controls .control-row { display: grid; gap: 8px; }
+      .search { width: 100%; }
     }
   </style>
 </head>
@@ -863,32 +956,59 @@
       `;
     }
 
+    function itemsHtml(order) {
+      const items = order.items || [];
+      if (!items.length) {
+        return '<li class="muted">لا توجد منتجات</li>';
+      }
+      return items.map(item => `
+        <li>${escapeHtml(item.quantity)} × ${escapeHtml(item.productName)}${item.optionLabel ? ' - ' + escapeHtml(item.optionLabel) : ''}</li>
+      `).join('');
+    }
+
     function customerHtml(order) {
       return `
-        <strong>${escapeHtml(order.customerName)}</strong>
-        <div class="muted" dir="ltr">${escapeHtml(order.customerPhone)}</div>
+        <div class="customer-block">
+          <strong>${escapeHtml(order.customerName)}</strong>
+          <div class="muted phone-line" dir="ltr">${escapeHtml(order.customerPhone)}</div>
+        </div>
       `;
     }
 
-    function itemsHtml(order) {
-      const items = order.items || [];
-      const preview = items.slice(0, 2).map(item => `
-        <li>${escapeHtml(item.quantity)} × ${escapeHtml(item.productName)}${item.optionLabel ? ' - ' + escapeHtml(item.optionLabel) : ''}</li>
-      `).join('');
-      const more = items.length > 2 ? `<li class="muted">+${items.length - 2} أخرى</li>` : '';
-      return preview + more;
+    function getOrderMapsUrl(order) {
+      const lat = order.locationLat;
+      const lng = order.locationLng;
+      if (lat != null && lng != null && lat !== '' && lng !== '') {
+        return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lat)},${encodeURIComponent(lng)}`;
+      }
+      if (order.locationMapsUrl) return order.locationMapsUrl;
+      return '';
+    }
+
+    function locationButtonHtml(order) {
+      const mapsUrl = getOrderMapsUrl(order);
+      if (!mapsUrl) {
+        return '<span class="muted">لا يوجد موقع GPS</span>';
+      }
+      return `
+        <a class="btn sm maps-btn" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">
+          📍 الانتقال لموقع العميل
+        </a>
+      `;
     }
 
     function orderExtraHtml(order) {
-      const mapsUrl = order.locationMapsUrl || (
-        order.locationLat != null && order.locationLng != null
-          ? `https://www.google.com/maps?q=${order.locationLat},${order.locationLng}`
-          : ''
-      );
+      const mapsUrl = getOrderMapsUrl(order);
       return `
         <div class="order-extra">
           <div><strong>العنوان:</strong> ${escapeHtml(order.customerAddress || 'بدون عنوان')}</div>
-          ${mapsUrl ? `<div><strong>الموقع:</strong> <a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener" style="color:#67e8f9">فتح على الخريطة</a> <span class="muted" dir="ltr">(${escapeHtml(order.locationLat)}, ${escapeHtml(order.locationLng)})</span></div>` : ''}
+          ${mapsUrl ? `
+            <div class="maps-row">
+              <strong>الموقع الجغرافي:</strong>
+              <a class="btn sm maps-btn" href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">📍 فتح موقع العميل على الخريطة</a>
+              <span class="muted" dir="ltr">(${escapeHtml(order.locationLat)}, ${escapeHtml(order.locationLng)})</span>
+            </div>
+          ` : '<div class="muted">لم يتم إرسال موقع GPS مع هذا الطلب</div>'}
           <div><strong>وقت التوصيل:</strong> ${escapeHtml(order.deliveryTimeLabel || 'غير محدد')}</div>
           <div><strong>الدفع:</strong> ${escapeHtml(order.paymentMethodLabel || 'الدفع عند الاستلام')} — ${escapeHtml(order.paymentStatusLabel || 'غير مدفوع')}</div>
           ${order.notes ? `<div><strong>ملاحظات العميل:</strong> ${escapeHtml(order.notes)}</div>` : ''}
@@ -925,8 +1045,11 @@
         <div class="manage-box">
           <div class="manage-top">
             <div class="quick-actions">${quick}</div>
-            <button class="btn sm" type="button" data-toggle-details="${order.id}">تفاصيل</button>
-            <button class="btn sm danger" type="button" data-delete-order="${order.id}" data-order-number="${escapeHtml(order.orderNumber)}">حذف</button>
+            <div class="manage-meta-actions">
+              ${locationButtonHtml(order)}
+              <button class="btn sm" type="button" data-toggle-details="${order.id}">تفاصيل</button>
+              <button class="btn sm danger" type="button" data-delete-order="${order.id}" data-order-number="${escapeHtml(order.orderNumber)}">حذف</button>
+            </div>
           </div>
           <div class="manage-details" data-details="${order.id}">
             <div class="details-grid">
@@ -1033,7 +1156,8 @@
               </div>
               <div class="order-card-grid">
                 <div class="customer">${customerHtml(order)}</div>
-                <div class="muted one-line">${escapeHtml(order.customerAddress || '')}</div>
+                <div class="muted">${escapeHtml(order.customerAddress || '')}</div>
+                <div class="location-actions">${locationButtonHtml(order)}</div>
                 <ul class="items-list">${itemsHtml(order)}</ul>
                 <div class="price">${money(order.total, order.currency)}</div>
               </div>

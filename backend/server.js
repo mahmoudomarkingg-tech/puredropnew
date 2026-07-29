@@ -6,7 +6,8 @@ const { pool } = require('./db/query');
 const { isProduction, isVercel } = require('./config/env');
 
 const PORT = Number(process.env.PORT || 3000);
-const HOST = process.env.HOST || '0.0.0.0';
+// Always bind on all interfaces in hosted environments.
+const HOST = '0.0.0.0';
 
 async function start() {
   await ensureDatabase();
@@ -15,7 +16,7 @@ async function start() {
     const mode = isProduction() ? 'production' : 'development';
     console.log(`PureDrop site is running on http://${HOST}:${PORT} (${mode})`);
     console.log('Database: PostgreSQL (DATABASE_URL)');
-    console.log(`Admin panel: http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}/admin/`);
+    console.log(`Admin panel: http://localhost:${PORT}/admin/`);
   });
 }
 

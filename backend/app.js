@@ -67,8 +67,11 @@ app.use('/api/admin', authRoutes);
 app.use('/api/admin', adminRoutes);
 
 const staticCache = (res, filePath) => {
-  if (/\.(png|jpe?g|jfif|webp|css|js)$/i.test(filePath)) {
-    res.setHeader('Cache-Control', 'public, max-age=3600');
+  // Avoid long browser caches for site shell so Render updates appear quickly.
+  if (/\.(png|jpe?g|jfif|webp)$/i.test(filePath)) {
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+  } else if (/\.(css|js)$/i.test(filePath)) {
+    res.setHeader('Cache-Control', 'public, max-age=60, must-revalidate');
   } else {
     res.setHeader('Cache-Control', 'no-cache');
   }
@@ -80,8 +83,16 @@ app.use('/images', express.static(path.join(ROOT_DIR, 'images'), {
 
 app.use('/admin', express.static(path.join(ROOT_DIR, 'admin'), {
   index: 'index.html',
+  redirect: true,
   setHeaders: staticCache
 }));
+
+app.get(['/admin', '/admin/'], (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(ROOT_DIR, 'admin', 'index.html'), (err) => {
+    if (err) next(err);
+  });
+});
 
 app.get('/script.js', (req, res) => {
   staticCache(res, 'script.js');
@@ -94,11 +105,17 @@ app.get('/style.css', (req, res) => {
 });
 
 app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(ROOT_DIR, 'index.html'));
 });
 
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) return notFoundHandler(req, res);
+  if (req.path === '/admin' || req.path.startsWith('/admin/')) {
+    res.setHeader('Cache-Control', 'no-cache');
+    return res.sendFile(path.join(ROOT_DIR, 'admin', 'index.html'));
+  }
+  res.setHeader('Cache-Control', 'no-cache');
   return res.sendFile(path.join(ROOT_DIR, 'index.html'));
 });
 

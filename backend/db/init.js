@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const bcrypt = require('bcryptjs');
 const { pool, query, get } = require('./query');
-const { seedFromJsonIfEmpty } = require('./seed');
+const { seedFromJsonIfEmpty, syncProductPricesFromSeed } = require('./seed');
 
 const ROOT_DIR = path.resolve(__dirname, '../..');
 
@@ -127,6 +127,7 @@ async function ensureDatabase() {
   await ensureDefaultSettings();
   await ensureAdminUser();
   await seedFromJsonIfEmpty();
+  await syncProductPricesFromSeed();
 }
 
 module.exports = {

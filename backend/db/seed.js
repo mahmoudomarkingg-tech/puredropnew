@@ -135,6 +135,68 @@ async function seedFromJsonIfEmpty() {
   return true;
 }
 
+async function syncProductPricesFromSeed() {
+  const seedPath = path.join(ROOT_DIR, 'database', 'seed-products.json');
+  if (!fs.existsSync(seedPath)) return false;
+
+  const products = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+  if (!Array.isArray(products) || !products.length) return false;
+
+  let updated = 0;
+  await withTransaction(async client => {
+    for (const product of products) {
+      await query(
+        `UPDATE products
+         SET name_ar = ?, name_en = ?, description = ?, full_description = ?,
+             price = ?, base_price = ?, chilled_price = ?, image_path = ?, updated_at = NOW()
+         WHERE id = ?`,
+        [
+          product.name,
+          product.nameEn || null,
+          product.description || null,
+          product.fullDescription || null,
+          product.price,
+          product.basePrice ?? null,
+          product.chilledPrice ?? null,
+          product.image || null,
+          product.id
+        ],
+        client
+      );
+
+      if (product.specs && product.specs.volume) {
+        await query(
+          `UPDATE product_specs SET volume = ? WHERE product_id = ?`,
+          [product.specs.volume, product.id],
+          client
+        );
+      }
+
+      const options = Array.isArray(product.options) ? product.options : [];
+      for (const option of options) {
+        await query(
+          `UPDATE product_options
+           SET price = ?, label_ar = ?, description = ?
+           WHERE product_id = ? AND option_code = ?`,
+          [
+            option.price,
+            option.label,
+            option.description || null,
+            product.id,
+            option.id
+          ],
+          client
+        );
+      }
+      updated += 1;
+    }
+  });
+
+  console.log(`[db] Synced prices for ${updated} products from seed-products.json`);
+  return true;
+}
+
 module.exports = {
-  seedFromJsonIfEmpty
+  seedFromJsonIfEmpty,
+  syncProductPricesFromSeed
 };
