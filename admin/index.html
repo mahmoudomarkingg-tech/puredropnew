@@ -381,27 +381,42 @@
       max-width: 180px;
     }
     .confirm-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 80;
-      background: rgba(2, 8, 18, 0.72);
+      display: none !important;
+    }
+    .inline-confirm {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.10);
       display: none;
-      place-items: center;
-      padding: 20px;
+      gap: 10px;
     }
-    .confirm-overlay.show { display: grid; }
-    .confirm-card {
-      width: min(420px, 100%);
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 22px;
-      box-shadow: var(--shadow);
+    .inline-confirm.show {
+      display: grid;
+      animation: pop 0.18s ease;
     }
-    .confirm-card h3 { margin: 0 0 8px; font-size: 20px; }
-    .confirm-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.7; }
-    .confirm-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .confirm-actions .btn { flex: 1; }
+    .inline-confirm h4 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 800;
+      color: #fecaca;
+    }
+    .inline-confirm p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+    .inline-confirm-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .inline-confirm-actions .btn {
+      flex: 1;
+      min-width: 110px;
+    }
     .empty, .error, .loading { padding: 38px; text-align: center; color: var(--muted); }
     .error { color: #fecaca; }
     .toast {
@@ -663,16 +678,6 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <div class="confirm-overlay" id="confirmOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
-    <div class="confirm-card">
-      <h3 id="confirmTitle">تأكيد العملية</h3>
-      <p id="confirmMessage">هل أنت متأكد؟</p>
-      <div class="confirm-actions">
-        <button class="btn" type="button" id="confirmCancel">إلغاء</button>
-        <button class="btn danger" type="button" id="confirmOk">تأكيد</button>
-      </div>
-    </div>
-  </div>
 
   <script>
     const TOKEN_KEY = 'puredrop_admin_token';
@@ -1051,6 +1056,7 @@
               <button class="btn sm danger" type="button" data-delete-order="${order.id}" data-order-number="${escapeHtml(order.orderNumber)}">حذف</button>
             </div>
           </div>
+          <div class="inline-confirm" data-inline-confirm="${order.id}" hidden></div>
           <div class="manage-details" data-details="${order.id}">
             <div class="details-grid">
               <div class="detail-block">
@@ -1080,7 +1086,7 @@
       });
       root.querySelectorAll('[data-quick-status]').forEach(button => {
         button.addEventListener('click', () => {
-          applyQuickStatus(button.dataset.quickStatus, button.dataset.status);
+          applyQuickStatus(button.dataset.quickStatus, button.dataset.status, button);
         });
       });
       root.querySelectorAll('[data-toggle-details]').forEach(button => {
@@ -1095,11 +1101,11 @@
       });
       root.querySelectorAll('[data-delete-order]').forEach(button => {
         button.addEventListener('click', () => {
-          confirmAction({
-            title: 'حذف الطلب',
-            message: `سيتم حذف الطلب ${button.dataset.orderNumber} نهائياً مع منتجاته وسجل حالته. لا يمكن التراجع.`,
+          confirmDangerAction({
+            anchor: button,
+            title: 'تأكيد الحذف',
+            message: `سيتم حذف الطلب ${button.dataset.orderNumber} نهائياً مع منتجاته. لا يمكن التراجع.`,
             okText: 'حذف نهائي',
-            okClass: 'btn danger',
             onConfirm: () => deleteOrder(button.dataset.deleteOrder)
           });
         });
@@ -1172,33 +1178,53 @@
     }
 
     let confirmResolver = null;
+    let activeConfirmPanel = null;
 
-    function confirmAction({ title, message, okText = 'تأكيد', okClass = 'btn danger', onConfirm }) {
-      const overlay = document.getElementById('confirmOverlay');
-      document.getElementById('confirmTitle').textContent = title;
-      document.getElementById('confirmMessage').textContent = message;
-      const okBtn = document.getElementById('confirmOk');
-      okBtn.textContent = okText;
-      okBtn.className = okClass;
-      overlay.classList.add('show');
-      confirmResolver = onConfirm;
-    }
-
-    function closeConfirm() {
-      document.getElementById('confirmOverlay').classList.remove('show');
-      confirmResolver = null;
-    }
-
-    document.getElementById('confirmCancel').addEventListener('click', closeConfirm);
-    document.getElementById('confirmOk').addEventListener('click', async () => {
-      const action = confirmResolver;
-      closeConfirm();
-      if (typeof action === 'function') {
-        await action();
+    function closeInlineConfirm() {
+      if (activeConfirmPanel) {
+        activeConfirmPanel.classList.remove('show');
+        activeConfirmPanel.hidden = true;
+        activeConfirmPanel.innerHTML = '';
+        activeConfirmPanel = null;
       }
-    });
+      confirmResolver = null;
+      document.querySelectorAll('.inline-confirm.show').forEach(panel => {
+        panel.classList.remove('show');
+        panel.hidden = true;
+        panel.innerHTML = '';
+      });
+    }
 
-    async function applyQuickStatus(orderId, status) {
+    function confirmDangerAction({ anchor, title, message, okText = 'تأكيد', onConfirm }) {
+      const manageBox = anchor?.closest?.('.manage-box');
+      const panel = manageBox?.querySelector('[data-inline-confirm]');
+      if (!panel) return;
+
+      closeInlineConfirm();
+      panel.hidden = false;
+      panel.classList.add('show');
+      panel.innerHTML = `
+        <h4>${escapeHtml(title)}</h4>
+        <p>${escapeHtml(message)}</p>
+        <div class="inline-confirm-actions">
+          <button class="btn sm" type="button" data-inline-cancel>رجوع</button>
+          <button class="btn sm danger" type="button" data-inline-ok>${escapeHtml(okText)}</button>
+        </div>
+      `;
+      activeConfirmPanel = panel;
+      confirmResolver = onConfirm;
+
+      panel.querySelector('[data-inline-cancel]')?.addEventListener('click', closeInlineConfirm);
+      panel.querySelector('[data-inline-ok]')?.addEventListener('click', async () => {
+        const action = confirmResolver;
+        closeInlineConfirm();
+        if (typeof action === 'function') await action();
+      });
+
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }
+
+    async function applyQuickStatus(orderId, status, anchor) {
       const run = async () => {
         try {
           await requestJson(`/api/admin/orders/${orderId}/status`, {
@@ -1212,14 +1238,13 @@
         }
       };
 
-      if (status === 'delivered' || status === 'cancelled') {
-        confirmAction({
-          title: status === 'delivered' ? 'تأكيد التسليم' : 'تأكيد الإلغاء',
-          message: status === 'delivered'
-            ? 'سيتم تعليم الطلب كـ «تم التسليم» ومزامنة خانة التسليم تلقائياً.'
-            : 'سيتم إلغاء الطلب. يمكنك لاحقاً تغيير الحالة إن لزم.',
-          okText: status === 'delivered' ? 'تأكيد التسليم' : 'تأكيد الإلغاء',
-          okClass: status === 'delivered' ? 'btn success' : 'btn danger',
+      // Confirmation only for cancel — delivery/other statuses apply immediately
+      if (status === 'cancelled') {
+        confirmDangerAction({
+          anchor,
+          title: 'تأكيد الإلغاء',
+          message: 'سيتم إلغاء هذا الطلب. يمكنك تغيير الحالة لاحقاً إن لزم.',
+          okText: 'تأكيد الإلغاء',
           onConfirm: run
         });
         return;
@@ -1232,71 +1257,47 @@
       const box = button.closest('.manage-box');
       const status = box.querySelector('[data-field="status"]').value;
       const note = box.querySelector('[data-field="note"]').value.trim();
-      if (status === 'delivered' || status === 'cancelled') {
-        confirmAction({
-          title: status === 'delivered' ? 'تأكيد التسليم' : 'تأكيد الإلغاء',
-          message: status === 'delivered'
-            ? 'سيتم حفظ الحالة كـ «تم التسليم» مع تحديث خانة التسليم.'
-            : 'سيتم حفظ الحالة كـ «ملغي».',
-          okText: 'حفظ',
-          okClass: status === 'delivered' ? 'btn success' : 'btn danger',
-          onConfirm: async () => {
-            try {
-              await requestJson(`/api/admin/orders/${orderId}/status`, {
-                method: 'PATCH',
-                body: JSON.stringify({ status, note, changedBy: 'لوحة الإدارة' })
-              });
-              showToast('تم تحديث حالة الطلب بنجاح');
-              await loadOrders(false);
-            } catch (error) {
-              showToast(error.message, 'error');
-            }
-          }
-        });
-        return;
-      }
-
-      try {
-        await requestJson(`/api/admin/orders/${orderId}/status`, {
-          method: 'PATCH',
-          body: JSON.stringify({ status, note, changedBy: 'لوحة الإدارة' })
-        });
-        showToast('تم تحديث حالة الطلب بنجاح');
-        await loadOrders(false);
-      } catch (error) {
-        showToast(error.message, 'error');
-      }
-    }
-
-    async function saveDelivery(orderId, button) {
-      const box = button.closest('.manage-box');
-      const deliveryStatus = box.querySelector('[data-field="delivery"]').value;
-      const deliveryNotes = box.querySelector('[data-field="delivery-note"]').value.trim();
       const run = async () => {
         try {
-          await requestJson(`/api/admin/orders/${orderId}/delivery`, {
+          await requestJson(`/api/admin/orders/${orderId}/status`, {
             method: 'PATCH',
-            body: JSON.stringify({ deliveryStatus, deliveryNotes, changedBy: 'لوحة الإدارة' })
+            body: JSON.stringify({ status, note, changedBy: 'لوحة الإدارة' })
           });
-          showToast('تم تحديث التسليم ومزامنة حالة الطلب');
+          showToast('تم تحديث حالة الطلب بنجاح');
           await loadOrders(false);
         } catch (error) {
           showToast(error.message, 'error');
         }
       };
 
-      if (deliveryStatus === 'تم التسليم') {
-        confirmAction({
-          title: 'تأكيد التسليم',
-          message: 'سيتم تعليم الطلب كمُسلَّم وتحديث حالته إلى «تم التسليم».',
-          okText: 'تأكيد التسليم',
-          okClass: 'btn success',
+      if (status === 'cancelled') {
+        confirmDangerAction({
+          anchor: button,
+          title: 'تأكيد الإلغاء',
+          message: 'سيتم حفظ الحالة كـ «ملغي» لهذا الطلب فقط.',
+          okText: 'تأكيد الإلغاء',
           onConfirm: run
         });
         return;
       }
 
       await run();
+    }
+
+    async function saveDelivery(orderId, button) {
+      const box = button.closest('.manage-box');
+      const deliveryStatus = box.querySelector('[data-field="delivery"]').value;
+      const deliveryNotes = box.querySelector('[data-field="delivery-note"]').value.trim();
+      try {
+        await requestJson(`/api/admin/orders/${orderId}/delivery`, {
+          method: 'PATCH',
+          body: JSON.stringify({ deliveryStatus, deliveryNotes, changedBy: 'لوحة الإدارة' })
+        });
+        showToast('تم تحديث التسليم ومزامنة حالة الطلب');
+        await loadOrders(false);
+      } catch (error) {
+        showToast(error.message, 'error');
+      }
     }
 
     async function deleteOrder(orderId) {

@@ -604,114 +604,98 @@ body {
 }
 
 
-/* ===== WAVE ===== */
+/* ===== WAVE — seamless SVG layers (no background tile seams) ===== */
 .wave-divider-premium {
   position: absolute;
   inset-inline: 0;
-  bottom: 0;
+  bottom: -2px;
   width: 100%;
-  height: 116px;
+  height: clamp(90px, 13vw, 150px);
   overflow: hidden;
   z-index: 2;
   pointer-events: none;
-  isolation: isolate;
-  transform: translateZ(0);
+  line-height: 0;
 }
 
-.wave-divider-premium::before {
-  content: '';
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 92px;
-  background: linear-gradient(to top, rgba(8, 47, 73, 0.18), rgba(8, 47, 73, 0));
-  opacity: 0.85;
-}
-
-.wave-divider-premium::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 14px 0;
-  height: 24px;
-  background: radial-gradient(circle at center, rgba(255,255,255,0.26), rgba(255,255,255,0));
-  opacity: 0.42;
-}
-
-.wave-divider-premium .wave-layer {
+.wave-divider-premium .wave-svg {
   position: absolute;
   left: 0;
-  bottom: -1px;
+  bottom: 0;
+  display: block;
   width: 200%;
+  min-width: 200%;
   height: 100%;
-  background-repeat: repeat-x;
-  background-position: 0 bottom;
-  backface-visibility: hidden;
   will-change: transform;
+  backface-visibility: hidden;
   transform: translate3d(0, 0, 0);
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-play-state: running;
+  animation: waveSlideSeamless linear infinite;
 }
 
-.wave-divider-premium .wave-layer-back {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 960 120'%3E%3Cpath fill='%2360a5fa' fill-opacity='0.76' d='M0,76C38,70,76,60,114,57C152,54,190,58,228,66C266,74,304,86,342,90C380,94,418,90,456,82C494,74,532,62,570,56C608,50,646,50,684,58C722,66,760,82,798,88C836,94,874,90,912,82C950,74,988,62,1026,58L1026,120L0,120Z'/%3E%3C/svg%3E");
-  background-size: 50% 116px;
-  opacity: 0.88;
-  animation-name: waveSlide;
-  animation-duration: 24s;
+.wave-divider-premium .wave-svg-far {
+  height: 78%;
+  color: rgba(125, 211, 252, 0.28);
+  animation-duration: 22s;
+  animation-direction: reverse;
 }
 
-.wave-divider-premium .wave-layer-front {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 960 120'%3E%3Cpath fill='%2306b6d4' fill-opacity='0.96' d='M0,88C32,84,64,76,96,72C128,68,160,68,192,74C224,80,256,92,288,98C320,104,352,104,384,98C416,92,448,80,480,72C512,64,544,58,576,60C608,62,640,72,672,82C704,92,736,102,768,104C800,106,832,100,864,92C896,84,928,74,960,70L960,120L0,120Z'/%3E%3C/svg%3E");
-  background-size: 50% 98px;
-  opacity: 0.97;
-  animation-name: waveSlide;
-  animation-duration: 15s;
+.wave-divider-premium .wave-svg-mid {
+  height: 90%;
+  color: rgba(56, 189, 248, 0.42);
+  animation-duration: 16s;
 }
 
-@keyframes waveSlide {
+.wave-divider-premium .wave-svg-front {
+  height: 100%;
+  animation-duration: 11s;
+  animation-direction: reverse;
+}
+
+.wave-divider-premium .wave-front-fill {
+  fill: url(#waveFrontGrad);
+}
+
+@keyframes waveSlideSeamless {
   from { transform: translate3d(0, 0, 0); }
   to { transform: translate3d(-50%, 0, 0); }
 }
 
-[data-theme="light"] .wave-divider-premium::before {
-  background: linear-gradient(to top, rgba(56, 189, 248, 0.14), rgba(56, 189, 248, 0));
-  opacity: 0.72;
+[data-theme="light"] .wave-divider-premium .wave-svg-far {
+  color: rgba(125, 211, 252, 0.45);
 }
 
-[data-theme="light"] .wave-divider-premium::after {
-  opacity: 0.28;
+[data-theme="light"] .wave-divider-premium .wave-svg-mid {
+  color: rgba(56, 189, 248, 0.5);
 }
 
-[data-theme="light"] .wave-divider-premium .wave-layer-back {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 960 120'%3E%3Cpath fill='%2393c5fd' fill-opacity='0.72' d='M0,76C38,70,76,60,114,57C152,54,190,58,228,66C266,74,304,86,342,90C380,94,418,90,456,82C494,74,532,62,570,56C608,50,646,50,684,58C722,66,760,82,798,88C836,94,874,90,912,82C950,74,988,62,1026,58L1026,120L0,120Z'/%3E%3C/svg%3E");
-  opacity: 0.82;
+[data-theme="light"] .wave-divider-premium .wave-front-fill {
+  fill: url(#waveFrontGradLight);
 }
 
-[data-theme="light"] .wave-divider-premium .wave-layer-front {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 960 120'%3E%3Cpath fill='%230ea5e9' fill-opacity='0.9' d='M0,88C32,84,64,76,96,72C128,68,160,68,192,74C224,80,256,92,288,98C320,104,352,104,384,98C416,92,448,80,480,72C512,64,544,58,576,60C608,62,640,72,672,82C704,92,736,102,768,104C800,106,832,100,864,92C896,84,928,74,960,70L960,120L0,120Z'/%3E%3C/svg%3E");
-  opacity: 0.88;
-}
-
-@media (max-width: 768px) {
+@media (min-width: 768px) and (max-width: 1180px) {
   .wave-divider-premium {
-    height: 76px;
+    height: clamp(100px, 11vw, 136px);
   }
 
-  .wave-divider-premium::before {
-    height: 58px;
-  }
-
-  .wave-divider-premium .wave-layer-back {
-    background-size: 50% 76px;
-    animation-duration: 19.6s;
-  }
-
-  .wave-divider-premium .wave-layer-front {
-    background-size: 50% 64px;
-    animation-duration: 12.3s;
-  }
+  .wave-divider-premium .wave-svg-far { animation-duration: 20s; }
+  .wave-divider-premium .wave-svg-mid { animation-duration: 14s; }
+  .wave-divider-premium .wave-svg-front { animation-duration: 10s; }
 }
 
+@media (max-width: 767px) {
+  .wave-divider-premium {
+    height: 92px;
+  }
+
+  .wave-divider-premium .wave-svg-far { animation-duration: 18s; }
+  .wave-divider-premium .wave-svg-mid { animation-duration: 13s; }
+  .wave-divider-premium .wave-svg-front { animation-duration: 9s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave-divider-premium .wave-svg {
+    animation: none !important;
+  }
+}
 /* ===== NOTIFICATION ===== */
 .notification-premium {
   position: fixed;
