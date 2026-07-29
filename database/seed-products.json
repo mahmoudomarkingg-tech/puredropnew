@@ -13,16 +13,17 @@
     "image": "images/carton-250.jfif",
     "options": [
       {
+        "id": "normal",
+        "label": "عادية 🌡️",
+        "price": 1.25,
+        "description": "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل",
+        "isDefault": true
+      },
+      {
         "id": "cold",
         "label": "مبردة ❄️",
         "price": 1.5,
         "description": "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً (+0.25 دينار)"
-      },
-      {
-        "id": "normal",
-        "label": "عادية 🌡️",
-        "price": 1.25,
-        "description": "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل"
       }
     ],
     "badge": "الأكثر مبيعاً",
@@ -58,16 +59,17 @@
     "image": "images/carton-200.jfif",
     "options": [
       {
+        "id": "normal",
+        "label": "عادية 🌡️",
+        "price": 1,
+        "description": "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل",
+        "isDefault": true
+      },
+      {
         "id": "cold",
         "label": "مبردة ❄️",
         "price": 1.25,
         "description": "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً (+0.25 دينار)"
-      },
-      {
-        "id": "normal",
-        "label": "عادية 🌡️",
-        "price": 1,
-        "description": "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل"
       }
     ],
     "badge": "مثالية للأطفال",

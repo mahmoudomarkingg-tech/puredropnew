@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Permissions-Policy" content="geolocation=(self)" />
   <title>قطرة نقية | طلب مياه وثلج مع توصيل في الأردن - PureDrop</title>
   <meta name="description" content="قطرة نقية: طلب مياه معبأة وقوارير 18.9 لتر وثلج مع توصيل سريع في عمّان وجميع محافظات الأردن. أسعار واضحة وطلب إلكتروني مباشر." />
   <meta name="keywords" content="مياه الأردن, توصيل مياه عمان, قوارير مياه 18.9, ثلج, شرنك مياه, كرتونة مياه, قطرة نقية, PureDrop" />
@@ -45,9 +46,12 @@
   </script>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
+  <link rel="stylesheet" href="style.css" />
 
 </head>
 <body class="bg-slate-950 text-white overflow-x-hidden">
@@ -921,7 +925,7 @@
             </div>
             <input type="hidden" id="customerLat" value="" />
             <input type="hidden" id="customerLng" value="" />
-            <p id="gpsStatus" class="mt-2 text-xs text-slate-500">يمكنك كتابة العنوان يدوياً أو الضغط على GPS لتحديد الموقع الجغرافي.</p>
+            <p id="gpsStatus" class="mt-2 text-xs text-slate-500">اضغط «موقعي GPS» واسمح بالوصول للموقع عند ظهور الرسالة. إن فشل، فعّل الموقع من إعدادات الهاتف وأعد المحاولة.</p>
             <a id="gpsMapsLink" href="#" target="_blank" rel="noopener" class="hidden mt-2 inline-flex items-center gap-1.5 text-xs text-cyan-400 hover:text-cyan-300">
               <i class="fas fa-map-marker-alt"></i>
               فتح الموقع على الخريطة
@@ -1063,7 +1067,7 @@
   </div>
 
   <!-- ===== PREMIUM JAVASCRIPT ===== -->
-    <script src="script.js"></script>
+    <script defer src="script.js"></script>
 
 </body>
 </html>

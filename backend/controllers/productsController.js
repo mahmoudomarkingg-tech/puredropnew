@@ -2,44 +2,22 @@
 
 const { all, get } = require('../db/query');
 
-async function productFromRow(row) {
-  const options = (await all(
-    `SELECT id, option_code, label_ar, label_en, price, description, is_default, sort_order
-     FROM product_options
-     WHERE product_id = ?
-     ORDER BY sort_order ASC, id ASC`,
-    [row.id]
-  )).map(option => ({
+function mapOption(option) {
+  return {
     id: option.option_code,
     label: option.label_ar,
     labelEn: option.label_en,
     price: Number(option.price),
     description: option.description,
     isDefault: Boolean(option.is_default)
-  }));
+  };
+}
 
-  const specsRow = (await get(
-    `SELECT volume, weight, material, shelf_life, storage
-     FROM product_specs
-     WHERE product_id = ?`,
-    [row.id]
-  )) || {};
-
-  const certifications = (await all(
-    `SELECT certification
-     FROM product_certifications
-     WHERE product_id = ?
-     ORDER BY sort_order ASC, id ASC`,
-    [row.id]
-  )).map(item => item.certification);
-
-  const usageTips = (await all(
-    `SELECT tip
-     FROM product_usage_tips
-     WHERE product_id = ?
-     ORDER BY sort_order ASC, id ASC`,
-    [row.id]
-  )).map(item => item.tip);
+function assembleProduct(row, extras = {}) {
+  const options = extras.options || [];
+  const specsRow = extras.specs || {};
+  const certifications = extras.certifications || [];
+  const usageTips = extras.usageTips || [];
 
   return {
     id: row.id,
@@ -72,6 +50,72 @@ async function productFromRow(row) {
   };
 }
 
+async function loadProductExtras(productIds) {
+  const extrasById = new Map();
+  for (const id of productIds) {
+    extrasById.set(id, {
+      options: [],
+      specs: null,
+      certifications: [],
+      usageTips: []
+    });
+  }
+  if (!productIds.length) return extrasById;
+
+  const placeholders = productIds.map(() => '?').join(', ');
+
+  const [optionsRows, specsRows, certRows, tipRows] = await Promise.all([
+    all(
+      `SELECT product_id, option_code, label_ar, label_en, price, description, is_default, sort_order
+       FROM product_options
+       WHERE product_id IN (${placeholders})
+       ORDER BY sort_order ASC, id ASC`,
+      productIds
+    ),
+    all(
+      `SELECT product_id, volume, weight, material, shelf_life, storage
+       FROM product_specs
+       WHERE product_id IN (${placeholders})`,
+      productIds
+    ),
+    all(
+      `SELECT product_id, certification
+       FROM product_certifications
+       WHERE product_id IN (${placeholders})
+       ORDER BY sort_order ASC, id ASC`,
+      productIds
+    ),
+    all(
+      `SELECT product_id, tip
+       FROM product_usage_tips
+       WHERE product_id IN (${placeholders})
+       ORDER BY sort_order ASC, id ASC`,
+      productIds
+    )
+  ]);
+
+  for (const row of optionsRows) {
+    extrasById.get(row.product_id)?.options.push(mapOption(row));
+  }
+  for (const row of specsRows) {
+    const bucket = extrasById.get(row.product_id);
+    if (bucket) bucket.specs = row;
+  }
+  for (const row of certRows) {
+    extrasById.get(row.product_id)?.certifications.push(row.certification);
+  }
+  for (const row of tipRows) {
+    extrasById.get(row.product_id)?.usageTips.push(row.tip);
+  }
+
+  return extrasById;
+}
+
+async function productFromRow(row) {
+  const extrasById = await loadProductExtras([row.id]);
+  return assembleProduct(row, extrasById.get(row.id));
+}
+
 async function listProducts(req, res) {
   const category = req.query.category;
   const includeInactive = req.query.includeInactive === '1';
@@ -93,10 +137,8 @@ async function listProducts(req, res) {
     params
   );
 
-  const products = [];
-  for (const row of rows) {
-    products.push(await productFromRow(row));
-  }
+  const extrasById = await loadProductExtras(rows.map(row => row.id));
+  const products = rows.map(row => assembleProduct(row, extrasById.get(row.id)));
 
   res.json({ success: true, products });
 }

@@ -127,7 +127,18 @@ async function ensureDatabase() {
   await ensureDefaultSettings();
   await ensureAdminUser();
   await seedFromJsonIfEmpty();
-  await syncProductPricesFromSeed();
+  // Avoid rewriting every product on every boot (faster cold start on Render).
+  // Set SYNC_PRODUCTS_ON_BOOT=true to force a full price/options sync.
+  if (String(process.env.SYNC_PRODUCTS_ON_BOOT || '').toLowerCase() === 'true') {
+    await syncProductPricesFromSeed();
+  } else {
+    // Sync once per process only when seed is newer than last sync marker in memory,
+    // or when FORCE_SYNC_PRODUCTS=1. Default: sync on first boot of this process.
+    if (!global.__puredropPricesSynced) {
+      await syncProductPricesFromSeed();
+      global.__puredropPricesSynced = true;
+    }
+  }
 }
 
 module.exports = {

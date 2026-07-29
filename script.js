@@ -13,8 +13,8 @@
         emoji: "🥤",
         image: "images/carton-250.jfif",
         options: [
-          { id: "cold", label: "مبردة ❄️", price: 1.50, description: "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً (+0.25 دينار)" },
-          { id: "normal", label: "عادية 🌡️", price: 1.25, description: "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل" }
+          { id: "normal", label: "عادية 🌡️", price: 1.25, description: "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل", isDefault: true },
+          { id: "cold", label: "مبردة ❄️", price: 1.50, description: "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً (+0.25 دينار)" }
         ],
         badge: "الأكثر مبيعاً",
         specs: {
@@ -44,8 +44,8 @@
         emoji: "🥤",
         image: "images/carton-200.jfif",
         options: [
-          { id: "cold", label: "مبردة ❄️", price: 1.25, description: "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً (+0.25 دينار)" },
-          { id: "normal", label: "عادية 🌡️", price: 1.00, description: "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل" }
+          { id: "normal", label: "عادية 🌡️", price: 1.00, description: "بدرجة حرارة الغرفة، مناسبة للتخزين الطويل", isDefault: true },
+          { id: "cold", label: "مبردة ❄️", price: 1.25, description: "معبأة ومبردة إلى 3-5°م، جاهزة للشرب فوراً (+0.25 دينار)" }
         ],
         badge: "مثالية للأطفال",
         specs: {
@@ -593,11 +593,19 @@
     }
 
     function normalizeApiProduct(product) {
+      let options = Array.isArray(product.options) && product.options.length ? [...product.options] : null;
+      if (options) {
+        options.sort((a, b) => {
+          const aScore = (a.isDefault ? -2 : 0) + (a.id === 'normal' ? -1 : 0);
+          const bScore = (b.isDefault ? -2 : 0) + (b.id === 'normal' ? -1 : 0);
+          return aScore - bScore;
+        });
+      }
       return {
         ...product,
         basePrice: product.basePrice ?? product.price,
         chilledPrice: product.chilledPrice ?? null,
-        options: Array.isArray(product.options) && product.options.length ? product.options : null,
+        options,
         specs: product.specs || {},
         usageTips: Array.isArray(product.usageTips) ? product.usageTips : []
       };
@@ -682,6 +690,9 @@
       if (compactIcon) compactIcon.className = iconClass;
       if (mobileIcon) mobileIcon.className = mobileIconClass;
 
+      if (typeof refreshBubbleThemeCache === 'function') {
+        refreshBubbleThemeCache();
+      }
       if (typeof initializeBubbles === 'function') {
         initializeBubbles();
       }
@@ -703,15 +714,21 @@ let lastBubbleFrame = 0;
 
 function resizeCanvas() {
   if (!canvas || !ctx) return;
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+  const width = Math.max(1, window.innerWidth);
+  const height = Math.max(1, window.innerHeight);
 
-  canvas.width = Math.floor(width * dpr);
-  canvas.height = Math.floor(height * dpr);
+  // Avoid resetting the drawing buffer if size barely changed (mobile URL bar scroll)
+  const nextW = Math.floor(width * dpr);
+  const nextH = Math.floor(height * dpr);
+  if (canvas.width === nextW && canvas.height === nextH) return false;
+
+  canvas.width = nextW;
+  canvas.height = nextH;
   canvas.style.width = width + 'px';
   canvas.style.height = height + 'px';
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return true;
 }
 
 class Bubble {
@@ -720,99 +737,92 @@ class Bubble {
   }
 
   reset(initial = false) {
-    this.x = Math.random() * window.innerWidth;
-    this.y = initial ? Math.random() * window.innerHeight : window.innerHeight + Math.random() * 130;
-    this.size = Math.random() * 3.4 + 1.6;
-    this.speedY = Math.random() * 38 + 42;
-    this.speedX = (Math.random() - 0.5) * 18;
+    const w = window.innerWidth || 1;
+    const h = window.innerHeight || 1;
+    this.x = Math.random() * w;
+    this.y = initial ? Math.random() * h : h + Math.random() * 130;
+    this.size = Math.random() * 3.2 + 1.5;
+    this.speedY = Math.random() * 36 + 40;
+    this.speedX = (Math.random() - 0.5) * 16;
     this.opacity = Math.random() * 0.12 + 0.12;
     this.phase = Math.random() * Math.PI * 2;
-    this.phaseSpeed = Math.random() * 1.25 + 0.95;
-    this.wobbleAmplitude = Math.random() * 18 + 8;
-    this.glowSize = this.size * (Math.random() * 1.2 + 1.9);
+    this.phaseSpeed = Math.random() * 1.2 + 0.9;
+    this.wobbleAmplitude = Math.random() * 16 + 8;
   }
 
   update(dt) {
+    const w = window.innerWidth || 1;
+    const h = window.innerHeight || 1;
     this.phase += this.phaseSpeed * dt;
     this.x += (this.speedX + Math.sin(this.phase) * this.wobbleAmplitude * 0.5) * dt;
     this.y -= this.speedY * dt;
 
-    if (this.y < -36 || this.x < -48 || this.x > window.innerWidth + 48) {
+    if (this.y < -36 || this.x < -48 || this.x > w + 48) {
       this.reset();
+      // Keep bubbles within current viewport height after mobile toolbar changes
+      if (this.y > h + 140) this.y = h + Math.random() * 80;
     }
   }
 
   draw() {
     if (!ctx) return;
 
-    const isLightTheme = document.documentElement.getAttribute('data-theme') === 'light';
+    const isLightTheme = cachedThemeIsLight;
+    const fill = isLightTheme
+      ? `rgba(56, 189, 248, ${this.opacity * 0.55})`
+      : `rgba(103, 232, 249, ${this.opacity * 0.45})`;
     const rim = isLightTheme
-      ? `rgba(3, 105, 161, ${this.opacity * 1.65})`
-      : `rgba(103, 232, 249, ${this.opacity * 1.45})`;
-    const coreCenter = isLightTheme
-      ? `rgba(224, 242, 254, ${this.opacity * 0.95})`
-      : `rgba(255, 255, 255, ${this.opacity * 1.28})`;
-    const coreEdge = isLightTheme
-      ? `rgba(56, 189, 248, ${this.opacity * 0.92})`
-      : `rgba(34, 211, 238, ${this.opacity * 0.82})`;
-    const haloStart = isLightTheme
-      ? `rgba(14, 165, 233, ${this.opacity * 0.34})`
-      : `rgba(34, 211, 238, ${this.opacity * 0.30})`;
-    const haloEnd = isLightTheme
-      ? 'rgba(14, 165, 233, 0)'
-      : 'rgba(34, 211, 238, 0)';
+      ? `rgba(3, 105, 161, ${this.opacity * 0.9})`
+      : `rgba(165, 243, 252, ${this.opacity * 0.7})`;
 
-    ctx.save();
-
-    const halo = ctx.createRadialGradient(this.x, this.y, this.size * 0.15, this.x, this.y, this.glowSize);
-    halo.addColorStop(0, haloStart);
-    halo.addColorStop(1, haloEnd);
-    ctx.fillStyle = halo;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.glowSize, 0, Math.PI * 2);
-    ctx.fill();
-
-    const grad = ctx.createRadialGradient(
-      this.x - this.size * 0.35,
-      this.y - this.size * 0.4,
-      this.size * 0.14,
-      this.x,
-      this.y,
-      this.size * 1.08
-    );
-    grad.addColorStop(0, coreCenter);
-    grad.addColorStop(0.45, coreEdge);
-    grad.addColorStop(1, isLightTheme ? 'rgba(56, 189, 248, 0)' : 'rgba(34, 211, 238, 0)');
-
-    ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
     ctx.fill();
-
-    ctx.lineWidth = 0.8;
+    ctx.lineWidth = 0.7;
     ctx.strokeStyle = rim;
     ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(this.x - (this.size * 0.42), this.y - (this.size * 0.44), this.size * 0.22, 0, Math.PI * 2);
-    ctx.fillStyle = isLightTheme
-      ? `rgba(255,255,255,${this.opacity * 0.92})`
-      : `rgba(255,255,255,${this.opacity * 1.08})`;
-    ctx.fill();
-
-    ctx.restore();
   }
 }
 
 function getBubbleCount() {
+  const isMobile = window.innerWidth < 768;
+  if (isMobile) return 14;
   const area = window.innerWidth * window.innerHeight;
-  const density = 1 / 36000;
-  return Math.max(34, Math.min(78, Math.floor(area * density)));
+  const density = 1 / 52000;
+  return Math.max(16, Math.min(36, Math.floor(area * density)));
 }
 
-function initializeBubbles() {
+let bubblesRafId = 0;
+let bubblesPaused = false;
+let cachedThemeIsLight = false;
+let lastBubbleWidth = 0;
+
+function refreshBubbleThemeCache() {
+  cachedThemeIsLight = document.documentElement.getAttribute('data-theme') === 'light';
+}
+
+function shouldDisableBubbles() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    || document.hidden;
+}
+
+function initializeBubbles(force = false) {
   if (!canvas || !ctx) return;
+  if (shouldDisableBubbles()) {
+    bubbles = [];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+
+  const widthChanged = Math.abs((window.innerWidth || 0) - lastBubbleWidth) >= 48;
   resizeCanvas();
+  refreshBubbleThemeCache();
+
+  // Only rebuild particles when width changes meaningfully — never on height-only scroll resize
+  if (!force && bubbles.length && !widthChanged) return;
+
+  lastBubbleWidth = window.innerWidth || 0;
   bubbles = [];
   const bubbleCount = getBubbleCount();
   for (let i = 0; i < bubbleCount; i++) {
@@ -822,25 +832,54 @@ function initializeBubbles() {
 
 function animateBubbles(timestamp) {
   if (!canvas || !ctx) return;
+  bubblesRafId = requestAnimationFrame(animateBubbles);
+
+  if (bubblesPaused || shouldDisableBubbles()) {
+    return;
+  }
+
+  if (!bubbles.length) {
+    initializeBubbles(true);
+  }
 
   if (!lastBubbleFrame) lastBubbleFrame = timestamp;
   let dt = (timestamp - lastBubbleFrame) / 1000;
   lastBubbleFrame = timestamp;
-  if (dt > 0.05) dt = 0.05;
+  // Keep motion continuous even if a few scroll frames are dropped
+  if (dt > 0.064) dt = 0.064;
 
   ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-  for (const bubble of bubbles) {
-    bubble.update(dt);
-    bubble.draw();
+  for (let i = 0; i < bubbles.length; i++) {
+    bubbles[i].update(dt);
+    bubbles[i].draw();
   }
+}
 
-  requestAnimationFrame(animateBubbles);
+function pauseBubbles() {
+  bubblesPaused = true;
+}
+
+function resumeBubbles() {
+  bubblesPaused = false;
+  lastBubbleFrame = 0;
+  if (!bubbles.length) initializeBubbles(true);
 }
 
 if (canvas && ctx) {
-  initializeBubbles();
-  requestAnimationFrame(animateBubbles);
-  window.addEventListener('resize', initializeBubbles, { passive: true });
+  initializeBubbles(true);
+  bubblesRafId = requestAnimationFrame(animateBubbles);
+
+  window.addEventListener('resize', () => {
+    // Height-only changes (mobile browser chrome) only resize buffer — animation keeps running
+    resizeCanvas();
+    const widthChanged = Math.abs((window.innerWidth || 0) - lastBubbleWidth) >= 48;
+    if (widthChanged) initializeBubbles(true);
+  }, { passive: true });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pauseBubbles();
+    else resumeBubbles();
+  });
 }
 
 
@@ -859,14 +898,19 @@ if (canvas && ctx) {
     document.querySelectorAll('.reveal-elegant').forEach(el => observer.observe(el));
 
     // ==================== PREMIUM NAVBAR BEHAVIOR ====================
+    let navScrollTicking = false;
     window.addEventListener('scroll', () => {
-      const navbar = document.getElementById('navbar');
-      if (window.scrollY > 80) {
-        navbar.classList.add('nav-scrolled-premium');
-      } else {
-        navbar.classList.remove('nav-scrolled-premium');
-      }
-    });
+      if (navScrollTicking) return;
+      navScrollTicking = true;
+      requestAnimationFrame(() => {
+        const navbar = document.getElementById('navbar');
+        if (navbar) {
+          if (window.scrollY > 80) navbar.classList.add('nav-scrolled-premium');
+          else navbar.classList.remove('nav-scrolled-premium');
+        }
+        navScrollTicking = false;
+      });
+    }, { passive: true });
 
     // ==================== MOBILE MENU ====================
     function toggleMobileMenu() {
@@ -928,6 +972,15 @@ function preserveProductsViewport(updateFn) {
   });
 }
 
+function getDefaultOptionIndex(product) {
+  if (!Array.isArray(product?.options) || !product.options.length) return -1;
+  const byFlag = product.options.findIndex(opt => opt.isDefault === true);
+  if (byFlag >= 0) return byFlag;
+  const byNormal = product.options.findIndex(opt => opt.id === 'normal');
+  if (byNormal >= 0) return byNormal;
+  return 0;
+}
+
 function renderProducts(filter = 'all') {
   currentProductsFilter = filter;
 
@@ -937,7 +990,12 @@ function renderProducts(filter = 'all') {
   const { wrapper, button } = getLoadMoreControls();
 
   grid.innerHTML = visibleProducts.map((p, i) => {
-    const displayPrice = p.options ? p.basePrice : p.price;
+    const defaultOptIdx = getDefaultOptionIndex(p);
+    if (defaultOptIdx >= 0) {
+      p.selectedOptionIdx = defaultOptIdx;
+    }
+    const activeOption = defaultOptIdx >= 0 ? p.options[defaultOptIdx] : null;
+    const displayPrice = activeOption ? Number(activeOption.price) : Number(p.price);
     const primarySpec = p.specs.volume || p.specs.weight || '';
 
     return `
@@ -971,12 +1029,12 @@ function renderProducts(filter = 'all') {
           <div class="mb-4">
             <div class="option-selector-premium">
               ${p.options.map((opt, idx) => `
-                <button onclick="selectOption(${p.id}, ${idx}, this)" class="option-btn-premium ${idx === 0 ? 'active' : ''}" data-opt="${idx}" data-price="${opt.price}">
+                <button type="button" onclick="selectOption(${p.id}, ${idx}, this)" class="option-btn-premium ${idx === defaultOptIdx ? 'active' : ''}" data-opt="${idx}" data-price="${opt.price}" data-option-id="${opt.id}">
                   ${opt.label}
                 </button>
               `).join('')}
             </div>
-            <p id="option-desc-${p.id}" class="text-xs text-slate-500 mt-2 min-h-[24px]">${p.options[0].description}</p>
+            <p id="option-desc-${p.id}" class="text-xs text-slate-500 mt-2 min-h-[24px]">${activeOption ? activeOption.description : ''}</p>
           </div>
         ` : ''}
 
@@ -985,7 +1043,7 @@ function renderProducts(filter = 'all') {
             <span class="text-2xl font-black gradient-text-premium" id="price-${p.id}">${formatPrice(displayPrice)}</span>
             <span class="text-xs text-slate-500 block mt-0.5">دينار أردني</span>
           </div>
-          <button onclick="addToCart(${p.id})" class="btn-water-premium w-13 h-13 rounded-xl flex items-center justify-center hover:shadow-lg hover:shadow-cyan-500/30 transition-all group">
+          <button type="button" onclick="addToCart(${p.id})" class="btn-water-premium w-13 h-13 rounded-xl flex items-center justify-center hover:shadow-lg hover:shadow-cyan-500/30 transition-all group">
             <i class="fas fa-plus text-white text-lg group-hover:scale-110 transition-transform"></i>
           </button>
         </div>
@@ -1042,21 +1100,24 @@ function showMoreProducts() {
 
     function selectOption(productId, optIdx, btn) {
       const product = products.find(p => p.id === productId);
+      if (!product?.options?.[optIdx]) return;
       const option = product.options[optIdx];
 
       // Update selected option UI
-      btn.parentElement.querySelectorAll('.option-btn-premium').forEach(b => {
-        b.classList.remove('active');
-      });
-      btn.classList.add('active');
+      const parent = btn?.parentElement || document.querySelector(`#option-desc-${productId}`)?.previousElementSibling;
+      if (parent) {
+        parent.querySelectorAll('.option-btn-premium').forEach(b => b.classList.remove('active'));
+      }
+      if (btn) btn.classList.add('active');
 
-      // Update price display
-      document.getElementById(`price-${productId}`).textContent = formatPrice(option.price);
+      // Keep displayed price synced with selected option
+      const priceEl = document.getElementById(`price-${productId}`);
+      if (priceEl) priceEl.textContent = formatPrice(Number(option.price));
       
       // Update description
       const descEl = document.getElementById(`option-desc-${productId}`);
       if (descEl) {
-        descEl.textContent = option.description;
+        descEl.textContent = option.description || '';
         descEl.classList.add('animate-fade-scale');
         setTimeout(() => descEl.classList.remove('animate-fade-scale'), 500);
       }
@@ -1113,11 +1174,14 @@ function filterProducts(category) {
 
       // Handle products with options (chilled vs normal)
       if (product.options) {
-        const optIdx = product.selectedOptionIdx !== undefined ? product.selectedOptionIdx : 0;
-        const selectedOption = product.options[optIdx];
-        price = selectedOption.price;
+        const optIdx = product.selectedOptionIdx !== undefined
+          ? product.selectedOptionIdx
+          : getDefaultOptionIndex(product);
+        const selectedOption = product.options[Math.max(0, optIdx)];
+        price = Number(selectedOption.price);
         optionLabel = selectedOption.label;
         optionId = selectedOption.id;
+        product.selectedOptionIdx = Math.max(0, optIdx);
       }
 
       // Check if item with same option already exists in cart
@@ -1284,10 +1348,61 @@ function filterProducts(category) {
       showNotification('🗑️ تم الحذف', `${item.name} ${item.optionLabel ? `(${item.optionLabel})` : ''} أُزيل من سلة طلباتك`, 'success');
     }
 
+    function getGeoPosition(options) {
+      return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, options);
+      });
+    }
+
+    function describeGeoError(error) {
+      if (!error) return 'تعذر تحديد الموقع';
+      if (error.code === 1) {
+        return 'تم رفض إذن الموقع. من إعدادات المتصفح/الهاتف اسمح بالوصول للموقع لهذا الموقع ثم أعد المحاولة.';
+      }
+      if (error.code === 2) return 'الموقع غير متاح حالياً. تأكد أن GPS/الموقع مفعّل على الهاتف.';
+      if (error.code === 3) return 'انتهت مهلة تحديد الموقع. حاول مرة أخرى مع إبقاء الشاشة مفتوحة.';
+      return error.message || 'تعذر تحديد الموقع';
+    }
+
+    async function resolveGpsPosition(onAttempt) {
+      const attempts = [
+        { label: 'سريع', enableHighAccuracy: false, timeout: 10000, maximumAge: 180000 },
+        { label: 'دقيق', enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+      ];
+
+      let lastError = null;
+      for (const attempt of attempts) {
+        try {
+          if (typeof onAttempt === 'function') onAttempt(attempt.label);
+          const position = await getGeoPosition({
+            enableHighAccuracy: attempt.enableHighAccuracy,
+            timeout: attempt.timeout,
+            maximumAge: attempt.maximumAge
+          });
+          if (position?.coords) return position;
+        } catch (error) {
+          lastError = error;
+          if (error && error.code === 1) throw error;
+        }
+      }
+      throw lastError || new Error('تعذر تحديد الموقع');
+    }
+
     async function useCurrentLocation() {
       const statusEl = document.getElementById('gpsStatus');
       const btn = document.getElementById('useGpsBtn');
       const mapsLink = document.getElementById('gpsMapsLink');
+
+      if (!window.isSecureContext) {
+        const message = 'تحديد الموقع يحتاج فتح الموقع عبر HTTPS (وليس ملف محلي).';
+        if (statusEl) {
+          statusEl.textContent = message;
+          statusEl.className = 'mt-2 text-xs text-red-400';
+        }
+        showNotification('⚠️ غير آمن', message, 'error');
+        return;
+      }
+
       if (!navigator.geolocation) {
         showNotification('⚠️ غير مدعوم', 'متصفحك لا يدعم تحديد الموقع الجغرافي', 'error');
         return;
@@ -1298,11 +1413,30 @@ function filterProducts(category) {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحديد...';
       }
-      if (statusEl) statusEl.textContent = 'جاري الحصول على موقعك الحالي...';
+      if (statusEl) {
+        statusEl.textContent = 'جاري الحصول على موقعك الحالي...';
+        statusEl.className = 'mt-2 text-xs text-cyan-300';
+      }
 
-      navigator.geolocation.getCurrentPosition(async (position) => {
+      try {
+        if (navigator.permissions?.query) {
+          try {
+            const permission = await navigator.permissions.query({ name: 'geolocation' });
+            if (permission.state === 'denied') {
+              throw { code: 1, message: 'permission denied' };
+            }
+          } catch (permErr) {
+            if (permErr && permErr.code === 1) throw permErr;
+          }
+        }
+
+        const position = await resolveGpsPosition((label) => {
+          if (statusEl) statusEl.textContent = `جاري تحديد الموقع (${label})...`;
+        });
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
+        const accuracy = Number(position.coords.accuracy || 0);
+
         document.getElementById('customerLat').value = String(lat);
         document.getElementById('customerLng').value = String(lng);
 
@@ -1313,57 +1447,54 @@ function filterProducts(category) {
         }
 
         let addressText = `موقع GPS: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        if (statusEl) statusEl.textContent = 'تم التقاط الإحداثيات، جاري تحسين العنوان...';
+
         try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&accept-language=ar`, {
-            headers: { 'Accept': 'application/json' }
-          });
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 6000);
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&accept-language=ar`,
+            {
+              headers: { Accept: 'application/json' },
+              signal: controller.signal
+            }
+          );
+          clearTimeout(timer);
           if (response.ok) {
             const data = await response.json();
-            if (data && data.display_name) {
-              addressText = data.display_name;
-            }
+            if (data?.display_name) addressText = data.display_name;
           }
         } catch (error) {
           console.warn('Reverse geocode failed:', error);
         }
 
         const addressInput = document.getElementById('customerAddress');
-        if (addressInput && !addressInput.value.trim()) {
-          addressInput.value = addressText;
-        } else if (addressInput && addressInput.value.trim() && !addressInput.value.includes('GPS')) {
-          // Keep typed address; GPS coords are stored separately.
-        } else if (addressInput) {
-          addressInput.value = addressText;
+        if (addressInput) {
+          const current = addressInput.value.trim();
+          if (!current || current.includes('GPS') || current.startsWith('موقع GPS')) {
+            addressInput.value = addressText;
+          }
         }
 
+        const accuracyText = accuracy > 0 ? ` (دقة تقريبية ${Math.round(accuracy)}م)` : '';
         if (statusEl) {
-          statusEl.textContent = `تم تحديد الموقع: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+          statusEl.textContent = `تم تحديد الموقع: ${lat.toFixed(5)}, ${lng.toFixed(5)}${accuracyText}`;
           statusEl.className = 'mt-2 text-xs text-emerald-400';
         }
         showNotification('📍 تم تحديد الموقع', 'تم حفظ إحداثيات GPS مع الطلب', 'success');
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = original;
-        }
-      }, (error) => {
-        let message = 'تعذر تحديد الموقع';
-        if (error.code === 1) message = 'يرجى السماح بالوصول إلى الموقع من إعدادات المتصفح';
-        if (error.code === 2) message = 'الموقع غير متاح حالياً';
-        if (error.code === 3) message = 'انتهت مهلة تحديد الموقع، حاول مرة أخرى';
+      } catch (error) {
+        const message = describeGeoError(error);
         if (statusEl) {
           statusEl.textContent = message;
           statusEl.className = 'mt-2 text-xs text-red-400';
         }
         showNotification('⚠️ فشل GPS', message, 'error');
+      } finally {
         if (btn) {
           btn.disabled = false;
           btn.innerHTML = original;
         }
-      }, {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-      });
+      }
     }
 
     async function confirmOrder() {
@@ -1467,29 +1598,31 @@ window.useCurrentLocation = useCurrentLocation;
 window.confirmOrder = confirmOrder;
 
   
-    // Premium confetti effect
+    // Premium confetti effect (lightweight)
     function createConfetti() {
       const container = document.getElementById('confettiContainer');
+      if (!container) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       container.innerHTML = '';
-      
-      const colors = ['#06b6d4', '#0ea5e9', '#3b82f6', '#8b5cf6', '#10b981'];
-      
-      for (let i = 0; i < 100; i++) {
+
+      const colors = ['#06b6d4', '#0ea5e9', '#3b82f6', '#10b981'];
+      const count = window.innerWidth < 768 ? 18 : 28;
+      const fragment = document.createDocumentFragment();
+
+      for (let i = 0; i < count; i++) {
         const confetti = document.createElement('div');
         confetti.className = 'confetti';
         confetti.style.left = Math.random() * 100 + 'vw';
         confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.width = Math.random() * 8 + 4 + 'px';
-        confetti.style.height = confetti.style.width;
-        confetti.style.animationDelay = Math.random() * 2 + 's';
-        confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
-        container.appendChild(confetti);
-        
-        // Remove confetti after animation
-        setTimeout(() => {
-          confetti.remove();
-        }, 4000);
+        const size = Math.random() * 7 + 4;
+        confetti.style.width = size + 'px';
+        confetti.style.height = size + 'px';
+        confetti.style.animationDelay = Math.random() * 1.2 + 's';
+        confetti.style.animationDuration = Math.random() * 1.5 + 1.8 + 's';
+        fragment.appendChild(confetti);
       }
+      container.appendChild(fragment);
+      setTimeout(() => { container.innerHTML = ''; }, 3800);
     }
 
     // ==================== PREMIUM NAVIGATION ====================
@@ -1753,17 +1886,16 @@ window.confirmOrder = confirmOrder;
         loadMoreButton.onclick = toggleMoreProducts;
       }
 
-      await loadProductsFromApi();
+      // Paint instantly from local fallback, then refresh from API when ready
       renderProducts('all');
-      
-      // Add loading state for better UX
-      setTimeout(() => {
+      const loaded = await loadProductsFromApi();
+      if (loaded) renderProducts(currentProductsFilter || 'all');
+
+      requestAnimationFrame(() => {
         document.querySelectorAll('.reveal-elegant').forEach(el => {
-          if (isElementInViewport(el)) {
-            el.classList.add('active');
-          }
+          if (isElementInViewport(el)) el.classList.add('active');
         });
-      }, 500);
+      });
     });
     
     // Helper to check if element is in viewport
@@ -1775,8 +1907,6 @@ window.confirmOrder = confirmOrder;
       );
     }
 
-    // ==================== PERFORMANCE OPTIMIZATION ====================
-    // Throttle scroll events for better performance
     function throttle(func, limit) {
       let inThrottle;
       return function() {
@@ -1789,11 +1919,6 @@ window.confirmOrder = confirmOrder;
         }
       };
     }
-    
-    // Apply throttle to scroll listener
-    window.addEventListener('scroll', throttle(() => {
-      // Navbar scroll effect already handled separately
-    }, 100), { passive: true });
 
   
 // تأثير 3D للبطاقات (Parallax Tilt Effect)
@@ -1815,24 +1940,27 @@ function init3DTilt() {
   cards.forEach(card => {
     if (card.dataset.tiltReady === 'true') return;
     card.dataset.tiltReady = 'true';
+    let frame = 0;
 
     card.addEventListener('mousemove', e => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * -8;
-      const rotateY = ((x - centerX) / centerX) * 8;
-
-      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.015, 1.015, 1.015)`;
-      card.style.transition = 'none';
-      card.style.boxShadow = `${-rotateY}px ${rotateX}px 18px rgba(0, 242, 254, 0.18)`;
-    });
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -6;
+        const rotateY = ((x - centerX) / centerX) * 6;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+        card.style.transition = 'none';
+      });
+    }, { passive: true });
 
     card.addEventListener('mouseleave', () => {
       card.style.transform = '';
-      card.style.transition = 'all 0.45s cubic-bezier(0.25, 1, 0.5, 1)';
+      card.style.transition = 'transform 0.35s ease';
       card.style.boxShadow = '';
     });
   });

@@ -89,7 +89,7 @@ async function seedFromJsonIfEmpty() {
 
       const options = Array.isArray(product.options) ? product.options : [];
       for (const [optIndex, option] of options.entries()) {
-        const isDefault = option.isDefault === true || option.is_default === 1 || optIndex === 0;
+        const isDefault = option.isDefault === true || option.is_default === 1 || option.id === 'normal' || (optIndex === 0 && !options.some(o => o.id === 'normal' || o.isDefault));
         await query(
           `INSERT INTO product_options (product_id, option_code, label_ar, price, description, is_default, sort_order)
            VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -173,15 +173,18 @@ async function syncProductPricesFromSeed() {
       }
 
       const options = Array.isArray(product.options) ? product.options : [];
-      for (const option of options) {
+      for (const [optIndex, option] of options.entries()) {
+        const isDefault = option.isDefault === true || option.is_default === 1 || option.id === 'normal' || (optIndex === 0 && !options.some(o => o.id === 'normal' || o.isDefault));
         await query(
           `UPDATE product_options
-           SET price = ?, label_ar = ?, description = ?
+           SET price = ?, label_ar = ?, description = ?, is_default = ?, sort_order = ?
            WHERE product_id = ? AND option_code = ?`,
           [
             option.price,
             option.label,
             option.description || null,
+            isDefault ? 1 : 0,
+            optIndex + 1,
             product.id,
             option.id
           ],
