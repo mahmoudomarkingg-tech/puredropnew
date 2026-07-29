@@ -741,10 +741,10 @@ class Bubble {
     const h = window.innerHeight || 1;
     this.x = Math.random() * w;
     this.y = initial ? Math.random() * h : h + Math.random() * 130;
-    this.size = Math.random() * 3.2 + 1.5;
-    this.speedY = Math.random() * 36 + 40;
-    this.speedX = (Math.random() - 0.5) * 16;
-    this.opacity = Math.random() * 0.12 + 0.12;
+    this.size = Math.random() * 4.2 + 2.2;
+    this.speedY = Math.random() * 42 + 48;
+    this.speedX = (Math.random() - 0.5) * 18;
+    this.opacity = Math.random() * 0.28 + 0.35;
     this.phase = Math.random() * Math.PI * 2;
     this.phaseSpeed = Math.random() * 1.2 + 0.9;
     this.wobbleAmplitude = Math.random() * 16 + 8;
@@ -759,7 +759,6 @@ class Bubble {
 
     if (this.y < -36 || this.x < -48 || this.x > w + 48) {
       this.reset();
-      // Keep bubbles within current viewport height after mobile toolbar changes
       if (this.y > h + 140) this.y = h + Math.random() * 80;
     }
   }
@@ -768,18 +767,19 @@ class Bubble {
     if (!ctx) return;
 
     const isLightTheme = cachedThemeIsLight;
+    // Stronger colors so "rain" stays visible on light backgrounds
     const fill = isLightTheme
-      ? `rgba(56, 189, 248, ${this.opacity * 0.55})`
-      : `rgba(103, 232, 249, ${this.opacity * 0.45})`;
+      ? `rgba(14, 165, 233, ${this.opacity * 0.85})`
+      : `rgba(103, 232, 249, ${this.opacity * 0.75})`;
     const rim = isLightTheme
-      ? `rgba(3, 105, 161, ${this.opacity * 0.9})`
-      : `rgba(165, 243, 252, ${this.opacity * 0.7})`;
+      ? `rgba(3, 105, 161, ${Math.min(1, this.opacity * 1.1)})`
+      : `rgba(165, 243, 252, ${Math.min(1, this.opacity * 0.95)})`;
 
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.fillStyle = fill;
     ctx.fill();
-    ctx.lineWidth = 0.7;
+    ctx.lineWidth = 1;
     ctx.strokeStyle = rim;
     ctx.stroke();
   }
@@ -787,10 +787,10 @@ class Bubble {
 
 function getBubbleCount() {
   const isMobile = window.innerWidth < 768;
-  if (isMobile) return 14;
+  if (isMobile) return 30;
   const area = window.innerWidth * window.innerHeight;
-  const density = 1 / 52000;
-  return Math.max(16, Math.min(36, Math.floor(area * density)));
+  const density = 1 / 30000;
+  return Math.max(32, Math.min(58, Math.floor(area * density)));
 }
 
 let bubblesRafId = 0;
@@ -803,8 +803,8 @@ function refreshBubbleThemeCache() {
 }
 
 function shouldDisableBubbles() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    || document.hidden;
+  // Only pause when tab is hidden — keep rain/waves running always for branding
+  return document.hidden;
 }
 
 function initializeBubbles(force = false) {
