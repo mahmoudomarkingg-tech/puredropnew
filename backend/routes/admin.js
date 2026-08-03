@@ -19,10 +19,22 @@ router.post('/orders/:id/delivery', asyncHandler(adminController.updateOrderDeli
 router.delete('/orders/:id', asyncHandler(adminController.deleteOrder));
 router.post('/orders/:id/delete', asyncHandler(adminController.deleteOrder));
 
+router.get('/hub-summary', asyncHandler(adminController.getAdminHubSummary));
+router.get('/customers', asyncHandler(adminController.listSavedCustomers));
+
 router.get('/contact-messages', asyncHandler(adminController.listContactMessages));
 router.patch('/contact-messages/:id/status', asyncHandler(adminController.updateContactMessageStatus));
 router.post('/contact-messages/:id/status', asyncHandler(adminController.updateContactMessageStatus));
 router.delete('/contact-messages/:id', asyncHandler(adminController.deleteContactMessage));
 router.post('/contact-messages/:id/delete', asyncHandler(adminController.deleteContactMessage));
+
+const couponsController = require('../controllers/couponsController');
+router.get('/coupons', asyncHandler(couponsController.listAdminCouponAccounts));
+router.post('/coupons', asyncHandler(couponsController.createAdminCouponAccount));
+router.get('/coupons/:id/ledger', asyncHandler(couponsController.getAdminCouponLedger));
+router.patch('/coupons/:id/adjust', asyncHandler(couponsController.adjustAdminCouponAccount));
+router.post('/coupons/:id/adjust', asyncHandler(couponsController.adjustAdminCouponAccount));
+router.patch('/coupons/:id/status', asyncHandler(couponsController.blockAdminCouponAccount));
+router.post('/coupons/:id/status', asyncHandler(couponsController.blockAdminCouponAccount));
 
 module.exports = router;

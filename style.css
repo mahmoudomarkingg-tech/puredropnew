@@ -1866,3 +1866,531 @@ select option:focus {
     font-size: 1.08rem;
   }
 }
+
+/* ===== Visibility helper (does not rely on Tailwind alone) ===== */
+.is-hidden {
+  display: none !important;
+}
+
+/* ===== Navbar: prevent crushing / overlapping ===== */
+#navbar > .max-w-7xl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+}
+
+.site-nav-links {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: nowrap;
+}
+
+.site-nav-links .nav-link {
+  flex-shrink: 0;
+  padding: 0.55rem 0.7rem !important;
+  border-radius: 0.75rem;
+  font-size: 0.88rem !important;
+  font-weight: 600;
+  color: #cbd5e1;
+  white-space: nowrap;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.site-nav-links .nav-link:hover {
+  color: #22d3ee;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.site-nav-actions {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 60;
+}
+
+.nav-icon-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.nav-icon-btn:hover {
+  color: #22d3ee;
+  background: rgba(34, 211, 238, 0.12);
+}
+
+.nav-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2.75rem;
+  padding: 0 0.85rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(245, 158, 11, 0.12);
+  color: #fcd34d;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.nav-admin-btn:hover {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fde68a;
+}
+
+.nav-order-cta {
+  padding: 0.7rem 1.15rem !important;
+  font-size: 0.88rem !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1280px) and (max-width: 1500px) {
+  .site-nav-links .nav-link {
+    padding: 0.5rem 0.5rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .nav-admin-btn span,
+  .customer-login-btn span {
+    display: none;
+  }
+
+  .nav-admin-btn,
+  .customer-login-btn {
+    width: 2.75rem;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+.cart-count-badge {
+  position: absolute;
+  top: -0.35rem;
+  inset-inline-end: -0.35rem;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #0f172a;
+}
+
+.customer-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2.6rem;
+  padding: 0 0.85rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.customer-login-btn .fa-google {
+  color: #ea4335;
+}
+
+.customer-login-btn:hover {
+  background: #f1f5f9;
+}
+
+/* ===== Compact customer account menu (navbar) ===== */
+.customer-account-menu {
+  position: relative;
+  flex-shrink: 0;
+  z-index: 70;
+}
+
+.customer-account-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2.6rem;
+  padding: 0 0.65rem 0 0.5rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  background: rgba(6, 182, 212, 0.14);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.customer-avatar,
+.customer-avatar-fallback {
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 999px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.customer-avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.12);
+  color: #a5f3fc;
+  font-size: 0.7rem;
+}
+
+.customer-coupon-pill {
+  min-width: 1.35rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #cffafe;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.customer-caret {
+  color: #a5f3fc;
+  font-size: 0.6rem;
+}
+
+.customer-account-dropdown {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  inset-inline-start: 0;
+  z-index: 90;
+  width: 15.5rem;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  background: rgba(15, 23, 42, 0.98);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  text-align: right;
+}
+
+.customer-dd-name {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.35rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-dd-book,
+.customer-dd-coupons {
+  font-size: 0.78rem;
+  color: #a5f3fc;
+  margin-bottom: 0.25rem;
+}
+
+.customer-dd-logout {
+  margin-top: 0.65rem;
+  width: 100%;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fecaca;
+  border-radius: 0.75rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ===== Auth modal + cart gate ===== */
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.auth-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.auth-modal-card {
+  position: relative;
+  width: min(26rem, 100%);
+  border-radius: 1.35rem;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.98), rgba(8, 15, 30, 0.98));
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.5);
+  padding: 1.4rem 1.35rem 1.2rem;
+  text-align: right;
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 0.85rem;
+  inset-inline-start: 0.85rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.auth-modal-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.auth-modal-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #fff;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.auth-modal-brand h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.auth-modal-brand p {
+  margin: 0.25rem 0 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.auth-modal-benefits {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.95rem;
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.18);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.auth-modal-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: #e2e8f0;
+  font-size: 0.84rem;
+}
+
+.auth-modal-benefits i {
+  color: #22d3ee;
+  width: 1rem;
+  text-align: center;
+}
+
+.auth-modal-google {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.95rem;
+  border: 0;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.auth-modal-google .fa-google {
+  color: #ea4335;
+}
+
+.auth-modal-google:hover {
+  background: #f8fafc;
+}
+
+.auth-demo-fields {
+  margin-top: 0.9rem;
+  padding: 0.85rem;
+  border-radius: 0.95rem;
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 0.65rem;
+}
+
+.auth-demo-label {
+  margin: 0;
+  color: #fbbf24;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.auth-demo-fields label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.auth-demo-fields input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  padding: 0.7rem 0.8rem;
+  font-family: inherit;
+}
+
+.auth-demo-submit {
+  border: 0;
+  border-radius: 0.8rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.auth-modal-note {
+  margin: 0.85rem 0 0;
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.cart-auth-gate {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  background: rgba(6, 182, 212, 0.1);
+}
+
+.cart-auth-gate-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.75rem;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: #ea4335;
+}
+
+.cart-auth-gate-title {
+  margin: 0;
+  font-weight: 800;
+  color: #ecfeff;
+  font-size: 0.95rem;
+}
+
+.cart-auth-gate-text {
+  margin: 0.25rem 0 0;
+  color: #a5f3fc;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.cart-auth-gate-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.8rem;
+  border-radius: 0.85rem;
+  border: 0;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cart-auth-balance {
+  border-radius: 1rem;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  background: rgba(139, 92, 246, 0.15);
+  padding: 1rem;
+}
+
+.mobile-auth-card {
+  margin-top: 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  background: rgba(6, 182, 212, 0.1);
+  padding: 1rem;
+}
+
+.mobile-auth-title {
+  margin: 0 0 0.35rem;
+  font-weight: 800;
+  color: #ecfeff;
+}
+
+.mobile-auth-text {
+  margin: 0 0 0.85rem;
+  color: #a5f3fc;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.mobile-auth-google-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.8rem;
+  border-radius: 0.85rem;
+  border: 0;
+  background: #fff;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.mobile-auth-logout {
+  margin-top: 0.5rem;
+  border: 0;
+  background: transparent;
+  color: #fca5a5;
+  font-size: 0.8rem;
+  cursor: pointer;
+}

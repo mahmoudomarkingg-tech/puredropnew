@@ -10,12 +10,16 @@ function getJwtSecret() {
   return secret;
 }
 
+function readBearerToken(req) {
+  const header = req.headers.authorization || '';
+  const queryToken = typeof req.query.token === 'string' ? req.query.token : '';
+  const bearerToken = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+  return bearerToken || queryToken;
+}
+
 function authenticateToken(req, res, next) {
   try {
-    const header = req.headers.authorization || '';
-    const queryToken = typeof req.query.token === 'string' ? req.query.token : '';
-    const bearerToken = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
-    const token = bearerToken || queryToken;
+    const token = readBearerToken(req);
 
     if (!token) {
       return res.status(401).json({
@@ -25,6 +29,12 @@ function authenticateToken(req, res, next) {
     }
 
     const payload = jwt.verify(token, getJwtSecret());
+    if (payload.role === 'customer') {
+      return res.status(403).json({
+        success: false,
+        error: 'هذا التوكن خاص بالعملاء وليس لوحة الإدارة'
+      });
+    }
     req.admin = {
       id: payload.sub || payload.id || null,
       username: payload.username
@@ -38,7 +48,62 @@ function authenticateToken(req, res, next) {
   }
 }
 
+function authenticateCustomer(req, res, next) {
+  try {
+    const token = readBearerToken(req);
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        error: 'يلزم تسجيل الدخول بحساب Google أولاً'
+      });
+    }
+
+    const payload = jwt.verify(token, getJwtSecret());
+    if (payload.role !== 'customer') {
+      return res.status(403).json({
+        success: false,
+        error: 'توكن غير صالح للعميل'
+      });
+    }
+
+    req.customer = {
+      id: Number(payload.sub) || null,
+      email: payload.email || null,
+      name: payload.name || null
+    };
+    if (!req.customer.id) {
+      return res.status(401).json({ success: false, error: 'توكن العميل غير صالح' });
+    }
+    return next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      error: 'انتهت جلسة العميل. سجّل الدخول عبر Google مجدداً'
+    });
+  }
+}
+
+function optionalCustomer(req, res, next) {
+  try {
+    const token = readBearerToken(req);
+    if (!token) return next();
+    const payload = jwt.verify(token, getJwtSecret());
+    if (payload.role === 'customer' && payload.sub) {
+      req.customer = {
+        id: Number(payload.sub) || null,
+        email: payload.email || null,
+        name: payload.name || null
+      };
+    }
+  } catch {
+    // ignore invalid optional token
+  }
+  return next();
+}
+
 module.exports = {
   authenticateToken,
+  authenticateCustomer,
+  optionalCustomer,
   getJwtSecret
 };

@@ -654,6 +654,215 @@
     .support-status.seen { background: rgba(6,182,212,.14); color: #67e8f9; border-color: rgba(6,182,212,.28); }
     .support-status.replied { background: rgba(16,185,129,.14); color: #6ee7b7; border-color: rgba(16,185,129,.28); }
     .support-status.closed { background: rgba(148,163,184,.14); color: #cbd5e1; border-color: rgba(148,163,184,.28); }
+    .hub-gate {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .hub-gate.hidden { display: none !important; }
+    .hub-card-wrap {
+      width: min(1040px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+    .hub-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      margin-bottom: 22px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .hub-card-wrap h2 { margin: 0 0 8px; font-size: 26px; }
+    .hub-card-wrap .lead { margin: 0; color: var(--muted); max-width: 36rem; line-height: 1.7; }
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .hub-tile {
+      position: relative;
+      border: 1px solid var(--line);
+      background: linear-gradient(165deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border-radius: 20px;
+      padding: 22px 18px;
+      cursor: pointer;
+      text-align: right;
+      font-family: inherit;
+      color: var(--text);
+      transition: .18s ease;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .hub-tile:hover {
+      transform: translateY(-3px);
+      border-color: rgba(6,182,212,.45);
+      background: rgba(6,182,212,.1);
+      box-shadow: 0 16px 40px rgba(0,0,0,.25);
+    }
+    .hub-tile-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      background: rgba(6,182,212,.14);
+      border: 1px solid rgba(6,182,212,.28);
+    }
+    .hub-tile.support .hub-tile-icon { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.3); }
+    .hub-tile.customers .hub-tile-icon { background: rgba(168,85,247,.14); border-color: rgba(168,85,247,.35); }
+    .hub-tile h3 { margin: 0; font-size: 18px; }
+    .hub-tile p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; flex: 1; }
+    .hub-tile-cta {
+      color: #67e8f9;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .hub-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 18px rgba(239,68,68,.35);
+    }
+    .hub-badge.show { display: inline-flex; }
+    .section-view.hidden { display: none !important; }
+    .section-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .section-tab {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: 800;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .section-tab.active {
+      color: #fff;
+      border-color: rgba(6,182,212,.45);
+      background: rgba(6,182,212,.16);
+    }
+    .book-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(168,85,247,.14);
+      border: 1px solid rgba(168,85,247,.35);
+      color: #e9d5ff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .data-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .data-stat {
+      background: var(--panel);
+      border: 1px solid rgba(168,85,247,.28);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .data-stat span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .data-stat strong { font-size: 22px; color: #e9d5ff; }
+    .data-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .data-panel {
+      background: var(--panel);
+      border: 1px solid rgba(168,85,247,.28);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .data-panel .panel-head { padding: 14px 16px; }
+    .issue-form {
+      display: grid;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(168,85,247,.06);
+    }
+    .issue-form .row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.7fr 0.5fr auto;
+      gap: 8px;
+    }
+    .customer-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(255,255,255,.03);
+      display: grid;
+      gap: 10px;
+    }
+    .customer-card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .customer-card-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .customer-card-meta div {
+      background: rgba(15,23,42,.55);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .customer-card-meta small { display: block; color: var(--muted); font-size: 11px; margin-bottom: 2px; }
+    .customer-card-meta strong { font-size: 13px; word-break: break-word; }
+    .balance-big { font-size: 24px; color: #e9d5ff; font-weight: 900; line-height: 1; }
+    .cards-grid { display: grid; gap: 10px; padding: 12px; }
+    @media (max-width: 1100px) {
+      .data-layout { grid-template-columns: 1fr; }
+      .data-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .issue-form .row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 900px) {
+      .hub-grid { grid-template-columns: 1fr; }
+      .top-actions { width: 100%; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .data-stats { grid-template-columns: 1fr; }
+      .customer-card-meta { grid-template-columns: 1fr; }
+      .issue-form .row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -663,10 +872,10 @@
         <div class="brand-icon" aria-hidden="true">💧</div>
         <div>
           <h2>دخول محمي</h2>
-          <p>لوحة إدارة الطلبات</p>
+          <p>لوحة إدارة قطرة نقية</p>
         </div>
       </div>
-      <p class="lead">هذه الصفحة محمية. لا يمكن عرض الطلبات أو تعديلها إلا بعد إدخال اسم المستخدم وكلمة المرور الصحيحة.</p>
+      <p class="lead">بعد الدخول ستختار القسم: الطلبات أو الدعم الفني أو بيانات العملاء.</p>
       <div class="form-error" id="loginError" role="alert"></div>
       <div class="field">
         <label for="loginUsername">اسم المستخدم</label>
@@ -684,65 +893,169 @@
     </form>
   </div>
 
+  <div class="hub-gate hidden" id="hubGate">
+    <div class="hub-card-wrap">
+      <div class="hub-head">
+        <div>
+          <h2>لوحة إدارة قطرة نقية</h2>
+          <p class="lead">اختر القسم المناسب. الشارة الحمراء تعني عناصر جديدة تحتاج متابعة فورية.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="admin-chip" id="hubAdminChip">الأدمن</span>
+          <a class="btn" href="/" target="_blank" rel="noopener">الموقع</a>
+          <button class="btn danger" type="button" id="hubLogoutBtn">خروج</button>
+        </div>
+      </div>
+      <div class="hub-grid">
+        <button type="button" class="hub-tile" data-enter-section="orders">
+          <span class="hub-badge" id="hubBadgeOrders">0</span>
+          <div class="hub-tile-icon">📦</div>
+          <h3>قسم الطلبات</h3>
+          <p>متابعة الطلبات، التسليم، رقم الدفتر، والرصيد المتبقي لكل عميل.</p>
+          <span class="hub-tile-cta">فتح الطلبات ←</span>
+        </button>
+        <button type="button" class="hub-tile support" data-enter-section="support">
+          <span class="hub-badge" id="hubBadgeSupport">0</span>
+          <div class="hub-tile-icon">🎧</div>
+          <h3>قسم الدعم الفني</h3>
+          <p>رسائل نموذج التواصل فقط — منفصلة بالكامل عن الطلبات والمبيعات.</p>
+          <span class="hub-tile-cta">فتح الدعم ←</span>
+        </button>
+        <button type="button" class="hub-tile customers" data-enter-section="customers">
+          <span class="hub-badge" id="hubBadgeCustomers">0</span>
+          <div class="hub-tile-icon">👤</div>
+          <h3>بيانات العملاء</h3>
+          <p>حسابات Google، الهاتف، أرقام الدفاتر، وإدارة رصيد الكابونات.</p>
+          <span class="hub-tile-cta">فتح البيانات ←</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="dashboard hidden" id="dashboard" style="display:none" aria-hidden="true">
   <header class="topbar">
     <div class="container topbar-inner">
       <div class="brand">
         <div class="brand-icon">💧</div>
         <div>
-          <h1>لوحة إدارة الطلبات</h1>
-          <p>الطلبات ورسائل الدعم تصل هنا مباشرة بعد الحفظ في قاعدة البيانات</p>
+          <h1 id="sectionTitle">لوحة الإدارة</h1>
+          <p id="sectionSubtitle">قسم محدد بعد اختيارك من القائمة</p>
         </div>
       </div>
       <div class="top-actions">
         <span class="admin-chip" id="adminChip">الأدمن</span>
-        <span class="live-badge"><span class="live-dot"></span><span id="liveText">تحديث فوري مفعل</span></span>
-        <button class="btn primary" id="refreshBtn">تحديث الآن</button>
-        <a class="btn" href="/" target="_blank" rel="noopener">فتح الموقع</a>
+        <span class="live-badge"><span class="live-dot"></span><span id="liveText">تحديث فوري</span></span>
+        <button class="btn" type="button" id="backToHubBtn">كل الأقسام</button>
+        <button class="btn primary" id="refreshBtn">تحديث</button>
+        <a class="btn" href="/" target="_blank" rel="noopener">الموقع</a>
         <button class="btn danger" id="logoutBtn" type="button">خروج</button>
       </div>
     </div>
   </header>
 
   <main class="container">
-    <section class="stats" id="stats"></section>
+    <div class="section-tabs" id="sectionTabs">
+      <button type="button" class="section-tab" data-enter-section="orders">الطلبات</button>
+      <button type="button" class="section-tab" data-enter-section="support">الدعم الفني</button>
+      <button type="button" class="section-tab" data-enter-section="customers">بيانات العملاء</button>
+    </div>
 
-    <section class="controls">
-      <div class="control-row">
-        <div class="search">
-          <span aria-hidden="true">🔎</span>
-          <input id="searchInput" type="search" placeholder="ابحث برقم الطلب أو رسالة الدعم أو اسم العميل أو الهاتف" />
+    <div class="section-view hidden" id="sectionOrders">
+      <section class="stats" id="stats"></section>
+      <section class="controls">
+        <div class="control-row">
+          <div class="search">
+            <span aria-hidden="true">🔎</span>
+            <input id="searchInput" type="search" placeholder="ابحث برقم الطلب أو اسم العميل أو الهاتف أو رقم الدفتر" />
+          </div>
+          <button class="btn" id="clearBtn">مسح البحث</button>
         </div>
-        <button class="btn" id="clearBtn">مسح البحث</button>
-      </div>
-      <div class="filters" id="filters"></div>
-    </section>
+        <div class="filters" id="filters"></div>
+      </section>
+      <section class="orders-panel">
+        <div class="panel-head">
+          <div>
+            <h2>الطلبات</h2>
+            <p id="lastUpdate">لم يتم التحميل بعد</p>
+          </div>
+          <div class="muted" id="ordersCount">0 طلب</div>
+        </div>
+        <div class="table-wrap" id="ordersTable">
+          <div class="loading">جاري تحميل الطلبات...</div>
+        </div>
+      </section>
+    </div>
 
-    <section class="orders-panel">
-      <div class="panel-head">
-        <div>
-          <h2>الطلبات</h2>
-          <p id="lastUpdate">لم يتم التحميل بعد</p>
+    <div class="section-view hidden" id="sectionSupport">
+      <section class="orders-panel support-panel">
+        <div class="panel-head">
+          <div>
+            <h2>الدعم الفني</h2>
+            <p id="supportLastUpdate">منفصلة عن الطلبات — بدون ترقيم الطلبات</p>
+          </div>
+          <div class="muted" id="supportCount">0 رسالة</div>
         </div>
-        <div class="muted" id="ordersCount">0 طلب</div>
-      </div>
-      <div class="table-wrap" id="ordersTable">
-        <div class="loading">جاري تحميل الطلبات...</div>
-      </div>
-    </section>
+        <div class="table-wrap" id="supportTable">
+          <div class="loading">جاري تحميل رسائل الدعم...</div>
+        </div>
+      </section>
+    </div>
 
-    <section class="orders-panel support-panel" style="margin-top:14px">
-      <div class="panel-head">
-        <div>
-          <h2>رسائل الدعم</h2>
-          <p id="supportLastUpdate">منفصلة عن الطلبات — بدون ترقيم الطلبات</p>
-        </div>
-        <div class="muted" id="supportCount">0 رسالة</div>
+    <div class="section-view hidden" id="sectionCustomers">
+      <section class="data-stats" id="customersDataStats">
+        <article class="data-stat"><span>عملاء Google</span><strong id="statCustomersTotal">0</strong></article>
+        <article class="data-stat"><span>جدد اليوم</span><strong id="statCustomersNew">0</strong></article>
+        <article class="data-stat"><span>دفاتر رقمية</span><strong id="statBooksTotal">0</strong></article>
+        <article class="data-stat"><span>كابونات متبقية</span><strong id="statCouponsRemaining">0</strong></article>
+      </section>
+
+      <div class="data-layout">
+        <section class="data-panel">
+          <div class="panel-head">
+            <div>
+              <h2>حسابات العملاء</h2>
+              <p id="customersLastUpdate">حسابات Google المرتبطة بالموقع</p>
+            </div>
+            <div class="muted" id="customersCount">0 عميل</div>
+          </div>
+          <div class="controls" style="margin:0;border-radius:0;border:0;border-bottom:1px solid var(--line)">
+            <div class="control-row">
+              <div class="search">
+                <span aria-hidden="true">🔎</span>
+                <input id="customersSearchInput" type="search" placeholder="ابحث بالاسم أو الإيميل أو الهاتف أو رقم الدفتر" />
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap" id="customersTable">
+            <div class="loading">جاري تحميل العملاء...</div>
+          </div>
+        </section>
+
+        <section class="data-panel">
+          <div class="panel-head">
+            <div>
+              <h2>الدفاتر الرقمية</h2>
+              <p id="couponsLastUpdate">إصدار دفتر أو تعديل الرصيد</p>
+            </div>
+            <div class="muted" id="couponsCount">0 دفتر</div>
+          </div>
+          <div class="issue-form">
+            <strong style="font-size:13px">إصدار دفتر جديد</strong>
+            <div class="row">
+              <input id="couponPhoneCreate" type="tel" placeholder="رقم الهاتف 07XXXXXXXX" dir="ltr" />
+              <select id="couponServiceCreate">
+                <option value="external" selected>دفتر خارجي</option>
+              </select>
+              <input id="couponQtyCreate" type="number" min="1" value="25" dir="ltr" title="عدد الكابونات" />
+              <button class="btn primary" type="button" id="couponCreateBtn">إصدار</button>
+            </div>
+          </div>
+          <div class="table-wrap" id="couponsTable">
+            <div class="loading">جاري تحميل الكابونات الرقمية...</div>
+          </div>
+        </section>
       </div>
-      <div class="table-wrap" id="supportTable">
-        <div class="loading">جاري تحميل رسائل الدعم...</div>
-      </div>
-    </section>
+    </div>
   </main>
   </div>
 
@@ -755,12 +1068,24 @@
       orders: [],
       contactMessages: [],
       contactCounts: { total: 0, new: 0, today: 0 },
+      couponAccounts: [],
+      couponCounts: { accounts: 0, remaining: 0, issued: 0, redeemed: 0 },
+      customers: [],
+      customerCounts: { total: 0, newToday: 0 },
+      hub: {
+        orders: 0,
+        support: 0,
+        customers: 0
+      },
+      activeSection: null,
       statuses: [],
       counts: { all: 0, today: 0, totalSales: 0, byStatus: [] },
       activeStatus: 'all',
       search: '',
       isLoading: false,
       isLoadingSupport: false,
+      isLoadingCoupons: false,
+      isLoadingCustomers: false,
       token: localStorage.getItem(TOKEN_KEY) || '',
       adminUsername: localStorage.getItem(ADMIN_KEY) || '',
       events: null,
@@ -780,10 +1105,13 @@
     const filtersEl = document.getElementById('filters');
     const ordersTableEl = document.getElementById('ordersTable');
     const supportTableEl = document.getElementById('supportTable');
+    const couponsTableEl = document.getElementById('couponsTable');
     const lastUpdateEl = document.getElementById('lastUpdate');
     const supportLastUpdateEl = document.getElementById('supportLastUpdate');
+    const couponsLastUpdateEl = document.getElementById('couponsLastUpdate');
     const ordersCountEl = document.getElementById('ordersCount');
     const supportCountEl = document.getElementById('supportCount');
+    const couponsCountEl = document.getElementById('couponsCount');
     const searchInput = document.getElementById('searchInput');
     const toastEl = document.getElementById('toast');
     const loginErrorEl = document.getElementById('loginError');
@@ -837,9 +1165,102 @@
     }
 
     function updateAdminChip() {
-      adminChip.textContent = state.adminUsername
-        ? `مسجّل: ${state.adminUsername}`
-        : 'الأدمن';
+      const label = state.adminUsername ? `مسجّل: ${state.adminUsername}` : 'الأدمن';
+      adminChip.textContent = label;
+      const hubChip = document.getElementById('hubAdminChip');
+      if (hubChip) hubChip.textContent = label;
+    }
+
+    function setHubBadge(id, count) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const n = Number(count) || 0;
+      el.textContent = String(n);
+      el.classList.toggle('show', n > 0);
+    }
+
+    async function refreshHubSummary() {
+      if (!state.token) return;
+      try {
+        const data = await requestJson('/api/admin/hub-summary');
+        state.hub.orders = data.sections?.orders?.newCount || 0;
+        state.hub.support = data.sections?.support?.newCount || 0;
+        state.hub.customers = data.sections?.customers?.newCount || 0;
+        setHubBadge('hubBadgeOrders', state.hub.orders);
+        setHubBadge('hubBadgeSupport', state.hub.support);
+        setHubBadge('hubBadgeCustomers', state.hub.customers);
+      } catch (error) {
+        console.warn(error.message);
+      }
+    }
+
+    function showHub() {
+      if (!state.token) {
+        showLogin();
+        return;
+      }
+      state.activeSection = null;
+      document.getElementById('loginGate').classList.add('hidden');
+      document.getElementById('hubGate').classList.remove('hidden');
+      const dash = document.getElementById('dashboard');
+      dash.classList.add('hidden');
+      dash.classList.remove('is-open');
+      dash.style.display = 'none';
+      dash.setAttribute('aria-hidden', 'true');
+      updateAdminChip();
+      refreshHubSummary();
+    }
+
+    function enterSection(section) {
+      if (!state.token) {
+        showLogin();
+        return;
+      }
+      state.activeSection = section;
+      document.getElementById('loginGate').classList.add('hidden');
+      document.getElementById('hubGate').classList.add('hidden');
+      const dash = document.getElementById('dashboard');
+      dash.classList.remove('hidden');
+      dash.classList.add('is-open');
+      dash.style.display = '';
+      dash.setAttribute('aria-hidden', 'false');
+
+      document.getElementById('sectionOrders')?.classList.toggle('hidden', section !== 'orders');
+      document.getElementById('sectionSupport')?.classList.toggle('hidden', section !== 'support');
+      document.getElementById('sectionCustomers')?.classList.toggle('hidden', section !== 'customers');
+      document.querySelectorAll('.section-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.enterSection === section);
+      });
+
+      const titles = {
+        orders: ['قسم الطلبات', 'متابعة الطلبات والتسليم ورقم دفتر العميل'],
+        support: ['قسم الدعم الفني', 'رسائل نموذج الدعم فقط'],
+        customers: ['بيانات العملاء', 'حسابات Google والدفاتر الرقمية والكابونات']
+      };
+      const meta = titles[section] || ['لوحة الإدارة', ''];
+      const titleEl = document.getElementById('sectionTitle');
+      const subEl = document.getElementById('sectionSubtitle');
+      if (titleEl) titleEl.textContent = meta[0];
+      if (subEl) subEl.textContent = meta[1];
+      updateAdminChip();
+
+      if (section === 'orders') loadOrders(true);
+      if (section === 'support') loadContactMessages(true);
+      if (section === 'customers') {
+        loadSavedCustomers(true);
+        loadCouponAccounts(true);
+      }
+    }
+
+    function updateCustomersDataStats() {
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = String(value ?? 0);
+      };
+      setText('statCustomersTotal', state.customerCounts.total || state.customers.length || 0);
+      setText('statCustomersNew', state.customerCounts.newToday || 0);
+      setText('statBooksTotal', state.couponCounts.accounts || 0);
+      setText('statCouponsRemaining', state.couponCounts.remaining || 0);
     }
 
     async function requestJson(path, options = {}) {
@@ -863,18 +1284,8 @@
     }
 
     function showDashboard() {
-      if (!state.token) {
-        showLogin();
-        return;
-      }
-      const gate = document.getElementById('loginGate');
-      const dash = document.getElementById('dashboard');
-      gate.classList.add('hidden');
-      dash.classList.remove('hidden');
-      dash.classList.add('is-open');
-      dash.style.display = '';
-      dash.setAttribute('aria-hidden', 'false');
-      updateAdminChip();
+      // After login: always land on the 3-section hub first.
+      showHub();
     }
 
     function clearLoginFields() {
@@ -892,18 +1303,19 @@
     function showLogin() {
       const gate = document.getElementById('loginGate');
       const dash = document.getElementById('dashboard');
+      const hub = document.getElementById('hubGate');
       dash.classList.add('hidden');
       dash.classList.remove('is-open');
       dash.style.display = 'none';
       dash.setAttribute('aria-hidden', 'true');
+      hub?.classList.add('hidden');
       gate.classList.remove('hidden');
-      // Never leave order data visible after logout / failed auth.
+      state.activeSection = null;
       state.orders = [];
-      ordersTableEl.innerHTML = '';
-      statsEl.innerHTML = '';
-      filtersEl.innerHTML = '';
+      if (ordersTableEl) ordersTableEl.innerHTML = '';
+      if (statsEl) statsEl.innerHTML = '';
+      if (filtersEl) filtersEl.innerHTML = '';
       clearLoginFields();
-      // Browsers sometimes autofill after paint — clear again shortly.
       setTimeout(clearLoginFields, 50);
       setTimeout(clearLoginFields, 300);
     }
@@ -946,18 +1358,21 @@
       showDashboard();
       connectLiveUpdates();
       startPolling();
-      await loadOrders();
-      await loadContactMessages();
       clearLoginFields();
-      showToast('تم تسجيل الدخول بنجاح');
+      showHub();
+      showToast('تم تسجيل الدخول — اختر القسم');
     }
 
     function startPolling() {
       stopPolling();
       state.pollTimer = setInterval(() => {
-        if (state.token) {
-          loadOrders(false);
-          loadContactMessages(false);
+        if (!state.token) return;
+        refreshHubSummary();
+        if (state.activeSection === 'orders') loadOrders(false);
+        if (state.activeSection === 'support') loadContactMessages(false);
+        if (state.activeSection === 'customers') {
+          loadSavedCustomers(false);
+          loadCouponAccounts(false);
         }
       }, 10000);
     }
@@ -970,14 +1385,73 @@
         if (!data?.success) throw new Error('unauthorized');
         state.adminUsername = data.admin?.username || state.adminUsername || '';
         localStorage.setItem(ADMIN_KEY, state.adminUsername);
-        showDashboard();
         connectLiveUpdates();
         startPolling();
-        await loadOrders();
-        await loadContactMessages();
+        showHub();
       } catch {
         logout(false);
       }
+    }
+
+    async function loadSavedCustomers(showLoading = true) {
+      if (!state.token) return;
+      const table = document.getElementById('customersTable');
+      if (!table) return;
+      if (state.isLoadingCustomers) return;
+      state.isLoadingCustomers = true;
+      if (showLoading) table.innerHTML = '<div class="loading">جاري تحميل بيانات العملاء...</div>';
+      try {
+        const params = new URLSearchParams({ limit: '200' });
+        if (state.search.trim()) params.set('q', state.search.trim());
+        const data = await requestJson(`/api/admin/customers?${params.toString()}`);
+        state.customers = data.customers || [];
+        state.customerCounts = data.counts || state.customerCounts;
+        renderSavedCustomers();
+        const last = document.getElementById('customersLastUpdate');
+        if (last) last.textContent = `آخر تحديث: ${fmtDate(data.generatedAt)}`;
+      } catch (error) {
+        table.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+      } finally {
+        state.isLoadingCustomers = false;
+      }
+    }
+
+    function renderSavedCustomers() {
+      const table = document.getElementById('customersTable');
+      const countEl = document.getElementById('customersCount');
+      if (!table) return;
+      if (countEl) {
+        countEl.textContent = `${state.customerCounts.total || state.customers.length || 0} عميل`;
+      }
+      updateCustomersDataStats();
+      if (!state.customers.length) {
+        table.innerHTML = '<div class="empty">لا توجد حسابات عملاء محفوظة بعد. تسجيل الدخول عبر Google من الموقع يحفظ البيانات هنا.</div>';
+        return;
+      }
+      table.innerHTML = `
+        <div class="cards-grid">
+          ${state.customers.map(c => `
+            <article class="customer-card">
+              <div class="customer-card-top">
+                <div>
+                  <div style="font-weight:900;font-size:15px">${escapeHtml(c.fullName || c.email)}</div>
+                  <div class="muted" style="margin-top:4px">${escapeHtml(c.email)}</div>
+                </div>
+                <div style="text-align:left">
+                  <div class="balance-big">${c.couponRemaining ?? 0}</div>
+                  <div class="muted" style="font-size:11px">كابون متبقي</div>
+                </div>
+              </div>
+              <div class="customer-card-meta">
+                <div><small>الهاتف</small><strong dir="ltr">${escapeHtml(c.phone || '—')}</strong></div>
+                <div><small>رقم الدفتر</small><strong dir="ltr">${escapeHtml(c.bookNumber || '—')}</strong></div>
+                <div><small>الطلبات المرتبطة</small><strong>${c.ordersCount || 0}</strong></div>
+                <div><small>آخر تحديث</small><strong>${fmtDate(c.updatedAt)}</strong></div>
+              </div>
+            </article>
+          `).join('')}
+        </div>
+      `;
     }
 
     async function loadOrders(showLoading = true) {
@@ -1027,11 +1501,111 @@
       }
     }
 
+    async function loadCouponAccounts(showLoading = true) {
+      if (!state.token || !couponsTableEl) return;
+      if (state.isLoadingCoupons) return;
+      state.isLoadingCoupons = true;
+      if (showLoading) couponsTableEl.innerHTML = '<div class="loading">جاري تحميل الكابونات الرقمية...</div>';
+      try {
+        const params = new URLSearchParams({ limit: '200' });
+        if (state.search.trim()) params.set('q', state.search.trim());
+        const data = await requestJson(`/api/admin/coupons?${params.toString()}`);
+        state.couponAccounts = data.accounts || [];
+        state.couponCounts = data.counts || state.couponCounts;
+        renderCouponAccounts();
+        couponsLastUpdateEl.textContent = `آخر تحديث: ${fmtDate(data.generatedAt)} — خصم الكابونات بعد التسليم`;
+      } catch (error) {
+        couponsTableEl.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+      } finally {
+        state.isLoadingCoupons = false;
+      }
+    }
+
+    function renderCouponAccounts() {
+      if (!couponsTableEl) return;
+      couponsCountEl.textContent = `${state.couponCounts.accounts || 0} دفتر`;
+      updateCustomersDataStats();
+      if (!state.couponAccounts.length) {
+        couponsTableEl.innerHTML = '<div class="empty">لا توجد دفاتر رقمية بعد. شراء دفتر من الموقع أو الإصدار اليدوي من الأعلى يُنشئ الرصيد ورقم الدفتر.</div>';
+        return;
+      }
+      couponsTableEl.innerHTML = `
+        <div class="cards-grid">
+          ${state.couponAccounts.map(acc => `
+            <article class="customer-card" data-coupon-id="${acc.id}">
+              <div class="customer-card-top">
+                <div>
+                  <div style="font-weight:900" dir="ltr">${escapeHtml(acc.bookNumber || 'بدون رقم')}</div>
+                  <div class="muted" style="margin-top:4px" dir="ltr">${escapeHtml(acc.phone)}</div>
+                  <div style="margin-top:6px"><strong>${escapeHtml(acc.customerName || 'بدون اسم')}</strong></div>
+                </div>
+                <div style="text-align:left">
+                  <div class="balance-big">${acc.remaining}</div>
+                  <div class="muted" style="font-size:11px">متبقي</div>
+                  <div class="muted" style="font-size:11px;margin-top:4px">متاح ${acc.available ?? acc.remaining}${(acc.pendingReserved || 0) > 0 ? ` • محجوز ${acc.pendingReserved}` : ''}</div>
+                </div>
+              </div>
+              <div class="customer-card-meta">
+                <div><small>مُصدر</small><strong>${acc.totalIssued}</strong></div>
+                <div><small>مستهلك</small><strong>${acc.totalRedeemed}</strong></div>
+                <div><small>الحالة</small><strong>${acc.status === 'blocked' ? 'موقوف' : 'نشط'}</strong></div>
+                <div><small>تعديل سريع</small>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+                    <input type="number" data-coupon-adjust="${acc.id}" value="1" dir="ltr" style="width:64px;padding:6px;border-radius:8px" />
+                    <button type="button" class="btn sm" data-coupon-plus="${acc.id}">+</button>
+                    <button type="button" class="btn sm" data-coupon-minus="${acc.id}">−</button>
+                    <button type="button" class="btn sm ${acc.status === 'blocked' ? 'primary' : 'danger'}" data-coupon-toggle="${acc.id}" data-status="${acc.status === 'blocked' ? 'active' : 'blocked'}">${acc.status === 'blocked' ? 'تفعيل' : 'إيقاف'}</button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          `).join('')}
+        </div>
+      `;
+      couponsTableEl.querySelectorAll('[data-coupon-plus]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.couponPlus;
+          const input = couponsTableEl.querySelector(`input[data-coupon-adjust="${id}"]`);
+          const qty = Math.abs(Number.parseInt(input?.value || '1', 10) || 1);
+          try {
+            await requestJson(`/api/admin/coupons/${id}/adjust`, { method: 'POST', body: JSON.stringify({ quantity: qty }) });
+            showToast(`تمت إضافة ${qty} كابون`);
+            await loadCouponAccounts(false);
+          } catch (error) { showToast(error.message, 'error'); }
+        });
+      });
+      couponsTableEl.querySelectorAll('[data-coupon-minus]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.couponMinus;
+          const input = couponsTableEl.querySelector(`input[data-coupon-adjust="${id}"]`);
+          const qty = Math.abs(Number.parseInt(input?.value || '1', 10) || 1);
+          try {
+            await requestJson(`/api/admin/coupons/${id}/adjust`, { method: 'POST', body: JSON.stringify({ quantity: -qty }) });
+            showToast(`تم خصم ${qty} كابون`);
+            await loadCouponAccounts(false);
+          } catch (error) { showToast(error.message, 'error'); }
+        });
+      });
+      couponsTableEl.querySelectorAll('[data-coupon-toggle]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          try {
+            await requestJson(`/api/admin/coupons/${btn.dataset.couponToggle}/status`, {
+              method: 'POST',
+              body: JSON.stringify({ status: btn.dataset.status })
+            });
+            showToast('تم تحديث حالة الحساب');
+            await loadCouponAccounts(false);
+          } catch (error) { showToast(error.message, 'error'); }
+        });
+      });
+    }
+
     function render() {
       renderStats();
       renderFilters();
       renderOrders();
       renderSupportMessages();
+      renderCouponAccounts();
     }
 
     function renderStats() {
@@ -1125,6 +1699,15 @@
           ` : '<div class="muted">لم يتم إرسال موقع GPS مع هذا الطلب</div>'}
           <div><strong>وقت التوصيل:</strong> ${escapeHtml(order.deliveryTimeLabel || 'غير محدد')}</div>
           <div><strong>الدفع:</strong> ${escapeHtml(order.paymentMethodLabel || 'الدفع عند الاستلام')} — ${escapeHtml(order.paymentStatusLabel || 'غير مدفوع')}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin:6px 0">
+            <span class="book-pill" dir="ltr">رقم الدفتر: ${escapeHtml(order.customerBookNumber || order.couponBookNumber || '—')}</span>
+            <span class="book-pill">متبقي من الدفتر: <strong>${order.couponRemaining != null ? order.couponRemaining : '—'}</strong></span>
+          </div>
+          ${order.couponsRedeemed > 0 ? `<div><strong>كابونات هذا الطلب:</strong> ${order.couponsRedeemed} كابون • الحالة: ${
+            order.couponRedeemStatus === 'applied' ? 'تم الخصم' :
+            order.couponRedeemStatus === 'pending' ? 'بانتظار التسليم (لم يُخصم بعد)' :
+            order.couponRedeemStatus === 'cancelled' ? 'ملغي' : (order.couponRedeemStatus || '—')
+          } — خصم ${money(order.couponDiscount || 0)}</div>` : ''}
           ${order.notes ? `<div><strong>ملاحظات العميل:</strong> ${escapeHtml(order.notes)}</div>` : ''}
           ${order.adminNotes ? `<div><strong>ملاحظة الإدارة:</strong> ${escapeHtml(order.adminNotes)}</div>` : ''}
           ${order.deliveryNotes ? `<div><strong>ملاحظة التسليم:</strong> ${escapeHtml(order.deliveryNotes)}</div>` : ''}
@@ -1534,12 +2117,22 @@
         document.getElementById('liveText').textContent = 'تحديث فوري مفعل';
       });
       events.addEventListener('orders-updated', () => {
-        loadOrders(false);
+        refreshHubSummary();
+        if (state.activeSection === 'orders') loadOrders(false);
         showToast('وصل تحديث جديد للطلبات');
       });
       events.addEventListener('contact-messages-updated', () => {
-        loadContactMessages(false);
+        refreshHubSummary();
+        if (state.activeSection === 'support') loadContactMessages(false);
         showToast('وصلت رسالة دعم جديدة');
+      });
+      events.addEventListener('coupons-updated', () => {
+        refreshHubSummary();
+        if (state.activeSection === 'customers') {
+          loadCouponAccounts(false);
+          loadSavedCustomers(false);
+        }
+        showToast('تحديث في الكابونات الرقمية');
       });
       events.onerror = () => {
         document.getElementById('liveText').textContent = 'إعادة الاتصال بالتحديث الفوري...';
@@ -1547,24 +2140,67 @@
     }
 
     let searchTimer = null;
-    searchInput.addEventListener('input', () => {
+    searchInput?.addEventListener('input', () => {
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => {
         state.search = searchInput.value;
-        loadOrders();
-        loadContactMessages();
+        if (state.activeSection === 'orders') loadOrders();
+        else if (state.activeSection === 'support') loadContactMessages();
+      }, 350);
+    });
+
+    const customersSearchInput = document.getElementById('customersSearchInput');
+    customersSearchInput?.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        state.search = customersSearchInput.value;
+        if (state.activeSection === 'customers') {
+          loadSavedCustomers();
+          loadCouponAccounts();
+        }
       }, 350);
     });
 
     document.getElementById('refreshBtn').addEventListener('click', () => {
-      loadOrders();
-      loadContactMessages();
+      refreshHubSummary();
+      if (state.activeSection === 'orders') loadOrders();
+      else if (state.activeSection === 'support') loadContactMessages();
+      else if (state.activeSection === 'customers') {
+        loadSavedCustomers();
+        loadCouponAccounts();
+      } else showHub();
     });
-    document.getElementById('clearBtn').addEventListener('click', () => {
+    document.getElementById('backToHubBtn')?.addEventListener('click', () => showHub());
+    document.getElementById('hubLogoutBtn')?.addEventListener('click', () => logout());
+    document.querySelectorAll('[data-enter-section]').forEach(btn => {
+      btn.addEventListener('click', () => enterSection(btn.dataset.enterSection));
+    });
+    document.getElementById('clearBtn')?.addEventListener('click', () => {
       searchInput.value = '';
       state.search = '';
-      loadOrders();
-      loadContactMessages();
+      if (state.activeSection === 'orders') loadOrders();
+      else if (state.activeSection === 'support') loadContactMessages();
+      else if (state.activeSection === 'customers') {
+        loadSavedCustomers();
+        loadCouponAccounts();
+      }
+    });
+    document.getElementById('couponCreateBtn')?.addEventListener('click', async () => {
+      const phone = document.getElementById('couponPhoneCreate')?.value.trim() || '';
+      const serviceType = document.getElementById('couponServiceCreate')?.value || 'external';
+      const quantity = Number.parseInt(document.getElementById('couponQtyCreate')?.value || '0', 10) || 0;
+      try {
+        const data = await requestJson('/api/admin/coupons', {
+          method: 'POST',
+          body: JSON.stringify({ phone, serviceType, quantity })
+        });
+        const book = (data.accounts || []).find(a => a.bookNumber)?.bookNumber;
+        showToast(book ? `تم إصدار الدفتر ${book}` : 'تم إصدار الدفتر الرقمي');
+        document.getElementById('couponPhoneCreate').value = '';
+        await loadCouponAccounts(false);
+      } catch (error) {
+        showToast(error.message, 'error');
+      }
     });
     document.getElementById('logoutBtn').addEventListener('click', () => logout());
     document.getElementById('togglePassword').addEventListener('click', () => {

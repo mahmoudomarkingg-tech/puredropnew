@@ -107,10 +107,14 @@ async function listOrders(req, res) {
 
   if (queryText) {
     where.push(
-      `(o.order_number ILIKE ? OR COALESCE(o.customer_name_snapshot, c.full_name) ILIKE ? OR COALESCE(o.customer_phone_snapshot, c.phone) ILIKE ? OR COALESCE(o.customer_address_snapshot, c.address) ILIKE ?)`
+      `(o.order_number ILIKE ?
+        OR COALESCE(o.customer_name_snapshot, c.full_name) ILIKE ?
+        OR COALESCE(o.customer_phone_snapshot, c.phone) ILIKE ?
+        OR COALESCE(o.customer_address_snapshot, c.address) ILIKE ?
+        OR COALESCE(o.coupon_book_number, '') ILIKE ?)`
     );
     const like = `%${queryText}%`;
-    params.push(like, like, like, like);
+    params.push(like, like, like, like, like);
   }
 
   params.push(limit);
@@ -125,6 +129,38 @@ async function listOrders(req, res) {
             o.subtotal,
             o.delivery_fee AS "deliveryFee",
             o.tax,
+            COALESCE(o.coupon_discount, 0) AS "couponDiscount",
+            COALESCE(o.coupons_redeemed, 0)::int AS "couponsRedeemed",
+            o.coupon_service_type AS "couponServiceType",
+            o.coupon_book_number AS "couponBookNumber",
+            o.coupon_redeem_status AS "couponRedeemStatus",
+            o.coupon_account_id AS "couponAccountId",
+            COALESCE(
+              (
+                SELECT ca.remaining
+                FROM coupon_accounts ca
+                WHERE ca.id = o.coupon_account_id
+              ),
+              (
+                SELECT ca2.remaining
+                FROM coupon_accounts ca2
+                WHERE ca2.phone = COALESCE(o.customer_phone_snapshot, c.phone)
+                  AND ca2.service_type = 'external'
+                ORDER BY ca2.updated_at DESC
+                LIMIT 1
+              )
+            ) AS "couponRemaining",
+            COALESCE(
+              o.coupon_book_number,
+              (
+                SELECT ca3.book_number
+                FROM coupon_accounts ca3
+                WHERE ca3.phone = COALESCE(o.customer_phone_snapshot, c.phone)
+                  AND ca3.service_type = 'external'
+                ORDER BY ca3.updated_at DESC
+                LIMIT 1
+              )
+            ) AS "customerBookNumber",
             o.total,
             o.currency,
             o.source,
@@ -168,6 +204,14 @@ async function listOrders(req, res) {
       subtotal: Number(row.subtotal),
       deliveryFee: Number(row.deliveryFee),
       tax: Number(row.tax),
+      couponDiscount: Number(row.couponDiscount || 0),
+      couponsRedeemed: Number(row.couponsRedeemed || 0),
+      couponServiceType: row.couponServiceType || null,
+      couponBookNumber: row.couponBookNumber || row.customerBookNumber || null,
+      customerBookNumber: row.customerBookNumber || row.couponBookNumber || null,
+      couponRedeemStatus: row.couponRedeemStatus || null,
+      couponRemaining:
+        row.couponRemaining == null ? null : Number(row.couponRemaining),
       total: Number(row.total),
       statusLabel: row.statusLabel || translateOrderStatus(row.status),
       statusColor: row.statusColor || ORDER_STATUS_COLORS[row.status] || '#06b6d4',
@@ -271,50 +315,76 @@ async function updateOrderStatus(req, res) {
 
   const deliveryStatus = newStatus === 'delivered' ? 'تم التسليم' : 'لم يتم التسليم';
 
-  await withTransaction(async client => {
-    const setParts = [
-      'status = ?',
-      'delivery_status = ?',
-      'delivery_status_updated_at = NOW()'
-    ];
-    const params = [newStatus, deliveryStatus];
+  const {
+    reverseOrderCouponEffects,
+    applyPendingCouponRedeem,
+    reverseAppliedCouponRedeem
+  } = require('../services/couponsService');
 
-    if (adminNotes) {
-      setParts.push('admin_notes = ?');
-      params.push(adminNotes);
-    }
+  let couponApplyResult = null;
 
-    if (newStatus === 'confirmed') {
-      setParts.push('confirmed_at = COALESCE(confirmed_at, NOW())');
-    }
-    if (newStatus === 'delivered') {
-      setParts.push('delivered_at = COALESCE(delivered_at, NOW())');
-    } else {
-      setParts.push('delivered_at = NULL');
-    }
-    if (newStatus === 'cancelled') {
-      setParts.push('cancelled_at = COALESCE(cancelled_at, NOW())');
-    } else {
-      setParts.push('cancelled_at = NULL');
-    }
+  try {
+    await withTransaction(async client => {
+      const setParts = [
+        'status = ?',
+        'delivery_status = ?',
+        'delivery_status_updated_at = NOW()'
+      ];
+      const params = [newStatus, deliveryStatus];
 
-    params.push(orderId);
-    await run(`UPDATE orders SET ${setParts.join(', ')} WHERE id = ?`, params, client);
-    await syncDeliveryTracking(client, orderId, order.order_number, deliveryStatus, null);
+      if (adminNotes) {
+        setParts.push('admin_notes = ?');
+        params.push(adminNotes);
+      }
 
-    await run(
-      `INSERT INTO order_status_history (order_id, old_status, new_status, note, changed_by)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        orderId,
-        order.status,
-        newStatus,
-        note || `تم تغيير الحالة إلى ${translateOrderStatus(newStatus)}`,
-        changedBy
-      ],
-      client
-    );
-  });
+      if (newStatus === 'confirmed') {
+        setParts.push('confirmed_at = COALESCE(confirmed_at, NOW())');
+      }
+      if (newStatus === 'delivered') {
+        setParts.push('delivered_at = COALESCE(delivered_at, NOW())');
+      } else {
+        setParts.push('delivered_at = NULL');
+      }
+      if (newStatus === 'cancelled') {
+        setParts.push('cancelled_at = COALESCE(cancelled_at, NOW())');
+      } else {
+        setParts.push('cancelled_at = NULL');
+      }
+
+      params.push(orderId);
+      await run(`UPDATE orders SET ${setParts.join(', ')} WHERE id = ?`, params, client);
+      await syncDeliveryTracking(client, orderId, order.order_number, deliveryStatus, null);
+
+      if (newStatus === 'delivered' && order.status !== 'delivered') {
+        couponApplyResult = await applyPendingCouponRedeem(orderId, client);
+      } else if (order.status === 'delivered' && newStatus !== 'delivered' && newStatus !== 'cancelled') {
+        await reverseAppliedCouponRedeem(orderId, client);
+      }
+
+      if (newStatus === 'cancelled' && order.status !== 'cancelled') {
+        await reverseOrderCouponEffects(orderId, client);
+      }
+
+      await run(
+        `INSERT INTO order_status_history (order_id, old_status, new_status, note, changed_by)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          orderId,
+          order.status,
+          newStatus,
+          note || `تم تغيير الحالة إلى ${translateOrderStatus(newStatus)}`,
+          changedBy
+        ],
+        client
+      );
+    });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    if (status < 500) {
+      return res.status(status).json({ success: false, error: error.message });
+    }
+    throw error;
+  }
 
   broadcastAdminEvent('orders-updated', {
     orderId,
@@ -323,6 +393,10 @@ async function updateOrderStatus(req, res) {
     deliveryStatus
   });
 
+  if (couponApplyResult?.applied || newStatus === 'cancelled') {
+    broadcastAdminEvent('coupons-updated', { orderId, status: newStatus });
+  }
+
   return res.json({
     success: true,
     orderId,
@@ -330,7 +404,8 @@ async function updateOrderStatus(req, res) {
     oldStatus: order.status,
     newStatus,
     statusLabel: translateOrderStatus(newStatus),
-    deliveryStatus
+    deliveryStatus,
+    couponApplyResult
   });
 }
 
@@ -370,49 +445,70 @@ async function updateOrderDeliveryStatus(req, res) {
     nextStatus = 'out_for_delivery';
   }
 
-  await withTransaction(async client => {
-    await run(
-      `UPDATE orders
-       SET delivery_status = ?,
-           delivery_notes = ?,
-           delivery_status_updated_at = NOW(),
-           status = ?,
-           delivered_at = CASE
-             WHEN ? = 'تم التسليم' THEN COALESCE(delivered_at, NOW())
-             ELSE NULL
-           END,
-           cancelled_at = CASE
-             WHEN ? = 'cancelled' THEN COALESCE(cancelled_at, NOW())
-             ELSE NULL
-           END
-       WHERE id = ?`,
-      [deliveryStatus, deliveryNotes || null, nextStatus, deliveryStatus, nextStatus, orderId],
-      client
-    );
+  const {
+    applyPendingCouponRedeem,
+    reverseAppliedCouponRedeem
+  } = require('../services/couponsService');
 
-    await syncDeliveryTracking(
-      client,
-      orderId,
-      order.order_number,
-      deliveryStatus,
-      deliveryNotes || null
-    );
+  let couponApplyResult = null;
 
-    await run(
-      `INSERT INTO order_status_history (order_id, old_status, new_status, note, changed_by)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
+  try {
+    await withTransaction(async client => {
+      await run(
+        `UPDATE orders
+         SET delivery_status = ?,
+             delivery_notes = ?,
+             delivery_status_updated_at = NOW(),
+             status = ?,
+             delivered_at = CASE
+               WHEN ? = 'تم التسليم' THEN COALESCE(delivered_at, NOW())
+               ELSE NULL
+             END,
+             cancelled_at = CASE
+               WHEN ? = 'cancelled' THEN COALESCE(cancelled_at, NOW())
+               ELSE NULL
+             END
+         WHERE id = ?`,
+        [deliveryStatus, deliveryNotes || null, nextStatus, deliveryStatus, nextStatus, orderId],
+        client
+      );
+
+      await syncDeliveryTracking(
+        client,
         orderId,
-        order.status,
-        nextStatus,
-        `تم تحديث التسليم إلى: ${deliveryStatus}${
-          nextStatus !== order.status ? ` — الحالة: ${translateOrderStatus(nextStatus)}` : ''
-        }`,
-        changedBy
-      ],
-      client
-    );
-  });
+        order.order_number,
+        deliveryStatus,
+        deliveryNotes || null
+      );
+
+      if (deliveryStatus === 'تم التسليم' && order.status !== 'delivered') {
+        couponApplyResult = await applyPendingCouponRedeem(orderId, client);
+      } else if (deliveryStatus === 'لم يتم التسليم' && order.status === 'delivered') {
+        await reverseAppliedCouponRedeem(orderId, client);
+      }
+
+      await run(
+        `INSERT INTO order_status_history (order_id, old_status, new_status, note, changed_by)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          orderId,
+          order.status,
+          nextStatus,
+          `تم تحديث التسليم إلى: ${deliveryStatus}${
+            nextStatus !== order.status ? ` — الحالة: ${translateOrderStatus(nextStatus)}` : ''
+          }`,
+          changedBy
+        ],
+        client
+      );
+    });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    if (status < 500) {
+      return res.status(status).json({ success: false, error: error.message });
+    }
+    throw error;
+  }
 
   broadcastAdminEvent('orders-updated', {
     orderId,
@@ -421,6 +517,10 @@ async function updateOrderDeliveryStatus(req, res) {
     status: nextStatus
   });
 
+  if (couponApplyResult?.applied || couponApplyResult?.alreadyApplied === false) {
+    broadcastAdminEvent('coupons-updated', { orderId, deliveryStatus });
+  }
+
   return res.json({
     success: true,
     orderId,
@@ -428,7 +528,8 @@ async function updateOrderDeliveryStatus(req, res) {
     deliveryStatus,
     deliveryNotes: deliveryNotes || null,
     status: nextStatus,
-    statusLabel: translateOrderStatus(nextStatus)
+    statusLabel: translateOrderStatus(nextStatus),
+    couponApplyResult
   });
 }
 
@@ -631,6 +732,117 @@ async function deleteContactMessage(req, res) {
   });
 }
 
+async function listSavedCustomers(req, res) {
+  const q = sanitizeText(req.query.q, 80);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 200, 1), 400);
+  const params = [];
+  let where = '';
+  if (q) {
+    where =
+      `WHERE cu.email ILIKE ? OR COALESCE(cu.full_name, '') ILIKE ? OR COALESCE(cu.phone, '') ILIKE ?
+        OR EXISTS (
+          SELECT 1 FROM coupon_accounts ca
+          WHERE ca.phone = cu.phone AND COALESCE(ca.book_number, '') ILIKE ?
+        )`;
+    const like = `%${q}%`;
+    params.push(like, like, like, like);
+  }
+  params.push(limit);
+
+  const rows = await all(
+    `SELECT cu.id,
+            cu.google_sub AS "googleSub",
+            cu.email,
+            cu.full_name AS "fullName",
+            cu.avatar_url AS "avatarUrl",
+            cu.phone,
+            cu.created_at AS "createdAt",
+            cu.updated_at AS "updatedAt",
+            (
+              SELECT ca.book_number
+              FROM coupon_accounts ca
+              WHERE ca.phone = cu.phone AND ca.service_type = 'external'
+              ORDER BY ca.updated_at DESC
+              LIMIT 1
+            ) AS "bookNumber",
+            (
+              SELECT ca.remaining
+              FROM coupon_accounts ca
+              WHERE ca.phone = cu.phone AND ca.service_type = 'external'
+              ORDER BY ca.updated_at DESC
+              LIMIT 1
+            ) AS "couponRemaining",
+            (
+              SELECT COUNT(*)::int FROM orders o
+              WHERE COALESCE(o.customer_phone_snapshot, '') = COALESCE(cu.phone, '')
+                AND cu.phone IS NOT NULL
+            ) AS "ordersCount"
+     FROM customer_users cu
+     ${where}
+     ORDER BY cu.updated_at DESC, cu.id DESC
+     LIMIT ?`,
+    params
+  );
+
+  const newToday = Number(
+    (
+      await get(
+        `SELECT COUNT(*)::int AS total
+         FROM customer_users
+         WHERE created_at >= DATE_TRUNC('day', NOW())`
+      )
+    )?.total || 0
+  );
+
+  return res.json({
+    success: true,
+    customers: rows.map(row => ({
+      ...row,
+      couponRemaining: row.couponRemaining == null ? 0 : Number(row.couponRemaining),
+      ordersCount: Number(row.ordersCount) || 0
+    })),
+    counts: {
+      total: rows.length,
+      newToday
+    },
+    generatedAt: new Date().toISOString()
+  });
+}
+
+async function getAdminHubSummary(req, res) {
+  const pendingOrders = Number(
+    (await get(`SELECT COUNT(*)::int AS total FROM orders WHERE status = 'pending'`))?.total || 0
+  );
+  const newSupport = Number(
+    (await get(`SELECT COUNT(*)::int AS total FROM contact_messages WHERE status = 'new'`))?.total ||
+      0
+  );
+  const newCustomersToday = Number(
+    (
+      await get(
+        `SELECT COUNT(*)::int AS total FROM customer_users WHERE created_at >= DATE_TRUNC('day', NOW())`
+      )
+    )?.total || 0
+  );
+  const customersTotal = Number(
+    (await get(`SELECT COUNT(*)::int AS total FROM customer_users`))?.total || 0
+  );
+  const couponBooks = Number(
+    (await get(`SELECT COUNT(*)::int AS total FROM coupon_accounts WHERE service_type = 'external'`))
+      ?.total || 0
+  );
+
+  return res.json({
+    success: true,
+    sections: {
+      orders: { newCount: pendingOrders, label: 'طلبات بانتظار المعالجة' },
+      support: { newCount: newSupport, label: 'رسائل دعم جديدة' },
+      customers: { newCount: newCustomersToday, total: customersTotal, couponBooks, label: 'عملاء جدد اليوم' }
+    },
+    generatedAt: new Date().toISOString()
+  });
+}
+
 module.exports = {
   listOrders,
   listOrderStatuses,
@@ -640,5 +852,7 @@ module.exports = {
   streamOrderEvents,
   listContactMessages,
   updateContactMessageStatus,
-  deleteContactMessage
+  deleteContactMessage,
+  listSavedCustomers,
+  getAdminHubSummary
 };

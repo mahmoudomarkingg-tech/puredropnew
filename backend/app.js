@@ -32,8 +32,10 @@ const healthRoutes = require('./routes/index');
 const catalogRoutes = require('./routes/catalog');
 const ordersRoutes = require('./routes/orders');
 const miscRoutes = require('./routes/misc');
+const couponsRoutes = require('./routes/coupons');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const customerAuthRoutes = require('./routes/customerAuth');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const app = express();
@@ -63,6 +65,8 @@ app.use('/api', healthRoutes);
 app.use('/api', catalogRoutes);
 app.use('/api', ordersRoutes);
 app.use('/api', miscRoutes);
+app.use('/api', couponsRoutes);
+app.use('/api/auth', customerAuthRoutes);
 app.use('/api/admin', authRoutes);
 app.use('/api/admin', adminRoutes);
 

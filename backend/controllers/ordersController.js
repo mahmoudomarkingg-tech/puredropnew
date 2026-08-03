@@ -9,6 +9,10 @@ const {
   isValidJordanPhone,
   money
 } = require('../utils/helpers');
+const {
+  issueCreditsFromOrderItems,
+  planCouponRedeemForOrder
+} = require('../services/couponsService');
 
 async function generateOrderNumber(client) {
   const now = new Date();
@@ -137,106 +141,208 @@ async function createOrder(req, res) {
   const subtotal = money(preparedItems.reduce((sum, item) => sum + item.lineTotal, 0));
   const deliveryFee = money(Number((await get("SELECT value FROM settings WHERE key = 'delivery_fee'"))?.value || 0));
   const tax = 0;
-  const total = money(subtotal + deliveryFee + tax);
 
-  const result = await withTransaction(async client => {
-    const orderNumber = await generateOrderNumber(client);
+  const couponPayload = payload.couponRedeem || payload.digitalCoupons || {};
+  const requestedRedeemQty = Number.parseInt(couponPayload.quantity ?? couponPayload.qty ?? 0, 10) || 0;
+  const requestedBookNumber = sanitizeText(
+    couponPayload.bookNumber || couponPayload.book_number || couponPayload.code,
+    40
+  ) || null;
 
-    // Always create a fresh customer row per order so name/address of older
-    // orders are never overwritten when the same phone orders again.
-    const insertedCustomer = await run(
-      `INSERT INTO customers (full_name, phone, address, notes)
-       VALUES (?, ?, ?, ?)
-       RETURNING id`,
-      [customer.name, customer.phone, customer.address, customer.notes],
-      client
-    );
-    const customerId = insertedCustomer.rows[0].id;
+  let result;
+  try {
+    result = await withTransaction(async client => {
+      const orderNumber = await generateOrderNumber(client);
 
-    const insertedOrder = await run(
-      `INSERT INTO orders
-       (order_number, customer_id, status, delivery_time_preference,
-        customer_name_snapshot, customer_phone_snapshot, customer_address_snapshot,
-        location_lat, location_lng, location_maps_url,
-        subtotal, delivery_fee, tax, total, currency, source, payment_method, payment_status, notes)
-       VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'JOD', 'website', 'cash_on_delivery', 'unpaid', ?)
-       RETURNING id`,
-      [
-        orderNumber,
-        customerId,
-        deliveryTimePreference,
-        customer.name,
-        customer.phone,
-        customer.address,
-        locationLat,
-        locationLng,
-        locationMapsUrl,
-        subtotal,
-        deliveryFee,
-        tax,
-        total,
-        customer.notes
-      ],
-      client
-    );
+      const insertedCustomer = await run(
+        `INSERT INTO customers (full_name, phone, address, notes)
+         VALUES (?, ?, ?, ?)
+         RETURNING id`,
+        [customer.name, customer.phone, customer.address, customer.notes],
+        client
+      );
+      const customerId = insertedCustomer.rows[0].id;
 
-    const orderId = insertedOrder.rows[0].id;
-
-    for (const item of preparedItems) {
-      await run(
-        `INSERT INTO order_items
-         (order_id, product_id, product_option_id, product_name_snapshot, option_label_snapshot, quantity, unit_price, line_total)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      const insertedOrder = await run(
+        `INSERT INTO orders
+         (order_number, customer_id, status, delivery_time_preference,
+          customer_name_snapshot, customer_phone_snapshot, customer_address_snapshot,
+          location_lat, location_lng, location_maps_url,
+          subtotal, delivery_fee, tax, coupon_discount, coupons_redeemed, coupon_service_type,
+          total, currency, source, payment_method, payment_status, notes)
+         VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NULL, ?, 'JOD', 'website', 'cash_on_delivery', 'unpaid', ?)
+         RETURNING id`,
         [
-          orderId,
-          item.productId,
-          item.productOptionId,
-          item.productName,
-          item.optionLabel,
-          item.quantity,
-          item.unitPrice,
-          item.lineTotal
+          orderNumber,
+          customerId,
+          deliveryTimePreference,
+          customer.name,
+          customer.phone,
+          customer.address,
+          locationLat,
+          locationLng,
+          locationMapsUrl,
+          subtotal,
+          deliveryFee,
+          tax,
+          money(subtotal + deliveryFee + tax),
+          customer.notes
         ],
         client
       );
+
+      const orderId = insertedOrder.rows[0].id;
+
+      for (const item of preparedItems) {
+        await run(
+          `INSERT INTO order_items
+           (order_id, product_id, product_option_id, product_name_snapshot, option_label_snapshot, quantity, unit_price, line_total)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            orderId,
+            item.productId,
+            item.productOptionId,
+            item.productName,
+            item.optionLabel,
+            item.quantity,
+            item.unitPrice,
+            item.lineTotal
+          ],
+          client
+        );
+      }
+
+      // Issue digital book first so first-order pack+refill can use the new book number immediately.
+      const issuedCoupons = await issueCreditsFromOrderItems({
+        phone: customer.phone,
+        customerName: customer.name,
+        orderId,
+        preparedItems,
+        client
+      });
+      const issuedBookNumber = issuedCoupons.find(row => row.bookNumber)?.bookNumber || null;
+
+      let couponDiscount = 0;
+      let couponsRedeemed = 0;
+      let couponServiceType = null;
+      let couponBookNumber = null;
+      let couponAccountId = null;
+      let couponRedeemStatus = null;
+      let availableAfterReserve = null;
+
+      if (requestedRedeemQty > 0) {
+        const planned = await planCouponRedeemForOrder({
+          phone: customer.phone,
+          customerName: customer.name,
+          bookNumber: requestedBookNumber || issuedBookNumber || null,
+          redeemQty: requestedRedeemQty,
+          preparedItems,
+          orderId,
+          client
+        });
+        couponDiscount = money(planned.discount);
+        couponsRedeemed = planned.redeemQty;
+        couponServiceType = planned.serviceType;
+        couponBookNumber = planned.bookNumber;
+        couponAccountId = planned.accountId;
+        couponRedeemStatus = planned.redeemStatus;
+        availableAfterReserve = planned.availableAfterReserve;
+      }
+
+      const total = money(Math.max(0, subtotal - couponDiscount + deliveryFee + tax));
+      const paymentStatus = total <= 0 ? 'paid' : 'unpaid';
+
+      await run(
+        `UPDATE orders
+         SET coupon_discount = ?,
+             coupons_redeemed = ?,
+             coupon_service_type = ?,
+             coupon_book_number = ?,
+             coupon_account_id = ?,
+             coupon_redeem_status = ?,
+             total = ?,
+             payment_status = ?
+         WHERE id = ?`,
+        [
+          couponDiscount,
+          couponsRedeemed,
+          couponServiceType,
+          couponBookNumber || issuedBookNumber,
+          couponAccountId,
+          couponRedeemStatus,
+          total,
+          paymentStatus,
+          orderId
+        ],
+        client
+      );
+
+      const historyNote = couponsRedeemed > 0
+        ? (couponRedeemStatus === 'applied'
+          ? `تم إنشاء الطلب مع خصم فوري ${couponsRedeemed} كابون (دفتر ${couponBookNumber}) — عميل معتمد`
+          : `تم إنشاء الطلب مع حجز ${couponsRedeemed} كابون رقمي (دفتر ${couponBookNumber}) — يُخصم بعد التسليم (أول استخدام)`)
+        : 'تم إنشاء الطلب مباشرة من الموقع وحفظه في قاعدة البيانات';
+
+      await run(
+        `INSERT INTO order_status_history (order_id, old_status, new_status, note, changed_by)
+         VALUES (?, NULL, 'pending', ?, 'الموقع الإلكتروني')`,
+        [orderId, historyNote],
+        client
+      );
+
+      await run(
+        `INSERT INTO "متابعة_تسليم_الطلبات"
+         ("معرف الطلب", "رقم الطلب", "هل تم التسليم", "تاريخ التسليم", "ملاحظات التسليم")
+         VALUES (?, ?, 'لم يتم التسليم', NULL, NULL)
+         ON CONFLICT ("معرف الطلب") DO NOTHING`,
+        [orderId, orderNumber],
+        client
+      );
+
+      return {
+        success: true,
+        orderId,
+        orderNumber,
+        status: 'pending',
+        customerId,
+        itemsCount: preparedItems.reduce((sum, item) => sum + item.quantity, 0),
+        subtotal,
+        deliveryFee,
+        tax,
+        couponDiscount,
+        couponsRedeemed,
+        couponServiceType,
+        couponBookNumber,
+        couponRedeemStatus,
+        couponAvailableAfterReserve: availableAfterReserve,
+        issuedCoupons,
+        total,
+        currency: 'JOD',
+        paymentStatus
+      };
+    });
+  } catch (error) {
+    const status = error.statusCode || 500;
+    if (status < 500) {
+      return res.status(status).json({ success: false, error: error.message });
     }
-
-    await run(
-      `INSERT INTO order_status_history (order_id, old_status, new_status, note, changed_by)
-       VALUES (?, NULL, 'pending', 'تم إنشاء الطلب مباشرة من الموقع وحفظه في قاعدة البيانات', 'الموقع الإلكتروني')`,
-      [orderId],
-      client
-    );
-
-    await run(
-      `INSERT INTO "متابعة_تسليم_الطلبات"
-       ("معرف الطلب", "رقم الطلب", "هل تم التسليم", "تاريخ التسليم", "ملاحظات التسليم")
-       VALUES (?, ?, 'لم يتم التسليم', NULL, NULL)
-       ON CONFLICT ("معرف الطلب") DO NOTHING`,
-      [orderId, orderNumber],
-      client
-    );
-
-    return {
-      success: true,
-      orderId,
-      orderNumber,
-      status: 'pending',
-      customerId,
-      itemsCount: preparedItems.reduce((sum, item) => sum + item.quantity, 0),
-      subtotal,
-      deliveryFee,
-      tax,
-      total,
-      currency: 'JOD'
-    };
-  });
+    throw error;
+  }
 
   broadcastAdminEvent('orders-updated', {
     orderId: result.orderId,
     orderNumber: result.orderNumber,
     status: 'pending'
   });
+
+  if (result.issuedCoupons?.length || result.couponsRedeemed) {
+    broadcastAdminEvent('coupons-updated', {
+      phone: customer.phone,
+      issued: result.issuedCoupons || [],
+      pendingRedeem: result.couponsRedeemed || 0,
+      bookNumber: result.couponBookNumber || null
+    });
+  }
 
   return res.status(201).json(result);
 }

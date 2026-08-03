@@ -362,3 +362,68 @@ CREATE TRIGGER trg_delivery_tracking_to_orders
 AFTER UPDATE OF "هل تم التسليم", "تاريخ التسليم", "ملاحظات التسليم"
 ON "متابعة_تسليم_الطلبات"
 FOR EACH ROW EXECUTE PROCEDURE sync_delivery_tracking_to_orders();
+
+-- ===== Customer Google accounts =====
+CREATE TABLE IF NOT EXISTS customer_users (
+  id SERIAL PRIMARY KEY,
+  google_sub TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL,
+  full_name TEXT,
+  avatar_url TEXT,
+  phone TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_customer_users_phone ON customer_users(phone);
+CREATE INDEX IF NOT EXISTS idx_customer_users_email ON customer_users(email);
+
+-- ===== Digital external coupon books =====
+CREATE TABLE IF NOT EXISTS coupon_accounts (
+  id SERIAL PRIMARY KEY,
+  phone TEXT NOT NULL,
+  customer_name TEXT,
+  service_type TEXT NOT NULL CHECK (service_type IN ('external', 'internal')),
+  book_number TEXT,
+  remaining INTEGER NOT NULL DEFAULT 0 CHECK (remaining >= 0),
+  total_issued INTEGER NOT NULL DEFAULT 0 CHECK (total_issued >= 0),
+  total_redeemed INTEGER NOT NULL DEFAULT 0 CHECK (total_redeemed >= 0),
+  applied_redeem_count INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'blocked')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (phone, service_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_coupon_accounts_phone ON coupon_accounts(phone);
+CREATE INDEX IF NOT EXISTS idx_coupon_accounts_updated_at ON coupon_accounts(updated_at);
+ALTER TABLE coupon_accounts ADD COLUMN IF NOT EXISTS book_number TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_coupon_accounts_book_number_unique
+  ON coupon_accounts (book_number) WHERE book_number IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS coupon_ledger (
+  id SERIAL PRIMARY KEY,
+  account_id INTEGER NOT NULL REFERENCES coupon_accounts(id) ON DELETE CASCADE,
+  entry_type TEXT NOT NULL CHECK (entry_type IN ('issue', 'redeem', 'adjust', 'cancel')),
+  quantity INTEGER NOT NULL,
+  order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+  note TEXT,
+  created_by TEXT NOT NULL DEFAULT 'system',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_coupon_ledger_account_id ON coupon_ledger(account_id);
+CREATE INDEX IF NOT EXISTS idx_coupon_ledger_order_id ON coupon_ledger(order_id);
+CREATE INDEX IF NOT EXISTS idx_coupon_ledger_created_at ON coupon_ledger(created_at);
+
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_discount NUMERIC(12, 2) NOT NULL DEFAULT 0 CHECK (coupon_discount >= 0);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupons_redeemed INTEGER NOT NULL DEFAULT 0 CHECK (coupons_redeemed >= 0);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_service_type TEXT
+  CHECK (coupon_service_type IS NULL OR coupon_service_type IN ('external', 'internal'));
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_book_number TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_account_id INTEGER;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_redeem_status TEXT;
+
+DROP TRIGGER IF EXISTS trg_coupon_accounts_updated_at ON coupon_accounts;
+CREATE TRIGGER trg_coupon_accounts_updated_at
+BEFORE UPDATE ON coupon_accounts
+FOR EACH ROW EXECUTE PROCEDURE set_updated_at();

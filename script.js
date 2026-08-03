@@ -1,5 +1,33 @@
     // ==================== ENHANCED PRODUCTS DATA ====================
+    const REFILL_PRODUCT_ID = 21;
+
     let products = [
+      {
+        id: 21,
+        name: "تعبئة قارورة مياه شامل التوصيل",
+        nameEn: "Bottle Refill with Delivery",
+        description: "تعبئة قارورة مياه مع التوصيل — السعر 1 دينار أو كابون خارجي واحد من دفترك الرقمي",
+        fullDescription: "خدمة تعبئة قارورة المياه مع التوصيل. ادفع ديناراً واحداً أو استخدم كابوناً خارجياً واحداً عبر رقم دفترك الرقمي. يُخصم الكابون بعد تأكيد التسليم من الإدارة.",
+        price: 1.00,
+        category: "bottle",
+        emoji: "💧",
+        image: "images/bottle-saudi-18l.png",
+        options: null,
+        badge: "تعبئة + توصيل",
+        specs: {
+          volume: "تعبئة قارورة قياسية",
+          material: "خدمة تعبئة وتوصيل",
+          shelfLife: "عند الطلب",
+          storage: "يُفضّل استلام القارورة فور الوصول",
+          certifications: ["المؤسسة العامة للغذاء والدواء الأردنية"]
+        },
+        usageTips: [
+          "1 دينار أو كابون خارجي واحد",
+          "أدخل رقم الدفتر عند الدفع بالكوبون",
+          "الخصم بعد التسليم فقط",
+          "احتفظ برقم الدفتر"
+        ]
+      },
       {
         id: 1,
         name: "كرتونة مياه 250 مل",
@@ -255,7 +283,7 @@
         emoji: "🧊",
         image: "images/ice-5kg.png",
         options: null,
-        badge: "اقتصادي",
+        badge: "الأوفر",
         specs: {
           weight: "5 كجم ± 150 جرام",
           material: "أكياس بلاستيكية صناعية ثلاثية الطبقة محكمة الإغلاق",
@@ -274,106 +302,106 @@
 ,
       {
         id: 11,
-        name: "دفتر كابونات خارجي 25 كابون",
-        nameEn: "Outdoor Coupons Book 25",
-        description: "دفتر كابونات خارجي يحتوي على 25 كابون - مناسب للتوزيع الخارجي",
-        fullDescription: "دفتر كابونات خارجي يحتوي على 25 كابون، مناسب لخدمة التوزيع الخارجي والمتابعة المنظمة للطلبات المتكررة.",
+        name: "دفتر كابونات رقمي خارجي 25",
+        nameEn: "Digital External Coupon Book 25",
+        description: "دفتر رقمي خارجي بـ 25 كابون — تحصل على رقم دفتر تحتفظ به لاستخدامه مع تعبئة القارورة",
+        fullDescription: "دفتر كابونات رقمي خارجي (25 كابون). بعد الشراء يظهر رقم الدفتر — احتفظ به وأدخله مع كل طلب تعبئة. يُخصم الكابون بعد التسليم فقط.",
         price: 20.00,
         category: "extras",
-        emoji: "📘",
+        emoji: "📱",
         image: "images/coupons-outdoor-25.jpg",
         options: null,
-        badge: "خدمة مميزة",
+        badge: "دفتر رقمي",
         specs: {
-          volume: "25 كابون",
-          material: "دفتر ورقي منظم",
-          shelfLife: "استخدام طويل",
-          storage: "يحفظ في مكان جاف ونظيف",
+          volume: "25 كابون رقمي خارجي",
+          material: "دفتر رقمي برقم فريد",
+          shelfLife: "رصيد دائم حتى الاستهلاك",
+          storage: "احفظ رقم الدفتر",
           certifications: ["خدمة معتمدة"]
         },
         usageTips: [
-          "مناسب للتوزيع الخارجي",
-          "منظم وسهل الاستخدام",
-          "مثالي للطلبات المتكررة",
-          "عملي للمؤسسات والأفراد"
+          "احتفظ برقم الدفتر",
+          "لتعبئة القارورة",
+          "الخصم بعد التسليم",
+          "كابون = تعبئة واحدة"
         ]
       },
       {
         id: 12,
-        name: "دفتر كابونات خارجي 20 كابون",
-        nameEn: "Outdoor Coupons Book 20",
-        description: "دفتر كابونات خارجي يحتوي على 20 كابون - خيار اقتصادي وعملي",
-        fullDescription: "دفتر كابونات خارجي يحتوي على 20 كابون، مناسب لمن يحتاج متابعة سهلة واقتصادية للطلبات الخارجية.",
+        name: "دفتر كابونات رقمي خارجي 20",
+        nameEn: "Digital External Coupon Book 20",
+        description: "دفتر رقمي خارجي بـ 20 كابون — خيار اقتصادي مع رقم دفتر خاص بك",
+        fullDescription: "دفتر كابونات رقمي خارجي (20 كابون) مع رقم دفتر تستخدمه عند طلب التعبئة.",
         price: 16.00,
         category: "extras",
-        emoji: "📘",
+        emoji: "📱",
         image: "images/coupons-outdoor-20.jpg",
         options: null,
-        badge: "اقتصادي",
+        badge: "دفتر رقمي",
         specs: {
-          volume: "20 كابون",
-          material: "دفتر ورقي منظم",
-          shelfLife: "استخدام طويل",
-          storage: "يحفظ في مكان جاف ونظيف",
+          volume: "20 كابون رقمي خارجي",
+          material: "دفتر رقمي برقم فريد",
+          shelfLife: "رصيد دائم حتى الاستهلاك",
+          storage: "احفظ رقم الدفتر",
           certifications: ["خدمة معتمدة"]
         },
         usageTips: [
-          "اقتصادي ومرتب",
-          "مناسب للأفراد",
-          "سهل الحمل",
-          "مناسب للخدمة الخارجية"
+          "اقتصادي",
+          "رقم دفتر واحد",
+          "لتعبئة القارورة",
+          "الخصم بعد التسليم"
         ]
       },
       {
         id: 13,
-        name: "دفتر كابونات داخلي 25 كابون",
-        nameEn: "Indoor Coupons Book 25",
-        description: "دفتر كابونات داخلي يحتوي على 25 كابون - مناسب للمنزل والمكتب",
-        fullDescription: "دفتر كابونات داخلي يحتوي على 25 كابون، مثالي للاستخدام المنزلي والمكتبي مع متابعة منظمة للاستهلاك.",
+        name: "دفتر كابونات رقمي خارجي 25+",
+        nameEn: "Digital External Coupon Book 25 Plus",
+        description: "دفتر رقمي خارجي بـ 25 كابون — مناسب للاستخدام المنتظم مع التوصيل",
+        fullDescription: "دفتر كابونات رقمي خارجي (25 كابون) للاستخدام المنتظم مع تعبئة القارورة.",
         price: 16.00,
         category: "extras",
-        emoji: "📗",
+        emoji: "📱",
         image: "images/coupons-indoor-25.jpg",
         options: null,
-        badge: "منزلي",
+        badge: "دفتر رقمي",
         specs: {
-          volume: "25 كابون",
-          material: "دفتر ورقي منظم",
-          shelfLife: "استخدام طويل",
-          storage: "يحفظ في مكان جاف ونظيف",
+          volume: "25 كابون رقمي خارجي",
+          material: "دفتر رقمي برقم فريد",
+          shelfLife: "رصيد دائم حتى الاستهلاك",
+          storage: "احفظ رقم الدفتر",
           certifications: ["خدمة معتمدة"]
         },
         usageTips: [
-          "مثالي للمنزل",
-          "مناسب للمكتب",
-          "ينظم الطلبات المتكررة",
-          "سهل الحفظ"
+          "استخدام منتظم",
+          "أدخل رقم الدفتر",
+          "لا خصم قبل التسليم",
+          "خارجي فقط"
         ]
       },
       {
         id: 14,
-        name: "دفتر كابونات داخلي 30 كابون",
-        nameEn: "Indoor Coupons Book 30",
-        description: "دفتر كابونات داخلي يحتوي على 30 كابون - قيمة أكبر واستخدام أطول",
-        fullDescription: "دفتر كابونات داخلي يحتوي على 30 كابون، يوفر قيمة ممتازة لمن يحتاج استخداماً طويلاً ومنظماً.",
+        name: "دفتر كابونات رقمي خارجي 30",
+        nameEn: "Digital External Coupon Book 30",
+        description: "دفتر رقمي خارجي بـ 30 كابون — قيمة أكبر للاستهلاك العالي",
+        fullDescription: "دفتر كابونات رقمي خارجي (30 كابون) للاستهلاك الأعلى مع رقم دفتر تحتفظ به.",
         price: 18.00,
         category: "extras",
-        emoji: "📗",
+        emoji: "📱",
         image: "images/coupons-indoor-30.jpg",
         options: null,
-        badge: "الأوفر",
+        badge: "دفتر رقمي",
         specs: {
-          volume: "30 كابون",
-          material: "دفتر ورقي منظم",
-          shelfLife: "استخدام طويل",
-          storage: "يحفظ في مكان جاف ونظيف",
+          volume: "30 كابون رقمي خارجي",
+          material: "دفتر رقمي برقم فريد",
+          shelfLife: "رصيد دائم حتى الاستهلاك",
+          storage: "احفظ رقم الدفتر",
           certifications: ["خدمة معتمدة"]
         },
         usageTips: [
-          "أفضل قيمة",
-          "مدة استخدام أطول",
-          "مثالي للمنزل والمكتب",
-          "سهل التنظيم"
+          "قيمة أكبر",
+          "خارجي فقط",
+          "رقم دفتر للاحتفاظ",
+          "الخصم بعد الاستلام"
         ]
       },
       {
@@ -549,7 +577,7 @@
       shrink: 'متوفر',
       bottle: 'الأكثر طلباً',
       ice: 'نقي',
-      extras: 'مميز'
+      extras: 'رقمي'
     };
 
     function applyDefaultProductBadges() {
@@ -566,9 +594,16 @@
     // عند تشغيل الموقع من backend/server.js سيتم تحميل المنتجات وحفظ الطلبات والرسائل من/إلى PostgreSQL.
     // عند فتح الموقع كملفات ثابتة سيبقى يعمل اعتماداً على بيانات المنتجات الاحتياطية داخل هذا الملف.
     const API_BASE_URL = window.PUREDROP_API_BASE_URL || '';
+    const CUSTOMER_TOKEN_KEY = 'puredrop_customer_token';
+    let customerSession = null;
+    let authConfig = { googleEnabled: false, demoLoginEnabled: true, googleClientId: null };
 
     function canUseApi() {
       return window.location.protocol !== 'file:' || Boolean(API_BASE_URL);
+    }
+
+    function getCustomerToken() {
+      return localStorage.getItem(CUSTOMER_TOKEN_KEY) || '';
     }
 
     async function puredropApiRequest(path, options = {}) {
@@ -576,12 +611,18 @@
         throw new Error('API غير متاح عند فتح الموقع كملف ثابت');
       }
 
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+      };
+      const token = getCustomerToken();
+      if (token && !headers.Authorization) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(options.headers || {})
-        }
+        headers
       });
 
       const data = await response.json().catch(() => ({}));
@@ -591,6 +632,293 @@
 
       return data;
     }
+
+    function getPrimaryCouponAccount() {
+      const list = (customerSession?.coupons || []).filter(c => c.serviceType === 'external');
+      return list[0] || null;
+    }
+
+    function setHiddenEl(el, hide) {
+      if (!el) return;
+      el.classList.toggle('is-hidden', hide);
+      el.classList.toggle('hidden', hide);
+    }
+
+    function closeCustomerMenu() {
+      const dropdown = document.getElementById('customerMenuDropdown');
+      const toggle = document.getElementById('customerMenuToggle');
+      setHiddenEl(dropdown, true);
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleCustomerMenu(event) {
+      event?.stopPropagation?.();
+      const dropdown = document.getElementById('customerMenuDropdown');
+      const toggle = document.getElementById('customerMenuToggle');
+      if (!dropdown || !toggle) return;
+      const open = dropdown.classList.contains('is-hidden') || dropdown.classList.contains('hidden');
+      setHiddenEl(dropdown, !open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function openCustomerAuthModal() {
+      const modal = document.getElementById('customerAuthModal');
+      if (!modal) {
+        startCustomerGoogleLogin();
+        return;
+      }
+      const demoBox = document.getElementById('authDemoFields');
+      const googleBtn = document.getElementById('authModalGoogleBtn');
+      const demoMode = !authConfig.googleClientId && authConfig.demoLoginEnabled;
+      setHiddenEl(demoBox, !demoMode);
+      if (googleBtn) {
+        setHiddenEl(googleBtn, demoMode);
+        // Keep Google-rendered button intact; only restore our CTA when empty / custom.
+        if (!googleBtn.querySelector('div[role="button"]') && !demoMode) {
+          googleBtn.innerHTML = '<i class="fab fa-google"></i> المتابعة مع Google';
+        }
+      }
+      setHiddenEl(modal, false);
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCustomerAuthModal() {
+      const modal = document.getElementById('customerAuthModal');
+      setHiddenEl(modal, true);
+      if (modal) modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    async function submitDemoCustomerLogin() {
+      const email = (document.getElementById('authDemoEmail')?.value || '').trim();
+      const name = (document.getElementById('authDemoName')?.value || '').trim() || 'عميل Google';
+      if (!email) {
+        showNotification('⚠️ تنبيه', 'أدخل البريد الإلكتروني', 'error');
+        return;
+      }
+      try {
+        const data = await puredropApiRequest('/api/auth/google-demo', {
+          method: 'POST',
+          body: JSON.stringify({ email, name })
+        });
+        await setCustomerSession(data.token, data.customer);
+        closeCustomerAuthModal();
+        showNotification('✅ دخول تجريبي', 'تم تسجيل الدخول (وضع محلي). للإنتاج فعّل GOOGLE_CLIENT_ID', 'success');
+      } catch (error) {
+        showNotification('❌ فشل الدخول', error.message || 'حاول مرة أخرى', 'error');
+      }
+    }
+
+    function renderCustomerAuthUI() {
+      const loggedIn = Boolean(customerSession?.id);
+      const chip = document.getElementById('customerAccountChip');
+      const loginBtn = document.getElementById('googleLoginBtnDesktop');
+      const acc = getPrimaryCouponAccount();
+      const remaining = acc ? Number(acc.available ?? acc.remaining) || 0 : 0;
+      const book = acc?.bookNumber || '—';
+
+      setHiddenEl(chip, !loggedIn);
+      setHiddenEl(loginBtn, loggedIn);
+      if (!loggedIn) closeCustomerMenu();
+
+      const nameChip = document.getElementById('customerNameChip');
+      const couponChip = document.getElementById('customerCouponChip');
+      const couponDetail = document.getElementById('customerCouponChipDetail');
+      const bookChip = document.getElementById('customerBookChip');
+      const avatar = document.getElementById('customerAvatar');
+      const avatarFallback = document.getElementById('customerAvatarFallback');
+      if (nameChip) nameChip.textContent = customerSession?.fullName || customerSession?.email || 'عميل';
+      if (couponChip) couponChip.textContent = String(remaining);
+      if (couponDetail) couponDetail.textContent = `${remaining} كابون متبقي`;
+      if (bookChip) bookChip.textContent = book !== '—' ? `دفتر: ${book}` : 'دفتر: لم يُصدر بعد';
+      if (avatar) {
+        if (customerSession?.avatarUrl) {
+          avatar.src = customerSession.avatarUrl;
+          setHiddenEl(avatar, false);
+          setHiddenEl(avatarFallback, true);
+        } else {
+          setHiddenEl(avatar, true);
+          setHiddenEl(avatarFallback, false);
+        }
+      }
+
+      const mobOut = document.getElementById('mobileCustomerLoggedOut');
+      const mobIn = document.getElementById('mobileCustomerLoggedIn');
+      setHiddenEl(mobOut, loggedIn);
+      setHiddenEl(mobIn, !loggedIn);
+      const mobName = document.getElementById('mobileCustomerName');
+      const mobCoupons = document.getElementById('mobileCustomerCoupons');
+      const mobBook = document.getElementById('mobileCustomerBook');
+      if (mobName) mobName.textContent = customerSession?.fullName || customerSession?.email || '—';
+      if (mobCoupons) mobCoupons.textContent = `${remaining} كابون متبقي`;
+      if (mobBook) mobBook.textContent = `دفتر: ${book}`;
+
+      const gate = document.getElementById('cartLoginGate');
+      const bal = document.getElementById('cartAccountBalance');
+      setHiddenEl(gate, loggedIn);
+      setHiddenEl(bal, !loggedIn);
+      if (bal) {
+        const big = document.getElementById('cartAccountCouponsBig');
+        const bookBig = document.getElementById('cartAccountBookBig');
+        if (big) big.textContent = String(remaining);
+        if (bookBig) bookBig.textContent = `دفتر: ${book}`;
+      }
+
+      if (loggedIn) {
+        closeCustomerAuthModal();
+        const nameEl = document.getElementById('customerName');
+        const phoneEl = document.getElementById('customerPhone');
+        if (nameEl && !nameEl.value && customerSession.fullName) nameEl.value = customerSession.fullName;
+        if (phoneEl && customerSession.phone) phoneEl.value = customerSession.phone;
+        const bookEl = document.getElementById('couponBookNumber');
+        if (bookEl && acc?.bookNumber && !bookEl.value.trim()) {
+          bookEl.value = acc.bookNumber;
+          const payBox = document.getElementById('payWithDigitalCoupon');
+          if (payBox && getRefillCartQty() > 0) payBox.checked = true;
+          syncCouponRedeemQtyFromCart();
+        }
+      }
+    }
+
+    document.addEventListener('click', (event) => {
+      const menu = document.getElementById('customerAccountChip');
+      if (!menu || menu.classList.contains('hidden')) return;
+      if (!menu.contains(event.target)) closeCustomerMenu();
+    });
+    document.getElementById('customerMenuToggle')?.addEventListener('click', toggleCustomerMenu);
+    window.toggleCustomerMenu = toggleCustomerMenu;
+    window.closeCustomerMenu = closeCustomerMenu;
+
+    async function setCustomerSession(token, customer) {
+      if (token) localStorage.setItem(CUSTOMER_TOKEN_KEY, token);
+      customerSession = customer || null;
+      renderCustomerAuthUI();
+    }
+
+    async function refreshCustomerSession() {
+      const token = getCustomerToken();
+      if (!token) {
+        customerSession = null;
+        renderCustomerAuthUI();
+        return null;
+      }
+      try {
+        const data = await puredropApiRequest('/api/auth/me');
+        customerSession = data.customer;
+        renderCustomerAuthUI();
+        return customerSession;
+      } catch {
+        localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+        customerSession = null;
+        renderCustomerAuthUI();
+        return null;
+      }
+    }
+
+    async function syncCustomerPhoneIfNeeded(phone, name) {
+      if (!getCustomerToken() || !phone) return;
+      try {
+        const data = await puredropApiRequest('/api/auth/me', {
+          method: 'PATCH',
+          body: JSON.stringify({ phone, fullName: name || undefined })
+        });
+        customerSession = data.customer;
+        renderCustomerAuthUI();
+      } catch (error) {
+        console.warn('Customer phone sync failed:', error.message);
+      }
+    }
+
+    async function handleGoogleCredential(response) {
+      try {
+        const data = await puredropApiRequest('/api/auth/google', {
+          method: 'POST',
+          body: JSON.stringify({ credential: response.credential })
+        });
+        await setCustomerSession(data.token, data.customer);
+        showNotification('✅ أهلاً بك', 'تم تسجيل الدخول عبر Google', 'success');
+      } catch (error) {
+        showNotification('❌ فشل الدخول', error.message || 'حاول مرة أخرى', 'error');
+      }
+    }
+
+    async function startCustomerGoogleLogin() {
+      try {
+        if (!authConfig.googleClientId && authConfig.demoLoginEnabled) {
+          openCustomerAuthModal();
+          return;
+        }
+
+        if (!authConfig.googleClientId || !window.google?.accounts?.id) {
+          showNotification(
+            '⚠️ Google غير جاهز',
+            'أضف GOOGLE_CLIENT_ID في ملف .env من Google Cloud Console ثم أعد تشغيل السيرفر',
+            'error'
+          );
+          return;
+        }
+
+        window.google.accounts.id.initialize({
+          client_id: authConfig.googleClientId,
+          callback: async (response) => {
+            await handleGoogleCredential(response);
+            closeCustomerAuthModal();
+          },
+          auto_select: false,
+          ux_mode: 'popup'
+        });
+
+        const host = document.getElementById('authModalGoogleBtn');
+        if (host) {
+          host.innerHTML = '';
+          window.google.accounts.id.renderButton(host, {
+            theme: 'outline',
+            size: 'large',
+            shape: 'pill',
+            text: 'continue_with',
+            width: 320,
+            locale: 'ar'
+          });
+          openCustomerAuthModal();
+          setHiddenEl(document.getElementById('authDemoFields'), true);
+          setHiddenEl(host, false);
+        }
+
+        window.google.accounts.id.prompt();
+      } catch (error) {
+        showNotification('❌ تعذر الدخول', error.message || 'حاول مرة أخرى', 'error');
+      }
+    }
+
+    function customerLogout() {
+      localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+      customerSession = null;
+      renderCustomerAuthUI();
+      showNotification('👋 تم الخروج', 'يمكنك تسجيل الدخول عبر Google في أي وقت', 'info');
+    }
+
+    async function initCustomerAuth() {
+      try {
+        authConfig = await puredropApiRequest('/api/auth/config');
+      } catch {
+        authConfig = { googleEnabled: false, demoLoginEnabled: true, googleClientId: null };
+      }
+      if (authConfig.googleClientId && window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: authConfig.googleClientId,
+          callback: handleGoogleCredential
+        });
+      }
+      await refreshCustomerSession();
+    }
+
+    window.startCustomerGoogleLogin = startCustomerGoogleLogin;
+    window.openCustomerAuthModal = openCustomerAuthModal;
+    window.closeCustomerAuthModal = closeCustomerAuthModal;
+    window.submitDemoCustomerLogin = submitDemoCustomerLogin;
+    window.customerLogout = customerLogout;
+    window.handleGoogleCredential = handleGoogleCredential;
 
     function normalizeApiProduct(product) {
       let options = Array.isArray(product.options) && product.options.length ? [...product.options] : null;
@@ -616,6 +944,12 @@
         const data = await puredropApiRequest('/api/products');
         if (Array.isArray(data.products) && data.products.length) {
           products = data.products.map(normalizeApiProduct);
+          // Keep refill product first in the storefront grid.
+          products.sort((a, b) => {
+            if (Number(a.id) === REFILL_PRODUCT_ID) return -1;
+            if (Number(b.id) === REFILL_PRODUCT_ID) return 1;
+            return 0;
+          });
           applyDefaultProductBadges();
           return true;
         }
@@ -1334,10 +1668,10 @@ function filterProducts(category) {
       badges.forEach((badge) => {
         if (totalItems > 0) {
           badge.textContent = totalItems;
-          badge.classList.remove('hidden');
+          badge.classList.remove('hidden', 'is-hidden');
           badge.classList.add('flex', 'cart-badge-premium');
         } else {
-          badge.classList.add('hidden');
+          badge.classList.add('hidden', 'is-hidden');
           badge.classList.remove('flex', 'cart-badge-premium');
         }
       });
@@ -1422,9 +1756,7 @@ function filterProducts(category) {
       `}).join('');
 
       // Update totals with premium formatting
-      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-      document.getElementById('subtotal').textContent = formatPrice(subtotal) + ' JOD';
-      document.getElementById('totalPrice').textContent = formatPrice(subtotal) + ' JOD';
+      updateCartTotalsPreview();
       
       // Free delivery badge animation
       const deliveryEl = document.getElementById('deliveryFee');
@@ -1599,7 +1931,372 @@ function filterProducts(category) {
       }
     }
 
+    const DIGITAL_BOOK_CREDITS = { 11: 25, 12: 20, 13: 25, 14: 30 };
+
+    function getRefillCartQty() {
+      return cart
+        .filter(item => Number(item.id) === REFILL_PRODUCT_ID)
+        .reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+    }
+
+    function getCartDigitalBookCredits() {
+      return cart.reduce((sum, item) => {
+        const per = DIGITAL_BOOK_CREDITS[Number(item.id)];
+        return per ? sum + per * (Number(item.qty) || 0) : sum;
+      }, 0);
+    }
+
+    /** Available coupons for this checkout: account balance + books in the same cart. */
+    function getEffectiveCouponAvailable() {
+      const acc = getPrimaryCouponAccount();
+      const base = acc ? Number(acc.available ?? acc.remaining) || 0 : 0;
+      return Math.max(0, base + getCartDigitalBookCredits());
+    }
+
+    /** Smallest packs that cover a coupon shortage (for same-cart top-up). */
+    function getSuggestedBooksForShortage(shortage) {
+      const need = Math.max(0, Number(shortage) || 0);
+      if (need <= 0) return [];
+      const packs = [
+        { id: 12, credits: 20, label: 'دفتر 20' },
+        { id: 13, credits: 25, label: 'دفتر 25+' },
+        { id: 11, credits: 25, label: 'دفتر 25' },
+        { id: 14, credits: 30, label: 'دفتر 30' }
+      ];
+      const covering = packs
+        .filter(p => p.credits >= need)
+        .sort((a, b) => a.credits - b.credits || a.id - b.id);
+      // Prefer the smallest covering pack + one larger option if different.
+      const picks = [];
+      if (covering[0]) picks.push(covering[0]);
+      const larger = covering.find(p => p.credits > (covering[0]?.credits || 0));
+      if (larger) picks.push(larger);
+      if (!picks.length) {
+        // Shortage bigger than largest single pack: suggest largest pack (may need qty>1 later).
+        picks.push(packs[packs.length - 1]);
+      }
+      return picks.map(p => {
+        const product = typeof getProductById === 'function' ? getProductById(p.id) : null;
+        const price = product ? Number(product.price) : null;
+        return { ...p, price, name: product?.name || p.label };
+      });
+    }
+
+    function addBookToCoverCouponShortage(productId) {
+      const id = Number(productId);
+      if (![11, 12, 13, 14].includes(id)) return;
+      addToCart(id);
+      const payBox = document.getElementById('payWithDigitalCoupon');
+      if (payBox) payBox.checked = true;
+      syncCouponRedeemQtyFromCart();
+      updateCartTotalsPreview();
+      renderCart?.();
+      const available = getEffectiveCouponAvailable();
+      const refillQty = getRefillCartQty();
+      if (refillQty <= available) {
+        showNotification(
+          '✅ تم إضافة الدفتر',
+          `الرصيد يصبح ${available} كابون ويكفي لتعبئة ${refillQty}. يمكنك تأكيد الطلب الآن.`,
+          'success'
+        );
+      } else {
+        const stillNeed = refillQty - available;
+        showNotification(
+          '📘 أُضيف الدفتر',
+          `ما زال ينقصك ${stillNeed} كابون. أضف دفتراً آخر أو قلّل كمية التعبئة.`,
+          'info'
+        );
+      }
+    }
+
+    function renderCouponTopUpSuggest(refillQty, available) {
+      const box = document.getElementById('couponBookTopUpSuggest');
+      const textEl = document.getElementById('couponBookTopUpText');
+      const buttonsEl = document.getElementById('couponBookTopUpButtons');
+      if (!box || !textEl || !buttonsEl) return;
+
+      const shortage = Math.max(0, refillQty - available);
+      if (shortage <= 0) {
+        box.classList.add('is-hidden', 'hidden');
+        buttonsEl.innerHTML = '';
+        return;
+      }
+
+      const suggestions = getSuggestedBooksForShortage(shortage);
+      textEl.textContent = `رصيدك الحالي ${available} كابون وتطلب ${refillQty} تعبئة — ينقصك ${shortage} كابون. أضف دفتراً رقمياً لنفس السلة ليُحسب الرصيد الجديد فوراً ويكمل الطلب.`;
+      buttonsEl.innerHTML = suggestions.map(s => {
+        const priceTxt = s.price != null ? ` • ${formatPrice(s.price)} JOD` : '';
+        return `<button type="button" class="px-3 py-2 rounded-xl text-xs font-bold bg-cyan-500 text-slate-900 hover:bg-cyan-400 transition-colors" onclick="addBookToCoverCouponShortage(${s.id})">+ ${s.label} (${s.credits} كابون${priceTxt})</button>`;
+      }).join('');
+
+      // Also offer reducing qty to available balance.
+      if (available > 0) {
+        buttonsEl.innerHTML += `<button type="button" class="px-3 py-2 rounded-xl text-xs font-bold border border-slate-500 text-slate-200 hover:bg-white/5 transition-colors" onclick="setRefillQtyToAvailableCoupons()">تقليل التعبئة إلى ${available}</button>`;
+      }
+
+      box.classList.remove('is-hidden', 'hidden');
+    }
+
+    function setRefillQtyToAvailableCoupons() {
+      let keep = Math.max(0, getEffectiveCouponAvailable());
+      cart.forEach(item => {
+        if (Number(item.id) !== REFILL_PRODUCT_ID) return;
+        const qty = Number(item.qty) || 0;
+        if (keep <= 0) item.qty = 0;
+        else if (qty > keep) {
+          item.qty = keep;
+          keep = 0;
+        } else {
+          keep -= qty;
+        }
+      });
+      cart = cart.filter(item => (Number(item.qty) || 0) > 0);
+      updateCartUI();
+      renderCart();
+      syncCouponRedeemQtyFromCart();
+      updateCartTotalsPreview();
+      showNotification('✅ تم التعديل', `تم تقليل التعبئة لتتوافق مع رصيدك (${getRefillCartQty()} تعبئة).`, 'success');
+    }
+
+    function isPayingWithDigitalCoupon() {
+      const payBox = document.getElementById('payWithDigitalCoupon');
+      const bookNumber = (document.getElementById('couponBookNumber')?.value || '').trim();
+      return !!(payBox?.checked || bookNumber);
+    }
+
+    function syncCouponRedeemQtyFromCart() {
+      const payBox = document.getElementById('payWithDigitalCoupon');
+      const qtyInput = document.getElementById('couponRedeemQty');
+      const refillQty = getRefillCartQty();
+      const bookFields = document.getElementById('couponBookFields');
+      const refillLabel = document.getElementById('cartRefillQtyLabel');
+      const redeemLabel = document.getElementById('couponRedeemQtyLabel');
+      const bookNumber = (document.getElementById('couponBookNumber')?.value || '').trim();
+
+      if (refillLabel) refillLabel.textContent = String(refillQty);
+
+      const hasDigitalBookInCart = cart.some(item => [11, 12, 13, 14].includes(Number(item.id)));
+
+      // Typed book number, or first order with book+refill in cart → treat as coupon payment.
+      if (payBox && refillQty > 0 && !payBox.checked && (bookNumber || hasDigitalBookInCart)) {
+        payBox.checked = true;
+      }
+
+      const payWithCoupon = isPayingWithDigitalCoupon();
+
+      // Coupons always equal refill qty when paying with digital coupon.
+      const redeemQty = payWithCoupon && refillQty > 0 ? refillQty : 0;
+      if (qtyInput) {
+        qtyInput.value = String(redeemQty);
+        qtyInput.max = String(Math.max(0, refillQty));
+      }
+      if (redeemLabel) {
+        redeemLabel.textContent = String(redeemQty);
+        redeemLabel.style.color = redeemQty > 0 ? '#e9d5ff' : '';
+      }
+
+      // Book number field stays editable (was previously locked / overlapping with disabled styles).
+      if (bookFields) {
+        bookFields.classList.remove('opacity-60', 'pointer-events-none');
+        bookFields.style.opacity = refillQty > 0 || payWithCoupon ? '1' : '0.85';
+      }
+      const bookInput = document.getElementById('couponBookNumber');
+      if (bookInput) {
+        bookInput.disabled = false;
+        bookInput.readOnly = false;
+        bookInput.removeAttribute('aria-disabled');
+      }
+      const bookRequiredMark = document.getElementById('couponBookRequiredMark');
+      const firstHint = document.getElementById('firstOrderBookHint');
+      if (bookRequiredMark) {
+        bookRequiredMark.classList.toggle('hidden', hasDigitalBookInCart && !bookNumber);
+      }
+      if (firstHint) {
+        firstHint.textContent = hasDigitalBookInCart
+          ? 'أول طلب مع دفتر في السلة: يمكنك ترك رقم الدفتر فارغاً — يُنشأ تلقائياً ويُستخدم مع التعبئة في نفس الطلب.'
+          : 'اكتب رقم دفترك هنا. إن لم يكن لديك دفتر بعد، أضف دفتراً رقمياً مع التعبئة في أول طلب.';
+      }
+
+      const available = getEffectiveCouponAvailable();
+      const statusEl = document.getElementById('couponBalanceStatus');
+      const limitWarn = document.getElementById('couponLimitWarning');
+      if (payWithCoupon && refillQty > 0) {
+        if (refillQty > available) {
+          const shortage = refillQty - available;
+          if (statusEl) {
+            statusEl.textContent = `ينقصك ${shortage} كابون لإكمال ${refillQty} تعبئة (المتاح ${available}). أضف دفتراً جديداً أدناه أو قلّل الكمية.`;
+            statusEl.classList.add('text-red-300');
+            statusEl.classList.remove('text-slate-400');
+          }
+          if (limitWarn) {
+            limitWarn.textContent = `⛔ الكمية أكبر من الرصيد: متاح ${available} / طلبت ${refillQty}`;
+            limitWarn.classList.remove('is-hidden', 'hidden');
+          }
+          renderCouponTopUpSuggest(refillQty, available);
+        } else if (statusEl) {
+          statusEl.textContent = `متاح للدفع بالكوبون: ${available} كابون • لهذا الطلب: ${redeemQty}`;
+          statusEl.classList.remove('text-red-300');
+          statusEl.classList.add('text-slate-400');
+          if (limitWarn) limitWarn.classList.add('is-hidden', 'hidden');
+          renderCouponTopUpSuggest(refillQty, available);
+        }
+      } else {
+        if (limitWarn) limitWarn.classList.add('is-hidden', 'hidden');
+        renderCouponTopUpSuggest(0, available);
+      }
+
+      const panel = document.getElementById('digitalCouponPanel');
+      if (panel) {
+        if (refillQty > 0) {
+          panel.classList.add('ring-1', 'ring-violet-400/40');
+        } else {
+          panel.classList.remove('ring-1', 'ring-violet-400/40');
+          if (payBox && payBox.checked) payBox.checked = false;
+        }
+      }
+    }
+
+    function estimateCouponDiscountPreview() {
+      const payWithCoupon = isPayingWithDigitalCoupon();
+      if (!payWithCoupon) return 0;
+      const redeemQty = Math.max(0, Number.parseInt(document.getElementById('couponRedeemQty')?.value || '0', 10) || 0);
+      if (redeemQty <= 0) return 0;
+      const refillPrices = [];
+      cart.forEach(item => {
+        if (Number(item.id) === REFILL_PRODUCT_ID) {
+          for (let i = 0; i < item.qty; i += 1) refillPrices.push(Number(item.price) || 1);
+        }
+      });
+      // Strict: never discount more units than refill qty in cart.
+      const use = Math.min(redeemQty, refillPrices.length);
+      let discount = 0;
+      for (let i = 0; i < use; i += 1) discount += refillPrices[i];
+      return discount;
+    }
+
+    function updateCartBookSummary() {
+      const payWithCoupon = isPayingWithDigitalCoupon();
+      const bookNumber = (document.getElementById('couponBookNumber')?.value || '').trim().toUpperCase();
+      const redeemQty = Math.max(0, Number.parseInt(document.getElementById('couponRedeemQty')?.value || '0', 10) || 0);
+      const refillQty = getRefillCartQty();
+      const bookRow = document.getElementById('cartBookNumberRow');
+      const bookDisplay = document.getElementById('cartBookNumberDisplay');
+      const linkRow = document.getElementById('cartCouponLinkRow');
+      const linkText = document.getElementById('cartCouponLinkText');
+
+      if (bookRow && bookDisplay) {
+        if (payWithCoupon && bookNumber) {
+          bookRow.classList.remove('hidden');
+          bookRow.classList.add('flex');
+          bookDisplay.textContent = bookNumber;
+        } else {
+          bookRow.classList.add('hidden');
+          bookRow.classList.remove('flex');
+          bookDisplay.textContent = '—';
+        }
+      }
+
+      if (linkRow && linkText) {
+        if (payWithCoupon && refillQty > 0) {
+          linkRow.classList.remove('hidden');
+          linkText.textContent = `${redeemQty} تعبئة = ${redeemQty} كابون لهذا الطلب`;
+        } else {
+          linkRow.classList.add('hidden');
+          linkText.textContent = '';
+        }
+      }
+    }
+
+    function updateCartTotalsPreview() {
+      syncCouponRedeemQtyFromCart();
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const couponDiscount = estimateCouponDiscountPreview();
+      const total = Math.max(0, subtotal - couponDiscount);
+      const subtotalEl = document.getElementById('subtotal');
+      const totalEl = document.getElementById('totalPrice');
+      const row = document.getElementById('couponDiscountRow');
+      const discountEl = document.getElementById('couponDiscountValue');
+      if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal) + ' JOD';
+      if (totalEl) totalEl.textContent = formatPrice(total) + ' JOD';
+      if (row && discountEl) {
+        if (couponDiscount > 0) {
+          row.classList.remove('hidden');
+          row.classList.add('flex');
+          discountEl.textContent = '−' + formatPrice(couponDiscount) + ' JOD';
+        } else {
+          row.classList.add('hidden');
+          row.classList.remove('flex');
+        }
+      }
+      updateCartBookSummary();
+    }
+
+    async function checkDigitalCouponBalance() {
+      const phone = document.getElementById('customerPhone')?.value.trim() || '';
+      const statusEl = document.getElementById('couponBalanceStatus');
+      const jordanPhoneRegex = /^07\d{8,9}$/;
+      if (!jordanPhoneRegex.test(phone)) {
+        if (statusEl) statusEl.textContent = 'أدخل رقم هاتف أردني صحيح أولاً ثم تحقق من الرصيد.';
+        showNotification('⚠️ رقم غير صالح', 'أدخل رقم الهاتف قبل التحقق من رصيد الدفتر', 'error');
+        return;
+      }
+      if (statusEl) statusEl.textContent = 'جارٍ التحقق من رصيد الدفتر الرقمي...';
+      try {
+        const data = await puredropApiRequest(`/api/coupons/balance?phone=${encodeURIComponent(phone)}`);
+        const accounts = (data.accounts || []).filter(a => a.serviceType === 'external');
+        if (!accounts.length) {
+          if (statusEl) statusEl.textContent = 'لا يوجد دفتر رقمي خارجي لهذا الرقم بعد. اشترِ دفتراً رقمياً خارجياً أولاً.';
+          showNotification('ℹ️ لا رصيد', 'لا يوجد دفتر رقمي خارجي على هذا الرقم حالياً', 'info');
+          return;
+        }
+        const match = accounts[0];
+        const bookEl = document.getElementById('couponBookNumber');
+        if (bookEl && match.bookNumber) {
+          bookEl.value = match.bookNumber;
+        }
+        const payBox = document.getElementById('payWithDigitalCoupon');
+        if (payBox && getRefillCartQty() > 0) payBox.checked = true;
+        syncCouponRedeemQtyFromCart();
+        const text = accounts
+          .map(a => `دفتر ${a.bookNumber || '—'}: متبقي ${a.remaining} • متاح ${a.available ?? a.remaining}`)
+          .join(' • ');
+        if (statusEl) statusEl.textContent = text + ' — يُخصم بعد التسليم فقط.';
+        if (match && document.getElementById('couponRedeemQty')) {
+          const refillQty = getRefillCartQty();
+          const available = Number(match.available ?? match.remaining) || 0;
+          document.getElementById('couponRedeemQty').max = String(Math.max(0, Math.min(available, refillQty || available)));
+        }
+        updateCartTotalsPreview();
+        showNotification('✅ رصيد الدفتر', text, 'success');
+      } catch (error) {
+        if (statusEl) statusEl.textContent = error.message || 'تعذر جلب الرصيد';
+        showNotification('❌ تعذر التحقق', error.message || 'حاول مرة أخرى', 'error');
+      }
+    }
+
+    window.checkDigitalCouponBalance = checkDigitalCouponBalance;
+    window.updateCartTotalsPreview = updateCartTotalsPreview;
+    window.addBookToCoverCouponShortage = addBookToCoverCouponShortage;
+    window.setRefillQtyToAvailableCoupons = setRefillQtyToAvailableCoupons;
+
+    document.addEventListener('input', (event) => {
+      if (event.target && (event.target.id === 'couponRedeemQty' || event.target.id === 'couponBookNumber')) {
+        updateCartTotalsPreview();
+      }
+    });
+    document.addEventListener('change', (event) => {
+      if (event.target && event.target.id === 'payWithDigitalCoupon') {
+        updateCartTotalsPreview();
+      }
+    });
+
     async function confirmOrder() {
+  if (!getCustomerToken() || !customerSession?.id) {
+    showNotification('🔐 يلزم تسجيل الدخول', 'سجّل الدخول أو أنشئ حساباً عبر Google أولاً ثم أكّد الطلب', 'error');
+    openCustomerAuthModal();
+    return;
+  }
+
   const name = document.getElementById('customerName').value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
   const address = document.getElementById('customerAddress').value.trim();
@@ -1608,6 +2305,15 @@ function filterProducts(category) {
   const lngRaw = document.getElementById('customerLng')?.value;
   const lat = latRaw ? Number(latRaw) : null;
   const lng = lngRaw ? Number(lngRaw) : null;
+  syncCouponRedeemQtyFromCart();
+  const payWithCoupon = isPayingWithDigitalCoupon();
+  const couponBookNumber = (document.getElementById('couponBookNumber')?.value || '').trim().toUpperCase();
+  const couponRedeemQty = payWithCoupon
+    ? Math.max(0, Number.parseInt(document.getElementById('couponRedeemQty')?.value || '0', 10) || 0)
+    : 0;
+  if (payWithCoupon && document.getElementById('payWithDigitalCoupon')) {
+    document.getElementById('payWithDigitalCoupon').checked = true;
+  }
 
   const deliveryTimeElement = document.querySelector('input[name="deliveryTime"]:checked');
   const deliveryTimeValue = deliveryTimeElement ? deliveryTimeElement.value : 'asap';
@@ -1632,6 +2338,47 @@ function filterProducts(category) {
     return;
   }
 
+  const refillQty = getRefillCartQty();
+  const hasDigitalBookInCart = cart.some(item => [11, 12, 13, 14].includes(Number(item.id)));
+  if (payWithCoupon) {
+    if (refillQty <= 0) {
+      showNotification('⚠️ تنبيه', 'الدفع بالكوبون متاح لمنتج تعبئة القارورة فقط — أضفه للسلة أولاً', 'error');
+      return;
+    }
+    // First order: allow empty book number if buying a digital book in the same cart
+    // (server will create/use the new book automatically).
+    if (!couponBookNumber && !hasDigitalBookInCart) {
+      showNotification(
+        '⚠️ رقم الدفتر مطلوب',
+        'اكتب رقم دفترك، أو أضف دفتراً رقمياً للسلة مع التعبئة ليُنشأ الرقم في أول طلب',
+        'error'
+      );
+      document.getElementById('couponBookNumber')?.focus();
+      document.getElementById('couponBookNumber')?.classList.add('border-red-500');
+      return;
+    }
+    if (couponRedeemQty !== refillQty) {
+      showNotification(
+        '⚠️ عدد غير متطابق',
+        `عدد الكابونات يجب أن يساوي عدد التعبئة في السلة (${refillQty}).`,
+        'error'
+      );
+      return;
+    }
+    const availableCoupons = getEffectiveCouponAvailable();
+    if (refillQty > availableCoupons) {
+      const shortage = refillQty - availableCoupons;
+      showNotification(
+        '⛔ رصيد غير كافٍ',
+        `ينقصك ${shortage} كابون. أضف دفتراً رقمياً من الاقتراحات في السلة، أو قلّل التعبئة إلى ${availableCoupons}.`,
+        'error'
+      );
+      document.getElementById('couponBookTopUpSuggest')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      renderCouponTopUpSuggest(refillQty, availableCoupons);
+      return;
+    }
+  }
+
   const confirmButton = document.querySelector('button[onclick="confirmOrder()"]');
   const originalButtonHtml = confirmButton ? confirmButton.innerHTML : '';
   if (confirmButton) {
@@ -1644,7 +2391,7 @@ function filterProducts(category) {
   const totalItems = cartSnapshot.reduce((sum, item) => sum + item.qty, 0);
 
   try {
-    const savedOrder = await saveOrderToDatabase({
+    const orderPayload = {
       customer: {
         name,
         phone,
@@ -1662,7 +2409,16 @@ function filterProducts(category) {
         optionId: item.optionId,
         quantity: item.qty
       }))
-    });
+    };
+    if (couponRedeemQty > 0) {
+      orderPayload.couponRedeem = {
+        quantity: couponRedeemQty,
+        bookNumber: couponBookNumber,
+        serviceType: 'external'
+      };
+    }
+    await syncCustomerPhoneIfNeeded(phone, name);
+    const savedOrder = await saveOrderToDatabase(orderPayload);
 
     const orderNum = savedOrder.orderNumber;
     const totalAmount = typeof savedOrder.total === 'number'
@@ -1673,13 +2429,56 @@ function filterProducts(category) {
     document.getElementById('confirmItemsCount').textContent = totalItems;
     document.getElementById('confirmTotal').textContent = formatPrice(totalAmount) + ' JOD';
 
+    const bookWrap = document.getElementById('confirmBookNumberWrap');
+    const bookConfirmEl = document.getElementById('confirmBookNumber');
+    const issuedBook =
+      savedOrder.issuedCoupons?.find(row => row.bookNumber)?.bookNumber ||
+      savedOrder.couponBookNumber ||
+      null;
+    if (bookWrap && bookConfirmEl && issuedBook) {
+      bookConfirmEl.textContent = issuedBook;
+      bookWrap.classList.remove('hidden');
+    } else if (bookWrap) {
+      bookWrap.classList.add('hidden');
+    }
+
     cart = [];
     updateCartUI();
+    if (document.getElementById('couponRedeemQty')) document.getElementById('couponRedeemQty').value = '0';
+    if (document.getElementById('payWithDigitalCoupon')) document.getElementById('payWithDigitalCoupon').checked = false;
+    if (document.getElementById('couponBalanceStatus')) {
+      document.getElementById('couponBalanceStatus').textContent =
+        'لتعبئة القارورة بالكوبون: أدخل رقم دفترك الرقمي. الدفع نقداً = 1 دينار لكل تعبئة، أو كابون خارجي واحد.';
+    }
+    updateCartTotalsPreview();
 
     document.getElementById('mainContent').classList.add('hidden');
     document.getElementById('cartPage').classList.remove('active');
     document.getElementById('aiChatPage')?.classList.remove('active');
     document.getElementById('orderConfirmPage').classList.add('active');
+
+    if (savedOrder.issuedCoupons?.length) {
+      const issuedText = savedOrder.issuedCoupons
+        .map(row => `${row.label || 'دفتر رقمي'}: +${row.coupons}${row.bookNumber ? ` • رقم الدفتر ${row.bookNumber}` : ''}`)
+        .join(' • ');
+      showNotification('📱 رقم دفترك جاهز فوراً', issuedText + ' — احفظ الرقم وسيظهر في حسابك', 'success');
+    }
+    if (savedOrder.couponsRedeemed > 0) {
+      if (savedOrder.couponRedeemStatus === 'applied') {
+        showNotification(
+          '🎫 تم خصم الكابونات فوراً',
+          `خُصم ${savedOrder.couponsRedeemed} كابون من دفترك (${savedOrder.couponBookNumber || couponBookNumber}) لأن هذا طلب متكرر.`,
+          'success'
+        );
+      } else {
+        showNotification(
+          '🎫 تم حجز الكابونات',
+          `أول استخدام: ${savedOrder.couponsRedeemed} كابون محجوزة على دفتر ${savedOrder.couponBookNumber || couponBookNumber}. الخصم النهائي بعد «تم التسليم» من الإدارة.`,
+          'info'
+        );
+      }
+    }
+    await refreshCustomerSession();
 
     createConfetti();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1991,6 +2790,7 @@ window.confirmOrder = confirmOrder;
       renderProducts('all');
       const loaded = await loadProductsFromApi();
       if (loaded) renderProducts(currentProductsFilter || 'all');
+      await initCustomerAuth();
 
       requestAnimationFrame(() => {
         document.querySelectorAll('.reveal-elegant').forEach(el => {
@@ -2257,8 +3057,8 @@ function calculateFamilyBottleAdvisor() {
 
   const external25 = getProductById(11);
   const external20 = getProductById(12);
-  const internal25 = getProductById(13);
-  const internal30 = getProductById(14);
+  const external30 = getProductById(14);
+  const refillProduct = getProductById(REFILL_PRODUCT_ID);
   const bottleJordan = getProductById(7);
   const bottleSaudi = getProductById(6);
   const bottleProduct = bottleJordan || bottleSaudi;
@@ -2271,25 +3071,26 @@ function calculateFamilyBottleAdvisor() {
 
   if (monthlyBottlesExact < 8) {
     tierTitle = 'استهلاك بسيط';
-    badgeText = 'كاش عند الحاجة';
-    bestFitText = 'الدفع كاش';
+    badgeText = 'تعبئة كاش عند الحاجة';
+    bestFitText = 'تعبئة 1 دينار';
 
-    summaryText = `استهلاك العائلة يقارب <b>${monthlyBottlesRounded} قارورة</b> شهرياً فقط، وهذا يعتبر استهلاكاً بسيطاً. بما أن عدد القوارير أقل من <b>8 قوارير شهرياً</b> فالأفضل لك أن تطلب كاش عند الحاجة حتى تبقى مرناً ولا ترتبط بدفتر أكبر من استهلاكك.`;
+    summaryText = `استهلاك العائلة يقارب <b>${monthlyBottlesRounded} قارورة</b> شهرياً فقط. الأنسب طلب <b>تعبئة القارورة</b> بدينار واحد عند الحاجة، بدون الالتزام بدفتر كابونات أكبر من استهلاكك.`;
 
     cards = [
       buildAdvisorCard({
-        title: 'الدفع كاش عند الحاجة',
-        subtitle: 'الخيار الأذكى للاستهلاك البسيط',
-        hint: 'طالما أن استهلاكك الشهري منخفض، فالدفع كاش يمنحك مرونة أكبر ويوفر عليك تكلفة دفتر لا تحتاجه بالكامل.',
+        title: refillProduct ? refillProduct.name : 'تعبئة قارورة شامل التوصيل',
+        subtitle: '1 دينار لكل تعبئة — أو كابون خارجي لاحقاً',
+        hint: 'للاستهلاك البسيط اطلب التعبئة نقداً. وإذا اشتريت دفتراً رقمياً خارجياً لاحقاً، احتفظ برقم الدفتر واستخدمه مع كل تعبئة.',
         tag: 'الخيار الأفضل',
         primary: true,
-        icon: 'fas fa-money-bill-wave',
-        mode: 'cash'
+        productId: refillProduct ? refillProduct.id : null,
+        icon: 'fas fa-tint',
+        mode: refillProduct ? 'product' : 'cash'
       }),
       buildAdvisorCard({
         title: bottleProduct ? bottleProduct.name : 'طلب القوارير الكبيرة',
         subtitle: bottleProduct ? `${formatPrice(bottleProduct.price)} دينار • اطلبها وقت الحاجة` : 'حل مباشر ومرن',
-        hint: 'يمكنك طلب القوارير الكبيرة مباشرة كلما احتجت، بدون التزام شهري ثابت، وهذا أنسب كثيراً لعائلتك حالياً.',
+        hint: 'يمكنك أيضاً طلب القوارير الكبيرة مباشرة كلما احتجت، بدون التزام شهري ثابت.',
         tag: 'حل مرن',
         productId: bottleProduct ? bottleProduct.id : null,
         icon: 'fas fa-jug-detergent',
@@ -2298,133 +3099,64 @@ function calculateFamilyBottleAdvisor() {
     ];
   } else if (monthlyBottlesExact < 20) {
     tierTitle = dailyLiters >= 10 ? 'استهلاك مرتفع نسبيًا' : 'استهلاك متوسط';
-    badgeText = 'اشتراك 20 كابون هو الأنسب';
-    bestFitText = '20 كابون داخلي أو خارجي';
+    badgeText = 'دفتر رقمي خارجي 20';
+    bestFitText = 'دفتر خارجي 20 كابون';
 
-    summaryText = `استهلاك العائلة يقارب <b>${monthlyBottlesRounded} قارورة</b> شهرياً، وهذا يعني أن اشتراك <b>20 كابون</b> هو الخيار الأقرب لاحتياجك. وعند استهلاك يقارب <b>10 لتر يومياً</b> فنحن نعتبره استهلاكاً واضحاً يستحق الاشتراك بدل الاعتماد على الطلب العشوائي.`;
+    summaryText = `استهلاك العائلة يقارب <b>${monthlyBottlesRounded} قارورة</b> شهرياً. الأنسب <b>دفتر كابونات رقمي خارجي 20</b> — بعد الشراء تحتفظ برقم الدفتر وتدخله مع كل طلب تعبئة، ويُخصم الكابون بعد التسليم فقط.`;
 
-    const internal20Card = buildAdvisorCard({
-      title: 'اشتراك داخلي 20 كابون',
-      subtitle: 'مناسب إذا كنت تفضّل الخدمة الداخلية المنتظمة',
-      hint: 'إذا كانت احتياجات العائلة ثابتة تقريباً وتفضّل تنظيم الخدمة داخلياً، فهذا الخيار هو الترشيح الأقرب لك حسب الاستهلاك الحالي.',
-      tag: 'موصى به',
-      primary: preference !== 'external',
-      icon: 'fas fa-house',
-      mode: 'contact',
-      ctaText: 'تواصل معنا للاشتراك الداخلي'
-    });
-
-    const external20Card = buildAdvisorCard({
-      title: external20 ? external20.name : 'اشتراك خارجي 20 كابون',
-      subtitle: external20 ? `${formatPrice(external20.price)} دينار • الأنسب للخدمة الخارجية` : 'الأنسب للخدمة الخارجية',
-      hint: 'إذا كنت تعتمد على الخدمة الخارجية، فهذا الاشتراك يوازن بين السعر والتنظيم ويغطي استهلاكك الشهري بشكل عملي.',
-      tag: 'الخيار الخارجي',
-      productId: external20 ? external20.id : null,
-      primary: preference === 'external',
-      icon: 'fas fa-truck',
-      mode: external20 ? 'product' : 'contact',
-      ctaText: 'تواصل معنا للاشتراك الخارجي'
-    });
-
-    if (preference === 'internal') {
-      cards = [
-        internal20Card,
-        buildAdvisorCard({
-          title: internal25 ? `${internal25.name} (بديل متاح)` : 'بديل داخلي متاح',
-          subtitle: internal25 ? `${formatPrice(internal25.price)} دينار • إذا أردت هامشاً أعلى` : 'إذا رغبت بخيار داخلي أعلى',
-          hint: 'إذا كنت تفضّل خياراً متاحاً مباشرة من المنتجات وبه هامش إضافي، يمكنك اختيار دفتر 25 داخلي كبديل قريب.',
-          tag: 'بديل متاح',
-          productId: internal25 ? internal25.id : null,
-          icon: 'fas fa-layer-group',
-          mode: internal25 ? 'product' : 'contact',
-          ctaText: 'تواصل معنا'
-        })
-      ];
-    } else if (preference === 'external') {
-      cards = [
-        external20Card,
-        buildAdvisorCard({
-          title: 'اشتراك داخلي 20 كابون',
-          subtitle: 'بديل إذا أردت تحويل الخدمة من خارجية إلى داخلية',
-          hint: 'يمكن اعتماد نفس التقدير على خطة داخلية 20 كابون إذا كانت هذه الخدمة أنسب لطبيعة منزلك.',
-          tag: 'بديل',
-          icon: 'fas fa-house',
-          mode: 'contact',
-          ctaText: 'استفسر عن الاشتراك الداخلي'
-        })
-      ];
-    } else {
-      cards = [internal20Card, external20Card];
-    }
+    cards = [
+      buildAdvisorCard({
+        title: external20 ? external20.name : 'دفتر رقمي خارجي 20',
+        subtitle: external20 ? `${formatPrice(external20.price)} دينار • رقم دفتر تحتفظ به` : 'رقم دفتر + رصيد رقمي',
+        hint: 'بعد الشراء يظهر رقم الدفتر. أدخله في كل طلب تعبئة قارورة. الإدارة تعتمد الخصم بعد التسليم فقط.',
+        tag: 'موصى به',
+        primary: true,
+        productId: external20 ? external20.id : null,
+        icon: 'fas fa-book',
+        mode: external20 ? 'product' : 'contact',
+        ctaText: 'تواصل معنا'
+      }),
+      buildAdvisorCard({
+        title: refillProduct ? refillProduct.name : 'تعبئة قارورة شامل التوصيل',
+        subtitle: '1 دينار أو كابون واحد من دفترك',
+        hint: 'استخدم رقم دفترك مع كل طلب تعبئة. بدون دفتر يمكنك الدفع ديناراً نقداً.',
+        tag: 'للطلب المتكرر',
+        productId: refillProduct ? refillProduct.id : null,
+        icon: 'fas fa-tint',
+        mode: refillProduct ? 'product' : 'cash'
+      })
+    ];
   } else {
     const veryHigh = monthlyBottlesExact >= 28;
+    const pack = veryHigh ? (external30 || external25) : external25;
     tierTitle = veryHigh ? 'استهلاك مرتفع جداً' : 'استهلاك مرتفع';
-    badgeText = veryHigh ? '25 أو 30 كابون أنسب لك' : '25 كابون أنسب لك';
-    bestFitText = veryHigh ? 'داخلي 30 أو خارجي 25' : 'داخلي 25 أو خارجي 25';
+    badgeText = veryHigh ? 'دفتر خارجي 30' : 'دفتر خارجي 25';
+    bestFitText = veryHigh ? 'دفتر خارجي 30 كابون' : 'دفتر خارجي 25 كابون';
 
-    summaryText = `استهلاك العائلة يقارب <b>${monthlyBottlesRounded} قارورة</b> شهرياً، وهذا مستوى مرتفع يحتاج إلى دفتر كابونات أكبر يوفّر عليك إعادة الطلب المستمرة ويحافظ على انتظام الخدمة طوال الشهر.`;
+    summaryText = `استهلاك العائلة يقارب <b>${monthlyBottlesRounded} قارورة</b> شهرياً. الأنسب دفتر كابونات رقمي <b>خارجي</b> أكبر، ثم تستخدم رقم الدفتر مع تعبئة القارورة؛ الخصم يتم بعد تأكيد التسليم.`;
 
-    const internalProduct = veryHigh ? internal30 : internal25;
-
-    const internalCard = buildAdvisorCard({
-      title: internalProduct ? internalProduct.name : (veryHigh ? 'اشتراك داخلي 30 كابون' : 'اشتراك داخلي 25 كابون'),
-      subtitle: internalProduct ? `${formatPrice(internalProduct.price)} دينار • مناسب للخدمة الداخلية` : 'مناسب للخدمة الداخلية المنتظمة',
-      hint: veryHigh
-        ? 'لأن استهلاك العائلة مرتفع جداً، فالخيار الداخلي 30 كابون يعطيك راحة أكبر ويقلل احتمالية نفاد القوارير قبل نهاية الشهر.'
-        : 'هذا الخيار الداخلي مناسب للعائلات ذات الاستهلاك المرتفع ويغطي الشهر بشكل مريح.',
-      tag: 'الخيار الداخلي',
-      productId: internalProduct ? internalProduct.id : null,
-      primary: preference !== 'external',
-      icon: 'fas fa-house',
-      mode: internalProduct ? 'product' : 'contact',
-      ctaText: 'تواصل معنا'
-    });
-
-    const externalCard = buildAdvisorCard({
-      title: external25 ? external25.name : 'اشتراك خارجي 25 كابون',
-      subtitle: external25 ? `${formatPrice(external25.price)} دينار • مناسب للخدمة الخارجية` : 'مناسب للخدمة الخارجية',
-      hint: 'إذا كنت تعتمد على الخدمة الخارجية، فدفتر 25 كابون هو الترشيح الأقرب لتغطية استهلاكك العالي بشكل منظم.',
-      tag: 'الخيار الخارجي',
-      productId: external25 ? external25.id : null,
-      primary: preference === 'external',
-      icon: 'fas fa-truck',
-      mode: external25 ? 'product' : 'contact',
-      ctaText: 'تواصل معنا'
-    });
-
-    if (preference === 'internal') {
-      cards = [
-        internalCard,
-        buildAdvisorCard({
-          title: external25 ? `${external25.name} (بديل خارجي)` : 'بديل خارجي 25 كابون',
-          subtitle: external25 ? `${formatPrice(external25.price)} دينار • إذا أردت تحويل الخدمة لخارجية` : 'بديل خارجي',
-          hint: 'يمكنك أيضاً الاعتماد على الخارجي 25 كابون إذا كان هذا النوع من الخدمة أنسب لك في بعض الفترات.',
-          tag: 'بديل',
-          productId: external25 ? external25.id : null,
-          icon: 'fas fa-route',
-          mode: external25 ? 'product' : 'contact',
-          ctaText: 'تواصل معنا'
-        })
-      ];
-    } else if (preference === 'external') {
-      cards = [
-        externalCard,
-        buildAdvisorCard({
-          title: internalProduct ? `${internalProduct.name} (بديل داخلي)` : 'بديل داخلي',
-          subtitle: internalProduct ? `${formatPrice(internalProduct.price)} دينار • إذا فضّلت التحويل للخدمة الداخلية` : 'بديل داخلي متاح',
-          hint: veryHigh
-            ? 'في حال فضّلت الخدمة الداخلية، سيكون خيار 30 داخلي هو الأقوى لهذه الكمية.'
-            : 'في حال كانت الخدمة الداخلية أنسب، فدفتر 25 داخلي يعتبر بديلاً جيداً.',
-          tag: 'بديل',
-          productId: internalProduct ? internalProduct.id : null,
-          icon: 'fas fa-house',
-          mode: internalProduct ? 'product' : 'contact',
-          ctaText: 'تواصل معنا'
-        })
-      ];
-    } else {
-      cards = [internalCard, externalCard];
-    }
+    cards = [
+      buildAdvisorCard({
+        title: pack ? pack.name : (veryHigh ? 'دفتر رقمي خارجي 30' : 'دفتر رقمي خارجي 25'),
+        subtitle: pack ? `${formatPrice(pack.price)} دينار • خارجي فقط` : 'دفتر رقمي خارجي',
+        hint: 'احفظ رقم الدفتر بعد الشراء وأدخله مع كل تعبئة. لن يُنقص الرصيد إلا بعد استلام الطلب.',
+        tag: 'موصى به',
+        primary: true,
+        productId: pack ? pack.id : null,
+        icon: 'fas fa-book',
+        mode: pack ? 'product' : 'contact',
+        ctaText: 'تواصل معنا'
+      }),
+      buildAdvisorCard({
+        title: refillProduct ? refillProduct.name : 'تعبئة قارورة شامل التوصيل',
+        subtitle: 'كابون واحد = تعبئة واحدة مع التوصيل',
+        hint: 'هذا المنتج هو نقطة استخدام دفترك الرقمي. الدفع نقداً بدينار متاح أيضاً.',
+        tag: 'استخدام الدفتر',
+        productId: refillProduct ? refillProduct.id : null,
+        icon: 'fas fa-tint',
+        mode: refillProduct ? 'product' : 'cash'
+      })
+    ];
   }
 
   document.getElementById('familyAdvisorTier').textContent = tierTitle;

@@ -97,7 +97,13 @@ async function ensureOrderDeliveryColumns() {
     'ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_address_snapshot TEXT',
     'ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_lat DOUBLE PRECISION',
     'ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_lng DOUBLE PRECISION',
-    'ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_maps_url TEXT'
+    'ALTER TABLE orders ADD COLUMN IF NOT EXISTS location_maps_url TEXT',
+    'ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_discount NUMERIC(12, 2) NOT NULL DEFAULT 0',
+    'ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupons_redeemed INTEGER NOT NULL DEFAULT 0',
+    'ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_service_type TEXT',
+    'ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_book_number TEXT',
+    'ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_account_id INTEGER',
+    "ALTER TABLE orders ADD COLUMN IF NOT EXISTS coupon_redeem_status TEXT"
   ];
 
   for (const sql of alters) {
@@ -121,9 +127,103 @@ async function ensureOrderDeliveryColumns() {
   `);
 }
 
+async function ensureCustomerUsersTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS customer_users (
+      id SERIAL PRIMARY KEY,
+      google_sub TEXT NOT NULL UNIQUE,
+      email TEXT NOT NULL,
+      full_name TEXT,
+      avatar_url TEXT,
+      phone TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_customer_users_phone ON customer_users(phone)');
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_customer_users_email ON customer_users(email)');
+}
+
+async function ensureDigitalCouponsTables() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS coupon_accounts (
+      id SERIAL PRIMARY KEY,
+      phone TEXT NOT NULL,
+      customer_name TEXT,
+      service_type TEXT NOT NULL CHECK (service_type IN ('external', 'internal')),
+      book_number TEXT,
+      remaining INTEGER NOT NULL DEFAULT 0 CHECK (remaining >= 0),
+      total_issued INTEGER NOT NULL DEFAULT 0 CHECK (total_issued >= 0),
+      total_redeemed INTEGER NOT NULL DEFAULT 0 CHECK (total_redeemed >= 0),
+      status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'blocked')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (phone, service_type)
+    )
+  `);
+  await pool.query(`ALTER TABLE coupon_accounts ADD COLUMN IF NOT EXISTS book_number TEXT`);
+  await pool.query(
+    `ALTER TABLE coupon_accounts ADD COLUMN IF NOT EXISTS applied_redeem_count INTEGER NOT NULL DEFAULT 0`
+  );
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_coupon_accounts_book_number_unique
+    ON coupon_accounts (book_number)
+    WHERE book_number IS NOT NULL
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS coupon_ledger (
+      id SERIAL PRIMARY KEY,
+      account_id INTEGER NOT NULL REFERENCES coupon_accounts(id) ON DELETE CASCADE,
+      entry_type TEXT NOT NULL CHECK (entry_type IN ('issue', 'redeem', 'adjust', 'cancel')),
+      quantity INTEGER NOT NULL,
+      order_id INTEGER REFERENCES orders(id) ON DELETE SET NULL,
+      note TEXT,
+      created_by TEXT NOT NULL DEFAULT 'system',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_coupon_accounts_phone ON coupon_accounts(phone)');
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_coupon_ledger_account_id ON coupon_ledger(account_id)');
+  await pool.query('CREATE INDEX IF NOT EXISTS idx_coupon_ledger_order_id ON coupon_ledger(order_id)');
+  await pool.query(`
+    UPDATE categories
+    SET name_ar = 'الدفاتر الرقمية والمستلزمات',
+        name_en = 'Digital Coupon Books & Extras',
+        description = 'دفاتر كابونات رقمية خارجية ومضخات وفلاتر ومستلزمات المياه',
+        icon = 'fas fa-qrcode'
+    WHERE id = 'extras'
+  `);
+
+  // Backfill book numbers for existing external accounts.
+  const missing = await pool.query(
+    `SELECT id FROM coupon_accounts WHERE book_number IS NULL OR BTRIM(book_number) = ''`
+  );
+  for (const row of missing.rows) {
+    let code = null;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const candidate = `EXT-${100000 + Math.floor(Math.random() * 900000)}`;
+      const exists = await pool.query(
+        'SELECT 1 FROM coupon_accounts WHERE book_number = $1 LIMIT 1',
+        [candidate]
+      );
+      if (!exists.rowCount) {
+        code = candidate;
+        break;
+      }
+    }
+    if (!code) code = `EXT-${Date.now().toString().slice(-8)}${row.id}`;
+    await pool.query('UPDATE coupon_accounts SET book_number = $1, updated_at = NOW() WHERE id = $2', [
+      code,
+      row.id
+    ]);
+  }
+}
+
 async function ensureDatabase() {
   await ensureSchema();
   await ensureOrderDeliveryColumns();
+  await ensureCustomerUsersTable();
+  await ensureDigitalCouponsTables();
   await ensureDefaultSettings();
   await ensureAdminUser();
   await seedFromJsonIfEmpty();
