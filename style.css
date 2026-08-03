@@ -2394,3 +2394,295 @@ select option:focus {
   font-size: 0.8rem;
   cursor: pointer;
 }
+
+/* ===== Auth email / tabs ===== */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.9rem 0;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.28);
+}
+
+.auth-google-hint {
+  margin: 0.55rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #fde68a;
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.auth-google-hint code {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-size: 0.72rem;
+}
+
+.auth-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.auth-mode-tab {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: #94a3b8;
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.5rem;
+  font-weight: 800;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.auth-mode-tab.active {
+  color: #ecfeff;
+  border-color: rgba(34, 211, 238, 0.45);
+  background: rgba(6, 182, 212, 0.16);
+}
+
+.auth-email-fields {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.auth-email-fields label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.auth-email-fields input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  padding: 0.7rem 0.8rem;
+  font-family: inherit;
+}
+
+.auth-email-error {
+  margin: 0;
+  color: #fecaca;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.theme-toggle-icon {
+  color: inherit;
+  font-size: 1rem;
+}
+
+.site-body {
+  background-color: var(--dark-bg);
+  color: var(--text-primary);
+}
+
+/* ===== Light theme: cover remaining dark-hardcoded surfaces ===== */
+[data-theme="light"] .site-body {
+  background-color: #eef6ff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] #navbar {
+  background: rgba(238, 246, 255, 0.88);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+[data-theme="light"] .site-nav-links .nav-link {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .site-nav-links .nav-link:hover {
+  color: #0369a1 !important;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+[data-theme="light"] .nav-icon-btn {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #334155;
+}
+
+[data-theme="light"] .nav-icon-btn:hover {
+  color: #0284c7;
+  background: #fff;
+}
+
+[data-theme="light"] .nav-admin-btn {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+[data-theme="light"] .customer-account-trigger {
+  background: rgba(14, 165, 233, 0.12);
+  border-color: rgba(14, 165, 233, 0.35);
+  color: #0f172a;
+}
+
+[data-theme="light"] .customer-coupon-pill,
+[data-theme="light"] .customer-caret,
+[data-theme="light"] .customer-avatar-fallback {
+  color: #0369a1;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .customer-account-dropdown {
+  background: #fff;
+  border-color: rgba(148, 163, 184, 0.35);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="light"] .customer-dd-name {
+  color: #0f172a;
+}
+
+[data-theme="light"] .customer-dd-book,
+[data-theme="light"] .customer-dd-coupons {
+  color: #0369a1;
+}
+
+[data-theme="light"] .auth-modal-card {
+  background: linear-gradient(165deg, #ffffff, #f0f9ff);
+  border-color: rgba(14, 165, 233, 0.28);
+}
+
+[data-theme="light"] .auth-modal-brand h2,
+[data-theme="light"] .auth-modal-benefits li {
+  color: #0f172a;
+}
+
+[data-theme="light"] .auth-modal-brand p,
+[data-theme="light"] .auth-modal-note,
+[data-theme="light"] .auth-email-fields label {
+  color: #64748b;
+}
+
+[data-theme="light"] .auth-modal-benefits {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.2);
+}
+
+[data-theme="light"] .auth-mode-tab {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+[data-theme="light"] .auth-mode-tab.active {
+  color: #0c4a6e;
+  background: rgba(14, 165, 233, 0.14);
+  border-color: rgba(14, 165, 233, 0.4);
+}
+
+[data-theme="light"] .auth-email-fields input {
+  background: #fff !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
+
+[data-theme="light"] .auth-google-hint {
+  background: rgba(245, 158, 11, 0.1);
+  color: #92400e;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+[data-theme="light"] .product-card-premium,
+[data-theme="light"] .glass-elegant {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="light"] .hero-title .text-white,
+[data-theme="light"] .hero-title-line.text-white {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] #cartPage,
+[data-theme="light"] #aiChatPage,
+[data-theme="light"] #orderConfirmPage,
+[data-theme="light"] .page-shell,
+[data-theme="light"] .cart-page-premium,
+[data-theme="light"] .main-content {
+  color: #0f172a;
+}
+
+[data-theme="light"] .mobile-menu-premium a,
+[data-theme="light"] .mobile-menu-premium {
+  color: #334155;
+}
+
+[data-theme="light"] .mobile-auth-card {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.28);
+}
+
+[data-theme="light"] .mobile-auth-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .mobile-auth-text {
+  color: #0369a1;
+}
+
+[data-theme="light"] .cart-auth-gate {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+[data-theme="light"] .cart-auth-gate-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .cart-auth-gate-text {
+  color: #0369a1;
+}
+
+[data-theme="light"] .notification-premium {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+[data-theme="light"] .floating-element {
+  opacity: 0.35;
+}
+
+[data-theme="light"] .waves-elegant,
+[data-theme="light"] .wave {
+  opacity: 0.55;
+}
+
+[data-theme="light"] #digitalCouponPanel,
+[data-theme="light"] .cart-auth-balance {
+  background: rgba(139, 92, 246, 0.08) !important;
+  border-color: rgba(139, 92, 246, 0.28) !important;
+}
+
+[data-theme="light"] #couponBookTopUpSuggest {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+[data-theme="light"] #couponBookTopUpSuggest .text-cyan-100,
+[data-theme="light"] #couponBookTopUpText {
+  color: #0c4a6e !important;
+}

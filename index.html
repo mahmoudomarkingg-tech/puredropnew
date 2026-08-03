@@ -9,8 +9,20 @@
   <meta name="keywords" content="مياه الأردن, توصيل مياه عمان, قوارير مياه 18.9, ثلج, شرنك مياه, كرتونة مياه, قطرة نقية, PureDrop" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
   <meta name="author" content="قطرة نقية PureDrop" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#e8f4ff" id="themeColorMeta" />
   <link rel="canonical" href="https://puredropnew.onrender.com/" />
+  <script>
+    (function () {
+      try {
+        var key = 'puredrop-theme-v2';
+        var saved = localStorage.getItem(key);
+        var theme = saved === 'dark' || saved === 'light' ? saved : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
 
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="ar_JO" />
@@ -56,7 +68,7 @@
   <meta name="google-signin-client_id" content="" id="googleClientMeta" />
 
 </head>
-<body class="bg-slate-950 text-white overflow-x-hidden">
+<body class="overflow-x-hidden site-body">
 
   <!-- ===== ADVANCED BUBBLES CANVAS ===== -->
   <canvas id="bubbles-canvas" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none"></canvas>
@@ -1140,7 +1152,7 @@
     </div>
   </div>
 
-  <!-- ===== Customer Auth Modal (Google login / create account) ===== -->
+  <!-- ===== Customer Auth Modal ===== -->
   <div id="customerAuthModal" class="auth-modal is-hidden" aria-hidden="true">
     <div class="auth-modal-backdrop" onclick="closeCustomerAuthModal()"></div>
     <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
@@ -1151,7 +1163,7 @@
         <div class="auth-modal-icon"><i class="fas fa-tint"></i></div>
         <div>
           <h2 id="authModalTitle">دخول أو إنشاء حساب</h2>
-          <p>حساب واحد عبر Google لمتابعة الدفتر والكابونات والطلبات</p>
+          <p>بالبريد الإلكتروني أو Google — لمتابعة الدفتر والكابونات</p>
         </div>
       </div>
       <ul class="auth-modal-benefits">
@@ -1159,23 +1171,47 @@
         <li><i class="fas fa-ticket"></i> عرض رصيد الكابونات المتبقي</li>
         <li><i class="fas fa-bolt"></i> إتمام الطلب بسرعة وأمان</li>
       </ul>
-      <button type="button" id="authModalGoogleBtn" class="auth-modal-google" onclick="startCustomerGoogleLogin()">
-        <i class="fab fa-google"></i>
-        المتابعة مع Google
-      </button>
-      <div id="authDemoFields" class="auth-demo-fields is-hidden">
-        <p class="auth-demo-label">وضع تجريبي محلي (بدون Google Cloud)</p>
+
+      <div id="authGoogleBlock">
+        <button type="button" id="authModalGoogleBtn" class="auth-modal-google" onclick="startCustomerGoogleLogin()">
+          <i class="fab fa-google"></i>
+          المتابعة مع Google
+        </button>
+        <p id="authGoogleHint" class="auth-google-hint is-hidden">Google غير مفعّل على الاستضافة بعد. يمكنك إنشاء حساب بالبريد أدناه فوراً، أو أضف <code>GOOGLE_CLIENT_ID</code> في إعدادات Render.</p>
+        <div class="auth-divider"><span>أو بالبريد</span></div>
+      </div>
+
+      <div class="auth-mode-tabs">
+        <button type="button" class="auth-mode-tab active" id="authTabLogin" onclick="setCustomerAuthMode('login')">تسجيل الدخول</button>
+        <button type="button" class="auth-mode-tab" id="authTabRegister" onclick="setCustomerAuthMode('register')">إنشاء حساب</button>
+      </div>
+
+      <div id="authEmailFields" class="auth-email-fields">
+        <label id="authNameWrap" class="is-hidden">
+          الاسم الكامل
+          <input type="text" id="authEmailName" placeholder="اسمك كما في الطلبات" autocomplete="name" />
+        </label>
         <label>
           البريد الإلكتروني
-          <input type="email" id="authDemoEmail" value="customer@gmail.com" dir="ltr" autocomplete="email" />
+          <input type="email" id="authEmailAddress" placeholder="name@gmail.com" dir="ltr" autocomplete="email" />
         </label>
         <label>
-          الاسم الظاهر
-          <input type="text" id="authDemoName" value="عميل قطرة نقية" autocomplete="name" />
+          كلمة المرور
+          <input type="password" id="authEmailPassword" placeholder="6 أحرف على الأقل" dir="ltr" autocomplete="current-password" />
         </label>
-        <button type="button" class="auth-demo-submit" onclick="submitDemoCustomerLogin()">إنشاء / دخول تجريبي</button>
+        <label id="authPhoneWrap" class="is-hidden">
+          رقم الهاتف (اختياري)
+          <input type="tel" id="authEmailPhone" placeholder="07XXXXXXXX" dir="ltr" autocomplete="tel" />
+        </label>
+        <button type="button" class="auth-demo-submit" id="authEmailSubmitBtn" onclick="submitEmailCustomerAuth()">تسجيل الدخول</button>
+        <p id="authEmailError" class="auth-email-error is-hidden"></p>
       </div>
-      <p class="auth-modal-note">بالدخول فأنت توافق على استخدام بياناتك لربط الطلبات ودفتر الكابونات فقط.</p>
+
+      <div id="authDemoFields" class="auth-demo-fields is-hidden">
+        <p class="auth-demo-label">دخول تجريبي سريع (تطوير محلي)</p>
+        <button type="button" class="auth-demo-submit" onclick="submitDemoCustomerLogin()">دخول تجريبي</button>
+      </div>
+      <p class="auth-modal-note">بياناتك تُستخدم لربط الطلبات ودفتر الكابونات فقط.</p>
     </div>
   </div>
 

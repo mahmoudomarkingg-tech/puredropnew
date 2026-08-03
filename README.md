@@ -19,4 +19,6 @@ npm run start:local
 
 - لا ترفع ملف `.env` إلى GitHub.
 - استخدم `.env.example` كمرجع للإعدادات.
-- دخول العملاء عبر Google؛ في التطوير يمكن تفعيل `ALLOW_DEMO_GOOGLE_LOGIN=true`.
+- دخول العملاء: **بريد + كلمة مرور** دائماً، وGoogle عند ضبط `GOOGLE_CLIENT_ID`.
+- على Render: Environment → أضف `GOOGLE_CLIENT_ID` من Google Cloud (اختياري)، ولا ترفع ملف `.env`.
+- الوضع الافتراضي للموقع: **صباحي (فاتح)**.

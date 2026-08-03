@@ -366,11 +366,12 @@ FOR EACH ROW EXECUTE PROCEDURE sync_delivery_tracking_to_orders();
 -- ===== Customer Google accounts =====
 CREATE TABLE IF NOT EXISTS customer_users (
   id SERIAL PRIMARY KEY,
-  google_sub TEXT NOT NULL UNIQUE,
+  google_sub TEXT UNIQUE,
   email TEXT NOT NULL,
   full_name TEXT,
   avatar_url TEXT,
   phone TEXT,
+  password_hash TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

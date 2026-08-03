@@ -131,15 +131,19 @@ async function ensureCustomerUsersTable() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS customer_users (
       id SERIAL PRIMARY KEY,
-      google_sub TEXT NOT NULL UNIQUE,
+      google_sub TEXT UNIQUE,
       email TEXT NOT NULL,
       full_name TEXT,
       avatar_url TEXT,
       phone TEXT,
+      password_hash TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  // Allow email/password accounts alongside Google (google_sub optional).
+  await pool.query(`ALTER TABLE customer_users ALTER COLUMN google_sub DROP NOT NULL`);
+  await pool.query(`ALTER TABLE customer_users ADD COLUMN IF NOT EXISTS password_hash TEXT`);
   await pool.query('CREATE INDEX IF NOT EXISTS idx_customer_users_phone ON customer_users(phone)');
   await pool.query('CREATE INDEX IF NOT EXISTS idx_customer_users_email ON customer_users(email)');
 }

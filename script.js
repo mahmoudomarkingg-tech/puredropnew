@@ -567,7 +567,8 @@
     // ==================== CART WITH ENHANCED LOGIC ====================
     let cart = [];
     let aiConversationHistory = []; // For context-aware AI responses
-    const THEME_STORAGE_KEY = 'puredrop-theme';
+    // v2: default morning/light for all visitors (resets old dark default)
+    const THEME_STORAGE_KEY = 'puredrop-theme-v2';
     const INITIAL_PRODUCTS_LIMIT = 12;
     let visibleProductsLimit = INITIAL_PRODUCTS_LIMIT;
     let currentProductsFilter = 'all';
@@ -596,7 +597,8 @@
     const API_BASE_URL = window.PUREDROP_API_BASE_URL || '';
     const CUSTOMER_TOKEN_KEY = 'puredrop_customer_token';
     let customerSession = null;
-    let authConfig = { googleEnabled: false, demoLoginEnabled: true, googleClientId: null };
+    let authConfig = { googleEnabled: false, demoLoginEnabled: true, googleClientId: null, emailAuthEnabled: true };
+    let customerAuthMode = 'login';
 
     function canUseApi() {
       return window.location.protocol !== 'file:' || Boolean(API_BASE_URL);
@@ -661,23 +663,48 @@
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 
+    function setCustomerAuthMode(mode) {
+      customerAuthMode = mode === 'register' ? 'register' : 'login';
+      const loginTab = document.getElementById('authTabLogin');
+      const registerTab = document.getElementById('authTabRegister');
+      const nameWrap = document.getElementById('authNameWrap');
+      const phoneWrap = document.getElementById('authPhoneWrap');
+      const submitBtn = document.getElementById('authEmailSubmitBtn');
+      const passInput = document.getElementById('authEmailPassword');
+      loginTab?.classList.toggle('active', customerAuthMode === 'login');
+      registerTab?.classList.toggle('active', customerAuthMode === 'register');
+      setHiddenEl(nameWrap, customerAuthMode !== 'register');
+      setHiddenEl(phoneWrap, customerAuthMode !== 'register');
+      if (submitBtn) {
+        submitBtn.textContent = customerAuthMode === 'register' ? 'إنشاء الحساب' : 'تسجيل الدخول';
+      }
+      if (passInput) {
+        passInput.autocomplete = customerAuthMode === 'register' ? 'new-password' : 'current-password';
+      }
+      const err = document.getElementById('authEmailError');
+      setHiddenEl(err, true);
+    }
+
     function openCustomerAuthModal() {
       const modal = document.getElementById('customerAuthModal');
-      if (!modal) {
-        startCustomerGoogleLogin();
-        return;
-      }
+      if (!modal) return;
+
       const demoBox = document.getElementById('authDemoFields');
       const googleBtn = document.getElementById('authModalGoogleBtn');
-      const demoMode = !authConfig.googleClientId && authConfig.demoLoginEnabled;
+      const googleHint = document.getElementById('authGoogleHint');
+      const googleReady = Boolean(authConfig.googleClientId);
+      const demoMode = !googleReady && authConfig.demoLoginEnabled;
+
       setHiddenEl(demoBox, !demoMode);
+      setHiddenEl(googleHint, googleReady);
       if (googleBtn) {
-        setHiddenEl(googleBtn, demoMode);
-        // Keep Google-rendered button intact; only restore our CTA when empty / custom.
-        if (!googleBtn.querySelector('div[role="button"]') && !demoMode) {
+        setHiddenEl(googleBtn, !googleReady);
+        if (googleReady && !googleBtn.querySelector('div[role="button"]')) {
           googleBtn.innerHTML = '<i class="fab fa-google"></i> المتابعة مع Google';
         }
       }
+
+      setCustomerAuthMode(customerAuthMode || 'login');
       setHiddenEl(modal, false);
       modal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
@@ -690,13 +717,66 @@
       document.body.style.overflow = '';
     }
 
-    async function submitDemoCustomerLogin() {
-      const email = (document.getElementById('authDemoEmail')?.value || '').trim();
-      const name = (document.getElementById('authDemoName')?.value || '').trim() || 'عميل Google';
-      if (!email) {
-        showNotification('⚠️ تنبيه', 'أدخل البريد الإلكتروني', 'error');
+    async function submitEmailCustomerAuth() {
+      const email = (document.getElementById('authEmailAddress')?.value || '').trim();
+      const password = document.getElementById('authEmailPassword')?.value || '';
+      const fullName = (document.getElementById('authEmailName')?.value || '').trim();
+      const phone = (document.getElementById('authEmailPhone')?.value || '').trim();
+      const errEl = document.getElementById('authEmailError');
+      const submitBtn = document.getElementById('authEmailSubmitBtn');
+      const showErr = (msg) => {
+        if (errEl) {
+          errEl.textContent = msg;
+          setHiddenEl(errEl, false);
+        }
+        showNotification('⚠️ تنبيه', msg, 'error');
+      };
+
+      if (!email || !password) {
+        showErr('أدخل البريد وكلمة المرور');
         return;
       }
+      if (customerAuthMode === 'register' && !fullName) {
+        showErr('أدخل الاسم لإنشاء الحساب');
+        return;
+      }
+
+      const original = submitBtn?.textContent;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'جارٍ المتابعة...';
+      }
+      setHiddenEl(errEl, true);
+
+      try {
+        const path = customerAuthMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+        const body = customerAuthMode === 'register'
+          ? { email, password, fullName, phone: phone || undefined }
+          : { email, password };
+        const data = await puredropApiRequest(path, {
+          method: 'POST',
+          body: JSON.stringify(body)
+        });
+        await setCustomerSession(data.token, data.customer);
+        closeCustomerAuthModal();
+        showNotification(
+          customerAuthMode === 'register' ? '✅ تم إنشاء الحساب' : '✅ أهلاً بك',
+          customerAuthMode === 'register' ? 'يمكنك الآن إتمام الطلب وربط رقم الدفتر' : 'تم تسجيل الدخول بنجاح',
+          'success'
+        );
+      } catch (error) {
+        showErr(error.message || 'تعذر إتمام العملية');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = original || (customerAuthMode === 'register' ? 'إنشاء الحساب' : 'تسجيل الدخول');
+        }
+      }
+    }
+
+    async function submitDemoCustomerLogin() {
+      const email = (document.getElementById('authEmailAddress')?.value || 'customer@gmail.com').trim();
+      const name = (document.getElementById('authEmailName')?.value || 'عميل قطرة نقية').trim() || 'عميل Google';
       try {
         const data = await puredropApiRequest('/api/auth/google-demo', {
           method: 'POST',
@@ -704,7 +784,7 @@
         });
         await setCustomerSession(data.token, data.customer);
         closeCustomerAuthModal();
-        showNotification('✅ دخول تجريبي', 'تم تسجيل الدخول (وضع محلي). للإنتاج فعّل GOOGLE_CLIENT_ID', 'success');
+        showNotification('✅ دخول تجريبي', 'تم تسجيل الدخول (وضع محلي)', 'success');
       } catch (error) {
         showNotification('❌ فشل الدخول', error.message || 'حاول مرة أخرى', 'error');
       }
@@ -845,20 +925,23 @@
 
     async function startCustomerGoogleLogin() {
       try {
-        if (!authConfig.googleClientId && authConfig.demoLoginEnabled) {
+        if (!authConfig.googleClientId) {
           openCustomerAuthModal();
-          return;
-        }
-
-        if (!authConfig.googleClientId || !window.google?.accounts?.id) {
           showNotification(
-            '⚠️ Google غير جاهز',
-            'أضف GOOGLE_CLIENT_ID في ملف .env من Google Cloud Console ثم أعد تشغيل السيرفر',
-            'error'
+            'ℹ️ استخدم البريد أو فعّل Google',
+            'يمكنك إنشاء حساب بالبريد الآن. لتفعيل Google أضف GOOGLE_CLIENT_ID في إعدادات Render ثم أعد النشر.',
+            'info'
           );
           return;
         }
 
+        if (!window.google?.accounts?.id) {
+          openCustomerAuthModal();
+          showNotification('⚠️ Google يحمّل', 'انتظر لحظات أو استخدم الدخول بالبريد', 'info');
+          return;
+        }
+
+        openCustomerAuthModal();
         window.google.accounts.id.initialize({
           client_id: authConfig.googleClientId,
           callback: async (response) => {
@@ -872,6 +955,7 @@
         const host = document.getElementById('authModalGoogleBtn');
         if (host) {
           host.innerHTML = '';
+          setHiddenEl(host, false);
           window.google.accounts.id.renderButton(host, {
             theme: 'outline',
             size: 'large',
@@ -880,14 +964,12 @@
             width: 320,
             locale: 'ar'
           });
-          openCustomerAuthModal();
-          setHiddenEl(document.getElementById('authDemoFields'), true);
-          setHiddenEl(host, false);
         }
 
         window.google.accounts.id.prompt();
       } catch (error) {
-        showNotification('❌ تعذر الدخول', error.message || 'حاول مرة أخرى', 'error');
+        openCustomerAuthModal();
+        showNotification('❌ تعذر Google', (error.message || 'استخدم الدخول بالبريد') , 'error');
       }
     }
 
@@ -917,6 +999,8 @@
     window.openCustomerAuthModal = openCustomerAuthModal;
     window.closeCustomerAuthModal = closeCustomerAuthModal;
     window.submitDemoCustomerLogin = submitDemoCustomerLogin;
+    window.submitEmailCustomerAuth = submitEmailCustomerAuth;
+    window.setCustomerAuthMode = setCustomerAuthMode;
     window.customerLogout = customerLogout;
     window.handleGoogleCredential = handleGoogleCredential;
 
@@ -1007,22 +1091,25 @@
     }
 
     function applyTheme(theme) {
-      const safeTheme = theme === 'light' ? 'light' : 'dark';
+      const safeTheme = theme === 'dark' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', safeTheme);
+      document.body?.classList.toggle('theme-light', safeTheme === 'light');
+      document.body?.classList.toggle('theme-dark', safeTheme === 'dark');
+
+      const meta = document.getElementById('themeColorMeta');
+      if (meta) meta.setAttribute('content', safeTheme === 'light' ? '#e8f4ff' : '#0f172a');
 
       const desktopIcon = document.getElementById('themeToggleIcon');
       const compactIcon = document.getElementById('themeToggleIconCompact');
       const mobileIcon = document.getElementById('mobileThemeToggleIcon');
+      // In light mode show moon (switch to night); in dark show sun (switch to morning).
       const iconClass = safeTheme === 'light'
-        ? 'fas fa-moon text-slate-300 group-hover:text-cyan-400 transition-colors text-lg'
-        : 'fas fa-sun text-slate-300 group-hover:text-cyan-400 transition-colors text-lg';
-      const mobileIconClass = safeTheme === 'light'
-        ? 'fas fa-moon text-cyan-400 transition-colors text-lg'
-        : 'fas fa-sun text-cyan-400 transition-colors text-lg';
+        ? 'fas fa-moon theme-toggle-icon'
+        : 'fas fa-sun theme-toggle-icon';
 
       if (desktopIcon) desktopIcon.className = iconClass;
       if (compactIcon) compactIcon.className = iconClass;
-      if (mobileIcon) mobileIcon.className = mobileIconClass;
+      if (mobileIcon) mobileIcon.className = iconClass;
 
       if (typeof refreshBubbleThemeCache === 'function') {
         refreshBubbleThemeCache();
@@ -1033,7 +1120,7 @@
     }
 
     function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
       const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
       applyTheme(nextTheme);
       localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
@@ -2776,8 +2863,9 @@ window.confirmOrder = confirmOrder;
 
     // ==================== INITIALIZE ====================
     document.addEventListener('DOMContentLoaded', async function() {
-      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'dark';
-      applyTheme(savedTheme);
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+      applyTheme(savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light');
+      if (!savedTheme) localStorage.setItem(THEME_STORAGE_KEY, 'light');
 
       const { button: loadMoreButton } = getLoadMoreControls();
       if (loadMoreButton) {
