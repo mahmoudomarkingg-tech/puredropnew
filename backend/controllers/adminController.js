@@ -317,6 +317,7 @@ async function updateOrderStatus(req, res) {
 
   const {
     reverseOrderCouponEffects,
+    reactivateOrderCouponEffects,
     applyPendingCouponRedeem,
     reverseAppliedCouponRedeem
   } = require('../services/couponsService');
@@ -355,14 +356,17 @@ async function updateOrderStatus(req, res) {
       await run(`UPDATE orders SET ${setParts.join(', ')} WHERE id = ?`, params, client);
       await syncDeliveryTracking(client, orderId, order.order_number, deliveryStatus, null);
 
+      // Cancel → restore coupons / roll back pack. Un-cancel → put them back.
+      if (newStatus === 'cancelled' && order.status !== 'cancelled') {
+        await reverseOrderCouponEffects(orderId, client);
+      } else if (order.status === 'cancelled' && newStatus !== 'cancelled') {
+        await reactivateOrderCouponEffects(orderId, client);
+      }
+
       if (newStatus === 'delivered' && order.status !== 'delivered') {
         couponApplyResult = await applyPendingCouponRedeem(orderId, client);
       } else if (order.status === 'delivered' && newStatus !== 'delivered' && newStatus !== 'cancelled') {
         await reverseAppliedCouponRedeem(orderId, client);
-      }
-
-      if (newStatus === 'cancelled' && order.status !== 'cancelled') {
-        await reverseOrderCouponEffects(orderId, client);
       }
 
       await run(
@@ -393,7 +397,11 @@ async function updateOrderStatus(req, res) {
     deliveryStatus
   });
 
-  if (couponApplyResult?.applied || newStatus === 'cancelled') {
+  if (
+    couponApplyResult?.applied ||
+    newStatus === 'cancelled' ||
+    (order.status === 'cancelled' && newStatus !== 'cancelled')
+  ) {
     broadcastAdminEvent('coupons-updated', { orderId, status: newStatus });
   }
 

@@ -2686,3 +2686,170 @@ select option:focus {
 [data-theme="light"] #couponBookTopUpText {
   color: #0c4a6e !important;
 }
+
+/* ===== Cart coupon panel: readable in both themes ===== */
+.cart-balance-label {
+  font-size: 0.75rem;
+  color: #ddd6fe;
+  margin-bottom: 0.25rem;
+}
+.cart-balance-value {
+  font-size: 1.875rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+}
+.cart-balance-sub {
+  font-size: 0.875rem;
+  color: #ede9fe;
+}
+.cart-balance-book {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #e9d5ff;
+}
+.coupon-panel {
+  border: 1px solid rgba(167, 139, 250, 0.35);
+  background: rgba(139, 92, 246, 0.12);
+}
+.coupon-panel-title { color: #ddd6fe; }
+.coupon-fetch-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  color: #e9d5ff;
+  cursor: pointer;
+}
+.coupon-status-text {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+.coupon-pay-label { color: #f5f3ff; }
+.coupon-field-label { color: #e2e8f0; }
+.coupon-book-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  color: #fff;
+}
+.coupon-hint {
+  font-size: 0.7rem;
+  color: #a5f3fc;
+  line-height: 1.55;
+}
+.coupon-stat-box {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(100, 116, 139, 0.45);
+}
+.coupon-stat-label {
+  font-size: 0.7rem;
+  color: #cbd5e1;
+}
+.coupon-stat-value { color: #fff; font-size: 1.15rem; }
+.coupon-stat-accent { color: #e9d5ff; }
+.coupon-footnote {
+  font-size: 0.7rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+.coupon-policy-note {
+  font-size: 0.7rem;
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  line-height: 1.55;
+}
+
+[data-theme="light"] .cart-auth-balance {
+  background: #f5f3ff !important;
+  border: 1px solid #c4b5fd !important;
+}
+[data-theme="light"] .cart-balance-label {
+  color: #5b21b6 !important;
+  font-weight: 700;
+}
+[data-theme="light"] .cart-balance-value {
+  color: #4c1d95 !important;
+}
+[data-theme="light"] .cart-balance-sub {
+  color: #6d28d9 !important;
+  font-weight: 700;
+}
+[data-theme="light"] .cart-balance-book {
+  color: #5b21b6 !important;
+}
+[data-theme="light"] .coupon-panel {
+  background: #f5f3ff !important;
+  border-color: #a78bfa !important;
+}
+[data-theme="light"] .coupon-panel-title {
+  color: #5b21b6 !important;
+}
+[data-theme="light"] .coupon-fetch-btn {
+  background: #ede9fe;
+  border-color: #a78bfa;
+  color: #5b21b6;
+}
+[data-theme="light"] .coupon-status-text {
+  color: #334155 !important;
+  font-weight: 600;
+}
+[data-theme="light"] .coupon-pay-label {
+  color: #1e1b4b !important;
+  font-weight: 700;
+}
+[data-theme="light"] .coupon-field-label {
+  color: #334155 !important;
+  font-weight: 700;
+}
+[data-theme="light"] .coupon-book-input {
+  background: #fff !important;
+  border-color: #a78bfa !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] .coupon-hint {
+  color: #0e7490 !important;
+  font-weight: 600;
+}
+[data-theme="light"] .coupon-stat-box {
+  background: #fff !important;
+  border-color: #94a3b8 !important;
+}
+[data-theme="light"] .coupon-stat-label {
+  color: #475569 !important;
+  font-weight: 700;
+}
+[data-theme="light"] .coupon-stat-value {
+  color: #0f172a !important;
+}
+[data-theme="light"] .coupon-stat-accent {
+  color: #6d28d9 !important;
+}
+[data-theme="light"] .coupon-footnote {
+  color: #475569 !important;
+  font-weight: 600;
+}
+[data-theme="light"] .coupon-policy-note {
+  color: #78350f !important;
+  background: #fffbeb !important;
+  border-color: #fbbf24 !important;
+  font-weight: 600;
+}
+[data-theme="light"] .coupon-status-text.text-red-300,
+[data-theme="light"] #couponLimitWarning {
+  color: #b91c1c !important;
+}
+[data-theme="light"] label.text-slate-300,
+[data-theme="light"] .text-slate-300 {
+  color: #334155 !important;
+  font-weight: 600;
+}
+[data-theme="light"] #gpsStatus,
+[data-theme="light"] .text-slate-500 {
+  color: #475569 !important;
+}

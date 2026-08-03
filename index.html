@@ -936,10 +936,10 @@
             </button>
           </div>
           <div id="cartAccountBalance" class="cart-auth-balance is-hidden">
-            <div class="text-xs text-violet-200 mb-1">رصيدك الظاهر</div>
-            <div id="cartAccountCouponsBig" class="text-3xl font-black text-white">0</div>
-            <div class="text-sm text-violet-100">كابون متبقي</div>
-            <div id="cartAccountBookBig" class="mt-2 text-sm font-bold tracking-wider text-violet-200" dir="ltr">دفتر: —</div>
+            <div class="cart-balance-label">رصيدك الظاهر</div>
+            <div id="cartAccountCouponsBig" class="cart-balance-value">0</div>
+            <div class="cart-balance-sub">كابون متبقي</div>
+            <div id="cartAccountBookBig" class="cart-balance-book" dir="ltr">دفتر: —</div>
           </div>
           <div>
             <label class="block text-sm font-medium mb-2 text-slate-300">الاسم الكامل <span class="text-red-400">*</span></label>
@@ -950,17 +950,17 @@
             <input type="tel" id="customerPhone" required placeholder="07XXXXXXXXX" class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all" dir="ltr"/>
             <p class="text-[11px] text-slate-500 mt-1">بعد تسجيل Google اربط رقم هاتفك هنا لربط الدفتر الرقمي</p>
           </div>
-          <div id="digitalCouponPanel" class="rounded-2xl border border-violet-500/30 bg-violet-500/10 p-4 space-y-3">
+          <div id="digitalCouponPanel" class="coupon-panel rounded-2xl p-4 space-y-3">
             <div class="flex items-center justify-between gap-2">
-              <h4 class="font-bold text-violet-200 flex items-center gap-2">
+              <h4 class="coupon-panel-title font-bold flex items-center gap-2">
                 <i class="fas fa-book"></i>
                 رقم الدفتر لتأكيد الدفع بالكوبون
               </h4>
-              <button type="button" onclick="checkDigitalCouponBalance()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-500/20 border border-violet-400/40 text-violet-200 hover:bg-violet-500/30">
+              <button type="button" onclick="checkDigitalCouponBalance()" class="coupon-fetch-btn">
                 جلب رقمي
               </button>
             </div>
-            <p id="couponBalanceStatus" class="text-xs text-slate-400">فعّل الدفع بالكوبون أو اكتب رقم الدفتر — عدد الكابونات = عدد التعبئة، ويجب ألا يتجاوز رصيدك المتاح.</p>
+            <p id="couponBalanceStatus" class="coupon-status-text">فعّل الدفع بالكوبون أو اكتب رقم الدفتر — عدد الكابونات = عدد التعبئة، ويجب ألا يتجاوز رصيدك المتاح.</p>
             <p id="couponLimitWarning" class="is-hidden text-xs font-bold text-red-300 bg-red-500/10 border border-red-400/30 rounded-xl px-3 py-2"></p>
             <div id="couponBookTopUpSuggest" class="is-hidden rounded-xl border border-cyan-400/35 bg-cyan-500/10 p-3 space-y-2">
               <p class="text-sm font-bold text-cyan-100 m-0">أكمل طلبك بشراء دفتر جديد في نفس السلة</p>
@@ -968,30 +968,30 @@
               <div id="couponBookTopUpButtons" class="flex flex-wrap gap-2"></div>
               <p class="text-[11px] text-slate-400 m-0">يُضاف رصيد الدفتر فوراً في نفس الطلب ويُستخدم لتغطية التعبئة.</p>
             </div>
-            <label class="flex items-center gap-2 text-sm text-violet-100 cursor-pointer">
+            <label class="coupon-pay-label flex items-center gap-2 text-sm cursor-pointer">
               <input type="checkbox" id="payWithDigitalCoupon" class="rounded border-slate-600 bg-white/10 text-violet-500 focus:ring-violet-400" />
               الدفع بكابون رقمي بدل الدينار
             </label>
             <div id="couponBookFields" class="space-y-3">
               <div>
-                <label class="block text-xs font-medium mb-1.5 text-slate-300">رقم الدفتر الرقمي <span id="couponBookRequiredMark" class="text-red-400">*</span></label>
-                <input type="text" id="couponBookNumber" placeholder="مثال: EXT-123456" autocomplete="off" class="w-full px-3 py-3 rounded-xl bg-white/5 border border-violet-400/40 text-white text-base font-bold tracking-wider focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-500/30" dir="ltr"/>
-                <p id="firstOrderBookHint" class="text-[11px] text-cyan-300/90 mt-1.5">اكتب رقم دفترك هنا. إن لم يكن لديك دفتر بعد، أضف دفتراً رقمياً مع التعبئة في أول طلب.</p>
+                <label class="coupon-field-label block text-xs font-medium mb-1.5">رقم الدفتر الرقمي <span id="couponBookRequiredMark" class="text-red-400">*</span></label>
+                <input type="text" id="couponBookNumber" placeholder="مثال: EXT-123456" autocomplete="off" class="coupon-book-input w-full px-3 py-3 rounded-xl text-base font-bold tracking-wider focus:outline-none focus:ring-2" dir="ltr"/>
+                <p id="firstOrderBookHint" class="coupon-hint mt-1.5">اكتب رقم دفترك هنا. إن لم يكن لديك دفتر بعد، أضف دفتراً رقمياً مع التعبئة في أول طلب.</p>
               </div>
               <div class="grid grid-cols-2 gap-3">
-                <div class="rounded-xl bg-white/5 border border-slate-700 px-3 py-2.5">
-                  <div class="text-[11px] text-slate-400 mb-1">تعبئة في السلة</div>
-                  <div id="cartRefillQtyLabel" class="font-bold text-white">0</div>
+                <div class="coupon-stat-box rounded-xl px-3 py-2.5">
+                  <div class="coupon-stat-label mb-1">تعبئة في السلة</div>
+                  <div id="cartRefillQtyLabel" class="coupon-stat-value font-bold">0</div>
                 </div>
-                <div class="rounded-xl bg-white/5 border border-slate-700 px-3 py-2.5">
-                  <div class="text-[11px] text-slate-400 mb-1">كابونات لهذا الطلب</div>
-                  <div id="couponRedeemQtyLabel" class="font-bold text-violet-200">0</div>
+                <div class="coupon-stat-box rounded-xl px-3 py-2.5">
+                  <div class="coupon-stat-label mb-1">كابونات لهذا الطلب</div>
+                  <div id="couponRedeemQtyLabel" class="coupon-stat-value coupon-stat-accent font-bold">0</div>
                   <input type="hidden" id="couponRedeemQty" value="0" />
                 </div>
               </div>
-              <p class="text-[11px] text-slate-400">عدد الكابونات = عدد تعبئة القوارير في السلة تلقائياً (لا يمكن طلب 4 كابونات لتعبئة 3 فقط).</p>
+              <p class="coupon-footnote">عدد الكابونات = عدد تعبئة القوارير في السلة تلقائياً (لا يمكن طلب 4 كابونات لتعبئة 3 فقط).</p>
             </div>
-            <p class="text-[11px] text-amber-200/90 bg-amber-500/10 border border-amber-400/20 rounded-xl px-3 py-2">
+            <p class="coupon-policy-note rounded-xl px-3 py-2">
               أول طلب بالكوبون: يُخصم بعد «تم التسليم» من الإدارة. من الطلب الثاني فصاعداً: يُخصم تلقائياً فور التأكيد. رقم الدفتر يظهر فوراً بعد شراء الدفتر وفي حسابك.
             </p>
           </div>

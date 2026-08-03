@@ -2179,7 +2179,7 @@ function filterProducts(category) {
       }
       if (redeemLabel) {
         redeemLabel.textContent = String(redeemQty);
-        redeemLabel.style.color = redeemQty > 0 ? '#e9d5ff' : '';
+        redeemLabel.style.color = '';
       }
 
       // Book number field stays editable (was previously locked / overlapping with disabled styles).

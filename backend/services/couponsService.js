@@ -427,7 +427,12 @@ async function applyPendingCouponRedeem(orderId, client) {
   );
   if (!order) return null;
   if (order.couponRedeemStatus === 'applied') return { alreadyApplied: true };
-  if (order.couponRedeemStatus !== 'pending' || !order.couponsRedeemed || !order.couponAccountId) {
+  // pending = first use waiting delivery; cancelled = order was cancelled then reactivated
+  const canApply =
+    (order.couponRedeemStatus === 'pending' || order.couponRedeemStatus === 'cancelled') &&
+    order.couponsRedeemed &&
+    order.couponAccountId;
+  if (!canApply) {
     return { skipped: true };
   }
 
@@ -473,17 +478,23 @@ async function applyPendingCouponRedeem(orderId, client) {
   };
 }
 
+/**
+ * Restore coupons once from order.coupons_redeemed (not by replaying all ledger
+ * redeem rows — that double-counted after cancel → redeliver → cancel).
+ */
 async function reverseAppliedCouponRedeem(orderId, client) {
-  const entries = await all(
-    `SELECT id, account_id AS "accountId", quantity
-     FROM coupon_ledger
-     WHERE order_id = ? AND entry_type = 'redeem' AND quantity < 0`,
+  const order = await get(
+    `SELECT id, coupons_redeemed AS "couponsRedeemed", coupon_redeem_status AS "couponRedeemStatus",
+            coupon_account_id AS "couponAccountId", coupon_book_number AS "couponBookNumber"
+     FROM orders WHERE id = ?`,
     [orderId],
     client
   );
+  if (!order) return { skipped: true };
+  if (order.couponRedeemStatus !== 'applied') return { skipped: true };
 
-  for (const entry of entries) {
-    const restore = Math.abs(entry.quantity);
+  const restore = Number(order.couponsRedeemed) || 0;
+  if (restore > 0 && order.couponAccountId) {
     await run(
       `UPDATE coupon_accounts
        SET remaining = remaining + ?,
@@ -491,34 +502,33 @@ async function reverseAppliedCouponRedeem(orderId, client) {
            applied_redeem_count = GREATEST(0, COALESCE(applied_redeem_count, 0) - 1),
            updated_at = NOW()
        WHERE id = ?`,
-      [restore, restore, entry.accountId],
+      [restore, restore, order.couponAccountId],
       client
     );
     await addLedger(
-      entry.accountId,
+      order.couponAccountId,
       'adjust',
       restore,
       orderId,
-      'استرجاع كابونات بسبب إلغاء التسليم/الطلب',
+      `استرجاع ${restore} كابون بسبب إلغاء التسليم/الطلب — دفتر ${order.couponBookNumber || ''}`,
       'النظام',
       client
     );
   }
 
-  if (entries.length) {
-    await run(
-      `UPDATE orders SET coupon_redeem_status = 'pending' WHERE id = ? AND coupon_redeem_status = 'applied'`,
-      [orderId],
-      client
-    );
-  }
+  await run(
+    `UPDATE orders SET coupon_redeem_status = 'pending' WHERE id = ? AND coupon_redeem_status = 'applied'`,
+    [orderId],
+    client
+  );
+  return { restored: restore };
 }
 
 async function clearPendingCouponRedeem(orderId, client) {
   await run(
     `UPDATE orders
      SET coupon_redeem_status = CASE
-           WHEN coupon_redeem_status = 'pending' THEN 'cancelled'
+           WHEN coupon_redeem_status IN ('pending', 'applied') THEN 'cancelled'
            ELSE coupon_redeem_status
          END
      WHERE id = ?`,
@@ -529,46 +539,122 @@ async function clearPendingCouponRedeem(orderId, client) {
 
 async function reverseOrderCouponEffects(orderId, client) {
   const order = await get(
-    `SELECT coupon_redeem_status AS "couponRedeemStatus" FROM orders WHERE id = ?`,
+    `SELECT coupon_redeem_status AS "couponRedeemStatus",
+            coupons_redeemed AS "couponsRedeemed",
+            coupon_account_id AS "couponAccountId"
+     FROM orders WHERE id = ?`,
     [orderId],
     client
   );
 
+  // Always restore applied balance first, then mark redeem cancelled.
   if (order?.couponRedeemStatus === 'applied') {
     await reverseAppliedCouponRedeem(orderId, client);
   }
   await clearPendingCouponRedeem(orderId, client);
 
-  const entries = await all(
-    `SELECT id, account_id AS "accountId", entry_type AS "entryType", quantity
+  // Reverse pack credits issued by this order (only net issues not already cancelled).
+  const issued = await all(
+    `SELECT account_id AS "accountId",
+            COALESCE(SUM(quantity), 0)::int AS "qty"
      FROM coupon_ledger
-     WHERE order_id = ? AND entry_type = 'issue'`,
+     WHERE order_id = ?
+       AND (
+         (entry_type = 'issue' AND quantity > 0)
+         OR (entry_type = 'cancel' AND quantity < 0)
+       )
+     GROUP BY account_id`,
     [orderId],
     client
   );
 
-  for (const entry of entries) {
-    if (entry.entryType === 'issue' && entry.quantity > 0) {
-      await run(
-        `UPDATE coupon_accounts
-         SET remaining = GREATEST(0, remaining - ?),
-             total_issued = GREATEST(0, total_issued - ?),
-             updated_at = NOW()
-         WHERE id = ?`,
-        [entry.quantity, entry.quantity, entry.accountId],
-        client
-      );
-      await addLedger(
-        entry.accountId,
-        'cancel',
-        -entry.quantity,
-        orderId,
-        'إلغاء إصدار بسبب إلغاء الطلب',
-        'النظام',
-        client
-      );
-    }
+  for (const row of issued) {
+    const netIssue = Number(row.qty) || 0;
+    if (netIssue <= 0) continue;
+    await run(
+      `UPDATE coupon_accounts
+       SET remaining = GREATEST(0, remaining - ?),
+           total_issued = GREATEST(0, total_issued - ?),
+           updated_at = NOW()
+       WHERE id = ?`,
+      [netIssue, netIssue, row.accountId],
+      client
+    );
+    await addLedger(
+      row.accountId,
+      'cancel',
+      -netIssue,
+      orderId,
+      'إلغاء إصدار بسبب إلغاء الطلب',
+      'النظام',
+      client
+    );
   }
+}
+
+/** When an order leaves cancelled → active: restore pack credits + pending redeem. */
+async function reactivateOrderCouponEffects(orderId, client) {
+  const order = await get(
+    `SELECT id, coupons_redeemed AS "couponsRedeemed", coupon_redeem_status AS "couponRedeemStatus",
+            coupon_account_id AS "couponAccountId"
+     FROM orders WHERE id = ?`,
+    [orderId],
+    client
+  );
+  if (!order) return { skipped: true };
+
+  // Pack impact on balance for this order. If <= 0, credits were rolled back → restore one pack unit.
+  const packImpact = await all(
+    `SELECT account_id AS "accountId",
+            COALESCE(SUM(quantity), 0)::int AS "impact",
+            COALESCE(MAX(CASE WHEN entry_type = 'issue' THEN quantity END), 0)::int AS "unitIssue"
+     FROM coupon_ledger
+     WHERE order_id = ?
+       AND entry_type IN ('issue', 'cancel')
+     GROUP BY account_id`,
+    [orderId],
+    client
+  );
+
+  for (const row of packImpact) {
+    const impact = Number(row.impact) || 0;
+    const unitIssue = Number(row.unitIssue) || 0;
+    const reissue = impact <= 0 && unitIssue > 0 ? unitIssue : 0;
+    if (reissue <= 0) continue;
+
+    await run(
+      `UPDATE coupon_accounts
+       SET remaining = remaining + ?,
+           total_issued = total_issued + ?,
+           updated_at = NOW()
+       WHERE id = ?`,
+      [reissue, reissue, row.accountId],
+      client
+    );
+    await addLedger(
+      row.accountId,
+      'issue',
+      reissue,
+      orderId,
+      `إعادة إصدار ${reissue} كابون بعد إعادة تفعيل الطلب`,
+      'النظام',
+      client
+    );
+  }
+
+  if (
+    order.couponRedeemStatus === 'cancelled' &&
+    (Number(order.couponsRedeemed) || 0) > 0 &&
+    order.couponAccountId
+  ) {
+    await run(
+      `UPDATE orders SET coupon_redeem_status = 'pending' WHERE id = ?`,
+      [orderId],
+      client
+    );
+  }
+
+  return { reactivated: true };
 }
 
 async function listAccounts({ q = '', limit = 100 } = {}) {
@@ -686,6 +772,7 @@ module.exports = {
   reverseAppliedCouponRedeem,
   clearPendingCouponRedeem,
   reverseOrderCouponEffects,
+  reactivateOrderCouponEffects,
   listAccounts,
   getAccountLedger,
   adminAdjustAccount

@@ -1724,8 +1724,6 @@
         <option value="${value}" ${value === (order.deliveryStatus || 'لم يتم التسليم') ? 'selected' : ''}>${value}</option>
       `).join('');
       const quick = [
-        { status: 'confirmed', label: 'تأكيد', cls: 'btn sm' },
-        { status: 'preparing', label: 'تجهيز', cls: 'btn sm' },
         { status: 'out_for_delivery', label: 'توصيل', cls: 'btn sm warn' },
         { status: 'delivered', label: 'تسليم', cls: 'btn sm success' },
         { status: 'cancelled', label: 'إلغاء', cls: 'btn sm danger' }
