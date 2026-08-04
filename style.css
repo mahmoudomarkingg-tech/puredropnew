@@ -431,16 +431,72 @@ body {
 }
 
 [data-theme="light"] .mobile-menu-premium {
-  background: rgba(241, 245, 249, 0.98);
-  border-left: 1px solid rgba(100, 116, 139, 0.22);
-}
-
-[data-theme="light"] .mobile-menu-toolbar-title {
+  background: #f1f5f9 !important;
+  border-left: 1px solid rgba(100, 116, 139, 0.28);
   color: #0f172a;
 }
 
+[data-theme="light"] .mobile-menu-toolbar {
+  border-bottom-color: rgba(148, 163, 184, 0.35);
+}
+
+[data-theme="light"] .mobile-menu-toolbar-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .mobile-menu-close {
+  background: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  color: #0f172a !important;
+}
+
 [data-theme="light"] .mobile-menu-link {
-  color: #334155;
+  color: #1e293b !important;
+  background: transparent;
+}
+
+[data-theme="light"] .mobile-menu-link:hover,
+[data-theme="light"] .mobile-menu-link:active {
+  color: #0e7490 !important;
+  background: rgba(14, 165, 233, 0.1) !important;
+}
+
+[data-theme="light"] .mobile-menu-link i {
+  color: #0891b2 !important;
+}
+
+[data-theme="light"] .mobile-menu-link-admin {
+  color: #92400e !important;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+[data-theme="light"] .mobile-menu-link-admin i {
+  color: #d97706 !important;
+}
+
+[data-theme="light"] .mobile-menu-theme-btn {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: rgba(148, 163, 184, 0.4) !important;
+}
+
+[data-theme="light"] .mobile-menu-contact {
+  border-top-color: rgba(148, 163, 184, 0.35);
+}
+
+[data-theme="light"] .mobile-menu-contact p,
+[data-theme="light"] .mobile-menu-contact .text-slate-500 {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .mobile-menu-contact a,
+[data-theme="light"] .mobile-menu-contact span {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .mobile-menu-backdrop {
+  background: rgba(15, 23, 42, 0.35);
 }
 
 [data-theme="light"] .mobile-menu-theme-btn {
@@ -2872,20 +2928,43 @@ body.auth-modal-open {
 
 [data-theme="light"] .mobile-menu-premium a,
 [data-theme="light"] .mobile-menu-premium {
-  color: #334155;
+  color: #1e293b;
 }
 
 [data-theme="light"] .mobile-auth-card {
-  background: rgba(14, 165, 233, 0.08);
-  border-color: rgba(14, 165, 233, 0.28);
+  background: #ffffff !important;
+  border-color: rgba(14, 165, 233, 0.35) !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
 }
 
 [data-theme="light"] .mobile-auth-title {
-  color: #0f172a;
+  color: #0f172a !important;
 }
 
 [data-theme="light"] .mobile-auth-text {
-  color: #0369a1;
+  color: #0369a1 !important;
+}
+
+[data-theme="light"] .mobile-auth-login-btn {
+  background: #0f172a !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .mobile-auth-register-btn {
+  background: linear-gradient(135deg, #06b6d4, #2563eb) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .mobile-auth-logout {
+  color: #b91c1c !important;
+}
+
+[data-theme="light"] .mobile-auth-logged .text-violet-200 {
+  color: #6d28d9 !important;
+}
+
+[data-theme="light"] .mobile-auth-logged .text-slate-400 {
+  color: #64748b !important;
 }
 
 [data-theme="light"] .cart-auth-gate {

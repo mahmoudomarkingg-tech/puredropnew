@@ -940,6 +940,42 @@
       }
     }
 
+    function waitForGoogleIdentity(timeoutMs = 8000) {
+      return new Promise((resolve) => {
+        if (window.google?.accounts?.id) {
+          resolve(true);
+          return;
+        }
+        const started = Date.now();
+        const timer = setInterval(() => {
+          if (window.google?.accounts?.id) {
+            clearInterval(timer);
+            resolve(true);
+            return;
+          }
+          if (Date.now() - started >= timeoutMs) {
+            clearInterval(timer);
+            resolve(false);
+          }
+        }, 120);
+      });
+    }
+
+    function initializeGoogleIdentity() {
+      if (!authConfig.googleClientId || !window.google?.accounts?.id) return false;
+      window.google.accounts.id.initialize({
+        client_id: authConfig.googleClientId,
+        callback: async (response) => {
+          await handleGoogleCredential(response);
+          closeCustomerAuthModal();
+        },
+        auto_select: false,
+        ux_mode: 'popup',
+        cancel_on_tap_outside: true
+      });
+      return true;
+    }
+
     async function handleGoogleCredential(response) {
       try {
         const data = await puredropApiRequest('/api/auth/google', {
@@ -956,31 +992,24 @@
     async function startCustomerGoogleLogin() {
       try {
         if (!authConfig.googleClientId) {
-          openCustomerAuthModal();
+          openCustomerAuthModal('login');
           showNotification(
-            'ℹ️ استخدم البريد أو فعّل Google',
-            'يمكنك إنشاء حساب بالبريد الآن. لتفعيل Google أضف GOOGLE_CLIENT_ID في إعدادات Render ثم أعد النشر.',
+            'ℹ️ Google غير مفعّل على السيرفر',
+            'أضف GOOGLE_CLIENT_ID في Environment على Render، مع نطاق الموقع في Google Cloud، ثم أعد النشر.',
             'info'
           );
           return;
         }
 
-        if (!window.google?.accounts?.id) {
-          openCustomerAuthModal();
-          showNotification('⚠️ Google يحمّل', 'انتظر لحظات أو استخدم الدخول بالبريد', 'info');
+        const ready = await waitForGoogleIdentity();
+        if (!ready) {
+          openCustomerAuthModal('login');
+          showNotification('⚠️ تعذر تحميل Google', 'تحقق من الاتصال أو استخدم الدخول بالبريد', 'error');
           return;
         }
 
-        openCustomerAuthModal();
-        window.google.accounts.id.initialize({
-          client_id: authConfig.googleClientId,
-          callback: async (response) => {
-            await handleGoogleCredential(response);
-            closeCustomerAuthModal();
-          },
-          auto_select: false,
-          ux_mode: 'popup'
-        });
+        initializeGoogleIdentity();
+        openCustomerAuthModal('login');
 
         const host = document.getElementById('authModalGoogleBtn');
         if (host) {
@@ -996,10 +1025,14 @@
           });
         }
 
-        window.google.accounts.id.prompt();
+        try {
+          window.google.accounts.id.prompt();
+        } catch (_) {
+          /* One Tap may be blocked; the button still works */
+        }
       } catch (error) {
-        openCustomerAuthModal();
-        showNotification('❌ تعذر Google', (error.message || 'استخدم الدخول بالبريد') , 'error');
+        openCustomerAuthModal('login');
+        showNotification('❌ تعذر Google', (error.message || 'استخدم الدخول بالبريد'), 'error');
       }
     }
 
@@ -1016,11 +1049,9 @@
       } catch {
         authConfig = { googleEnabled: false, demoLoginEnabled: true, googleClientId: null };
       }
-      if (authConfig.googleClientId && window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: authConfig.googleClientId,
-          callback: handleGoogleCredential
-        });
+      if (authConfig.googleClientId) {
+        await waitForGoogleIdentity();
+        initializeGoogleIdentity();
       }
       await refreshCustomerSession();
     }
