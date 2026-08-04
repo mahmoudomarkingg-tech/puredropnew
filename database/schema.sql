@@ -210,7 +210,7 @@ CREATE TABLE IF NOT EXISTS contact_messages (
   address TEXT,
   service_type TEXT,
   message TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'seen', 'replied', 'closed')),
+  status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'unreplied', 'replied')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

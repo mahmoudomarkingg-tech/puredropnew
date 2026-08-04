@@ -588,10 +588,14 @@ function streamOrderEvents(req, res) {
 }
 
 const CONTACT_STATUS_LABELS = {
-  new: 'جديدة',
-  seen: 'تمت المشاهدة',
-  replied: 'تم الرد',
-  closed: 'مغلقة'
+  new: 'لم يتم الرد',
+  unreplied: 'لم يتم الرد',
+  replied: 'تم الرد'
+};
+
+const CONTACT_STATUS_EDITABLE = {
+  unreplied: 'لم يتم الرد',
+  replied: 'تم الرد'
 };
 
 async function listContactMessages(req, res) {
@@ -643,6 +647,7 @@ async function listContactMessages(req, res) {
   const countsRow = await get(
     `SELECT
        COUNT(*)::int AS total,
+       COUNT(*) FILTER (WHERE status IN ('new', 'unreplied', 'seen'))::int AS "unrepliedCount",
        COUNT(*) FILTER (WHERE status = 'new')::int AS "newCount",
        COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE)::int AS today
      FROM contact_messages`
@@ -654,14 +659,16 @@ async function listContactMessages(req, res) {
     messages: messages.map(row => ({
       ...row,
       kind: 'support_message',
+      status: row.status === 'replied' ? 'replied' : 'unreplied',
       statusLabel: CONTACT_STATUS_LABELS[row.status] || row.status
     })),
     counts: {
       total: Number(countsRow?.total || 0),
+      unreplied: Number(countsRow?.unrepliedCount || 0),
       new: Number(countsRow?.newCount || 0),
       today: Number(countsRow?.today || 0)
     },
-    statuses: Object.entries(CONTACT_STATUS_LABELS).map(([statusKey, labelAr]) => ({
+    statuses: Object.entries(CONTACT_STATUS_EDITABLE).map(([statusKey, labelAr]) => ({
       status: statusKey,
       labelAr
     })),
@@ -671,14 +678,17 @@ async function listContactMessages(req, res) {
 
 async function updateContactMessageStatus(req, res) {
   const messageId = Number.parseInt(req.params.id, 10);
-  const nextStatus = sanitizeText(req.body?.status, 40);
+  let nextStatus = sanitizeText(req.body?.status, 40);
+  if (nextStatus === 'new' || nextStatus === 'seen' || nextStatus === 'closed') {
+    nextStatus = 'unreplied';
+  }
 
   if (!Number.isInteger(messageId) || messageId <= 0) {
     return res.status(400).json({ success: false, error: 'معرّف الرسالة غير صالح' });
   }
 
-  if (!CONTACT_STATUS_LABELS[nextStatus]) {
-    return res.status(400).json({ success: false, error: 'حالة الرسالة غير صالحة' });
+  if (!CONTACT_STATUS_EDITABLE[nextStatus]) {
+    return res.status(400).json({ success: false, error: 'حالة الرسالة غير صالحة. استخدم: تم الرد أو لم يتم الرد' });
   }
 
   const existing = await get('SELECT id, status FROM contact_messages WHERE id = ?', [messageId]);
@@ -706,8 +716,41 @@ async function updateContactMessageStatus(req, res) {
     supportCode: `دعم-${messageId}`,
     kind: 'support_message',
     status: nextStatus,
-    statusLabel: CONTACT_STATUS_LABELS[nextStatus]
+    statusLabel: CONTACT_STATUS_EDITABLE[nextStatus] || CONTACT_STATUS_LABELS[nextStatus]
   });
+}
+
+async function ackAdminHubSection(req, res) {
+  const section = sanitizeText(req.body?.section, 40);
+  if (section === 'support') {
+    const result = await run(
+      `UPDATE contact_messages
+       SET status = 'unreplied', updated_at = NOW()
+       WHERE status IN ('new', 'seen')`
+    );
+    broadcastAdminEvent('contact-messages-updated', { section: 'support', acked: true });
+    return res.json({
+      success: true,
+      section,
+      cleared: true,
+      updated: result?.rowCount || 0
+    });
+  }
+
+  if (section === 'customers') {
+    const row = await get(`SELECT COALESCE(MAX(id), 0)::int AS "latestId" FROM customer_users`);
+    return res.json({
+      success: true,
+      section,
+      latestId: Number(row?.latestId || 0)
+    });
+  }
+
+  if (section === 'orders') {
+    return res.json({ success: true, section, cleared: true });
+  }
+
+  return res.status(400).json({ success: false, error: 'قسم غير معروف' });
 }
 
 async function deleteContactMessage(req, res) {
@@ -832,6 +875,9 @@ async function getAdminHubSummary(req, res) {
       )
     )?.total || 0
   );
+  const customersLatestId = Number(
+    (await get(`SELECT COALESCE(MAX(id), 0)::int AS "latestId" FROM customer_users`))?.latestId || 0
+  );
   const customersTotal = Number(
     (await get(`SELECT COUNT(*)::int AS total FROM customer_users`))?.total || 0
   );
@@ -845,7 +891,13 @@ async function getAdminHubSummary(req, res) {
     sections: {
       orders: { newCount: pendingOrders, label: 'طلبات بانتظار المعالجة' },
       support: { newCount: newSupport, label: 'رسائل دعم جديدة' },
-      customers: { newCount: newCustomersToday, total: customersTotal, couponBooks, label: 'عملاء جدد اليوم' }
+      customers: {
+        newCount: newCustomersToday,
+        latestId: customersLatestId,
+        total: customersTotal,
+        couponBooks,
+        label: 'عملاء جدد اليوم'
+      }
     },
     generatedAt: new Date().toISOString()
   });
@@ -861,6 +913,7 @@ module.exports = {
   listContactMessages,
   updateContactMessageStatus,
   deleteContactMessage,
+  ackAdminHubSection,
   listSavedCustomers,
   getAdminHubSummary
 };

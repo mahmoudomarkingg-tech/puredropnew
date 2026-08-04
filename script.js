@@ -599,6 +599,11 @@
     let customerSession = null;
     let authConfig = { googleEnabled: false, demoLoginEnabled: true, googleClientId: null, emailAuthEnabled: true };
     let customerAuthMode = 'login';
+    // When true, customer chose cash — do not auto-recheck coupon payment.
+    let preferCashPayment = false;
+    // Guest (not logged in) coupon balance looked up by phone or booklet number.
+    let guestCouponLookup = { available: 0, bookNumber: '', phone: '' };
+    let guestBookLookupTimer = null;
 
     function canUseApi() {
       return window.location.protocol !== 'file:' || Boolean(API_BASE_URL);
@@ -671,6 +676,7 @@
       const phoneWrap = document.getElementById('authPhoneWrap');
       const submitBtn = document.getElementById('authEmailSubmitBtn');
       const passInput = document.getElementById('authEmailPassword');
+      const titleEl = document.getElementById('authModalTitle');
       loginTab?.classList.toggle('active', customerAuthMode === 'login');
       registerTab?.classList.toggle('active', customerAuthMode === 'register');
       setHiddenEl(nameWrap, customerAuthMode !== 'register');
@@ -678,16 +684,28 @@
       if (submitBtn) {
         submitBtn.textContent = customerAuthMode === 'register' ? 'إنشاء الحساب' : 'تسجيل الدخول';
       }
+      if (titleEl) {
+        titleEl.textContent = customerAuthMode === 'register' ? 'إنشاء حساب' : 'تسجيل الدخول';
+      }
       if (passInput) {
         passInput.autocomplete = customerAuthMode === 'register' ? 'new-password' : 'current-password';
       }
       const err = document.getElementById('authEmailError');
       setHiddenEl(err, true);
+      const scroller = document.querySelector('#customerAuthModal .auth-modal-scroll');
+      if (scroller) scroller.scrollTop = 0;
     }
 
-    function openCustomerAuthModal() {
+    function openCustomerAuthModal(mode) {
       const modal = document.getElementById('customerAuthModal');
       if (!modal) return;
+
+      const mobileMenu = document.getElementById('mobileMenu');
+      if (mobileMenu?.classList.contains('open') && typeof setMobileMenuOpen === 'function') {
+        setMobileMenuOpen(false);
+      } else if (mobileMenu?.classList.contains('open')) {
+        mobileMenu.classList.remove('open');
+      }
 
       const demoBox = document.getElementById('authDemoFields');
       const googleBtn = document.getElementById('authModalGoogleBtn');
@@ -704,10 +722,19 @@
         }
       }
 
-      setCustomerAuthMode(customerAuthMode || 'login');
+      const nextMode = mode === 'register' || mode === 'login' ? mode : (customerAuthMode || 'login');
+      setCustomerAuthMode(nextMode);
       setHiddenEl(modal, false);
       modal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('auth-modal-open');
+      requestAnimationFrame(() => {
+        const scroller = modal.querySelector('.auth-modal-scroll');
+        if (scroller) scroller.scrollTop = 0;
+        modal.scrollTop = 0;
+        const focusId = nextMode === 'register' ? 'authEmailName' : 'authEmailAddress';
+        document.getElementById(focusId)?.focus?.({ preventScroll: true });
+      });
     }
 
     function closeCustomerAuthModal() {
@@ -715,6 +742,7 @@
       setHiddenEl(modal, true);
       if (modal) modal.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
+      document.body.classList.remove('auth-modal-open');
     }
 
     async function submitEmailCustomerAuth() {
@@ -800,6 +828,7 @@
 
       setHiddenEl(chip, !loggedIn);
       setHiddenEl(loginBtn, loggedIn);
+      setHiddenEl(document.getElementById('mobileNavAuthBtn'), loggedIn);
       if (!loggedIn) closeCustomerMenu();
 
       const nameChip = document.getElementById('customerNameChip');
@@ -836,6 +865,7 @@
 
       const gate = document.getElementById('cartLoginGate');
       const bal = document.getElementById('cartAccountBalance');
+      // Login is optional — guests can order with name/phone/booklet number.
       setHiddenEl(gate, loggedIn);
       setHiddenEl(bal, !loggedIn);
       if (bal) {
@@ -855,7 +885,7 @@
         if (bookEl && acc?.bookNumber && !bookEl.value.trim()) {
           bookEl.value = acc.bookNumber;
           const payBox = document.getElementById('payWithDigitalCoupon');
-          if (payBox && getRefillCartQty() > 0) payBox.checked = true;
+          if (payBox && getRefillCartQty() > 0 && !preferCashPayment) payBox.checked = true;
           syncCouponRedeemQtyFromCart();
         }
       }
@@ -961,7 +991,7 @@
             size: 'large',
             shape: 'pill',
             text: 'continue_with',
-            width: 320,
+            width: Math.max(220, Math.min(320, Math.floor(host.clientWidth || 280))),
             locale: 'ar'
           });
         }
@@ -1333,11 +1363,47 @@ if (canvas && ctx) {
     }, { passive: true });
 
     // ==================== MOBILE MENU ====================
-    function toggleMobileMenu() {
-      document.getElementById('mobileMenu').classList.toggle('open');
-      // Prevent body scroll when menu is open
-      document.body.style.overflow = document.getElementById('mobileMenu').classList.contains('open') ? 'hidden' : '';
+    let mobileMenuScrollY = 0;
+
+    function setMobileMenuOpen(willOpen) {
+      const menu = document.getElementById('mobileMenu');
+      const backdrop = document.getElementById('mobileMenuBackdrop');
+      const scroller = document.getElementById('mobileMenuScroll');
+      if (!menu) return;
+
+      menu.classList.toggle('open', willOpen);
+      menu.setAttribute('aria-hidden', willOpen ? 'false' : 'true');
+      if (backdrop) {
+        backdrop.hidden = !willOpen;
+        backdrop.setAttribute('aria-hidden', willOpen ? 'false' : 'true');
+      }
+
+      if (willOpen) {
+        mobileMenuScrollY = window.scrollY || window.pageYOffset || 0;
+        document.body.classList.add('mobile-menu-open');
+        document.body.style.top = `-${mobileMenuScrollY}px`;
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        if (scroller) {
+          scroller.scrollTop = 0;
+          scroller.style.webkitOverflowScrolling = 'touch';
+        }
+      } else {
+        document.body.classList.remove('mobile-menu-open');
+        document.body.style.top = '';
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        window.scrollTo(0, mobileMenuScrollY);
+      }
     }
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobileMenu');
+      if (!menu) return;
+      setMobileMenuOpen(!menu.classList.contains('open'));
+    }
+
+    window.toggleMobileMenu = toggleMobileMenu;
 
     // ==================== PREMIUM NOTIFICATIONS ====================
     function showNotification(title, msg, type = 'success') {
@@ -2033,11 +2099,60 @@ function filterProducts(category) {
       }, 0);
     }
 
-    /** Available coupons for this checkout: account balance + books in the same cart. */
+    /** Available coupons for this checkout: account/guest balance + books in the same cart. */
     function getEffectiveCouponAvailable() {
       const acc = getPrimaryCouponAccount();
-      const base = acc ? Number(acc.available ?? acc.remaining) || 0 : 0;
+      const sessionBase = acc ? Number(acc.available ?? acc.remaining) || 0 : 0;
+      const bookEl = (document.getElementById('couponBookNumber')?.value || '').trim().toUpperCase();
+      const guestMatchesBook =
+        Boolean(guestCouponLookup.bookNumber) &&
+        Boolean(bookEl) &&
+        guestCouponLookup.bookNumber === bookEl;
+      const guestBase = guestMatchesBook ? Number(guestCouponLookup.available) || 0 : 0;
+      const base = Math.max(sessionBase, guestBase);
       return Math.max(0, base + getCartDigitalBookCredits());
+    }
+
+    function applyGuestCouponAccounts(accounts, phone = '') {
+      const list = (accounts || []).filter(a => a.serviceType === 'external');
+      if (!list.length) {
+        guestCouponLookup = { available: 0, bookNumber: '', phone: phone || '' };
+        return null;
+      }
+      const match = list[0];
+      guestCouponLookup = {
+        available: Number(match.available ?? match.remaining) || 0,
+        bookNumber: String(match.bookNumber || '').toUpperCase(),
+        phone: phone || match.phone || ''
+      };
+      return match;
+    }
+
+    async function lookupCouponByBookNumber(bookNumber, { silent = false } = {}) {
+      const code = String(bookNumber || '').trim().toUpperCase();
+      if (!code || code.length < 6) return null;
+      const statusEl = document.getElementById('couponBalanceStatus');
+      try {
+        const data = await puredropApiRequest(
+          `/api/coupons/balance?bookNumber=${encodeURIComponent(code)}`
+        );
+        const match = applyGuestCouponAccounts(data.accounts || [], data.phone || '');
+        if (!match) return null;
+        const bookEl = document.getElementById('couponBookNumber');
+        if (bookEl && match.bookNumber) bookEl.value = match.bookNumber;
+        const payBox = document.getElementById('payWithDigitalCoupon');
+        if (payBox && getRefillCartQty() > 0 && !preferCashPayment) payBox.checked = true;
+        syncCouponRedeemQtyFromCart();
+        updateCartTotalsPreview();
+        const text = `دفتر ${match.bookNumber}: متاح ${match.available ?? match.remaining} كابون`;
+        if (statusEl) statusEl.textContent = text + ' — يمكنك الطلب بدون تسجيل دخول.';
+        if (!silent) showNotification('✅ رصيد الدفتر', text, 'success');
+        return match;
+      } catch (error) {
+        if (!silent && statusEl) statusEl.textContent = error.message || 'تعذر التحقق من رقم الدفتر';
+        if (!silent) showNotification('❌ تعذر التحقق', error.message || 'تحقق من رقم الدفتر', 'error');
+        return null;
+      }
     }
 
     /** Smallest packs that cover a coupon shortage (for same-cart top-up). */
@@ -2073,6 +2188,7 @@ function filterProducts(category) {
       const id = Number(productId);
       if (![11, 12, 13, 14].includes(id)) return;
       addToCart(id);
+      preferCashPayment = false;
       const payBox = document.getElementById('payWithDigitalCoupon');
       if (payBox) payBox.checked = true;
       syncCouponRedeemQtyFromCart();
@@ -2147,8 +2263,7 @@ function filterProducts(category) {
 
     function isPayingWithDigitalCoupon() {
       const payBox = document.getElementById('payWithDigitalCoupon');
-      const bookNumber = (document.getElementById('couponBookNumber')?.value || '').trim();
-      return !!(payBox?.checked || bookNumber);
+      return !!payBox?.checked;
     }
 
     function syncCouponRedeemQtyFromCart() {
@@ -2164,8 +2279,14 @@ function filterProducts(category) {
 
       const hasDigitalBookInCart = cart.some(item => [11, 12, 13, 14].includes(Number(item.id)));
 
-      // Typed book number, or first order with book+refill in cart → treat as coupon payment.
-      if (payBox && refillQty > 0 && !payBox.checked && (bookNumber || hasDigitalBookInCart)) {
+      // Auto-suggest coupon pay only if customer did not choose cash.
+      if (
+        payBox &&
+        refillQty > 0 &&
+        !payBox.checked &&
+        !preferCashPayment &&
+        (bookNumber || hasDigitalBookInCart)
+      ) {
         payBox.checked = true;
       }
 
@@ -2228,6 +2349,13 @@ function filterProducts(category) {
           renderCouponTopUpSuggest(refillQty, available);
         }
       } else {
+        if (statusEl) {
+          statusEl.textContent = preferCashPayment
+            ? `الدفع نقداً مفعّل — يمكنك تفعيل الكوبون لاحقاً إن رغبت (متاح ${available} كابون).`
+            : `فعّل الدفع بالكوبون أو اتركه معطّلاً للدفع نقداً. المتاح: ${available} كابون.`;
+          statusEl.classList.remove('text-red-300');
+          statusEl.classList.add('text-slate-400');
+        }
         if (limitWarn) limitWarn.classList.add('is-hidden', 'hidden');
         renderCouponTopUpSuggest(0, available);
       }
@@ -2239,6 +2367,7 @@ function filterProducts(category) {
         } else {
           panel.classList.remove('ring-1', 'ring-violet-400/40');
           if (payBox && payBox.checked) payBox.checked = false;
+          preferCashPayment = false;
         }
       }
     }
@@ -2320,35 +2449,49 @@ function filterProducts(category) {
 
     async function checkDigitalCouponBalance() {
       const phone = document.getElementById('customerPhone')?.value.trim() || '';
+      const bookNumber = (document.getElementById('couponBookNumber')?.value || '').trim().toUpperCase();
       const statusEl = document.getElementById('couponBalanceStatus');
       const jordanPhoneRegex = /^07\d{8,9}$/;
+
+      // Prefer booklet number for guests who already typed it.
+      if (bookNumber.length >= 6 && !jordanPhoneRegex.test(phone)) {
+        if (statusEl) statusEl.textContent = 'جارٍ التحقق من رقم الدفتر...';
+        await lookupCouponByBookNumber(bookNumber);
+        return;
+      }
+
       if (!jordanPhoneRegex.test(phone)) {
-        if (statusEl) statusEl.textContent = 'أدخل رقم هاتف أردني صحيح أولاً ثم تحقق من الرصيد.';
-        showNotification('⚠️ رقم غير صالح', 'أدخل رقم الهاتف قبل التحقق من رصيد الدفتر', 'error');
+        if (bookNumber.length >= 6) {
+          if (statusEl) statusEl.textContent = 'جارٍ التحقق من رقم الدفتر...';
+          await lookupCouponByBookNumber(bookNumber);
+          return;
+        }
+        if (statusEl) statusEl.textContent = 'أدخل رقم الهاتف أو رقم الدفتر ثم اضغط «جلب رقمي».';
+        showNotification('⚠️ بيانات ناقصة', 'أدخل رقم الهاتف أو رقم الدفتر للتحقق من الرصيد', 'error');
         return;
       }
       if (statusEl) statusEl.textContent = 'جارٍ التحقق من رصيد الدفتر الرقمي...';
       try {
         const data = await puredropApiRequest(`/api/coupons/balance?phone=${encodeURIComponent(phone)}`);
-        const accounts = (data.accounts || []).filter(a => a.serviceType === 'external');
-        if (!accounts.length) {
+        const match = applyGuestCouponAccounts(data.accounts || [], phone);
+        if (!match) {
           if (statusEl) statusEl.textContent = 'لا يوجد دفتر رقمي خارجي لهذا الرقم بعد. اشترِ دفتراً رقمياً خارجياً أولاً.';
           showNotification('ℹ️ لا رصيد', 'لا يوجد دفتر رقمي خارجي على هذا الرقم حالياً', 'info');
           return;
         }
-        const match = accounts[0];
         const bookEl = document.getElementById('couponBookNumber');
         if (bookEl && match.bookNumber) {
           bookEl.value = match.bookNumber;
         }
         const payBox = document.getElementById('payWithDigitalCoupon');
-        if (payBox && getRefillCartQty() > 0) payBox.checked = true;
+        if (payBox && getRefillCartQty() > 0 && !preferCashPayment) payBox.checked = true;
         syncCouponRedeemQtyFromCart();
-        const text = accounts
+        const text = (data.accounts || [])
+          .filter(a => a.serviceType === 'external')
           .map(a => `دفتر ${a.bookNumber || '—'}: متبقي ${a.remaining} • متاح ${a.available ?? a.remaining}`)
           .join(' • ');
-        if (statusEl) statusEl.textContent = text + ' — يُخصم بعد التسليم فقط.';
-        if (match && document.getElementById('couponRedeemQty')) {
+        if (statusEl) statusEl.textContent = text + ' — يمكنك الطلب بدون تسجيل دخول.';
+        if (document.getElementById('couponRedeemQty')) {
           const refillQty = getRefillCartQty();
           const available = Number(match.available ?? match.remaining) || 0;
           document.getElementById('couponRedeemQty').max = String(Math.max(0, Math.min(available, refillQty || available)));
@@ -2370,20 +2513,31 @@ function filterProducts(category) {
       if (event.target && (event.target.id === 'couponRedeemQty' || event.target.id === 'couponBookNumber')) {
         updateCartTotalsPreview();
       }
+      if (event.target && event.target.id === 'couponBookNumber') {
+        const code = (event.target.value || '').trim().toUpperCase();
+        if (guestBookLookupTimer) clearTimeout(guestBookLookupTimer);
+        if (code.length < 6) return;
+        guestBookLookupTimer = setTimeout(() => {
+          lookupCouponByBookNumber(code, { silent: true });
+        }, 550);
+      }
     });
     document.addEventListener('change', (event) => {
       if (event.target && event.target.id === 'payWithDigitalCoupon') {
+        preferCashPayment = !event.target.checked;
+        if (preferCashPayment) {
+          const qtyInput = document.getElementById('couponRedeemQty');
+          if (qtyInput) qtyInput.value = '0';
+          showNotification('💵 دفع نقدي', 'تم إلغاء الدفع بالكوبون لهذا الطلب — ستدفع بالدينار.', 'info');
+        } else {
+          showNotification('🎟️ دفع بالكوبون', 'تم تفعيل الدفع بالكابونات الرقمية.', 'success');
+        }
+        syncCouponRedeemQtyFromCart();
         updateCartTotalsPreview();
       }
     });
 
     async function confirmOrder() {
-  if (!getCustomerToken() || !customerSession?.id) {
-    showNotification('🔐 يلزم تسجيل الدخول', 'سجّل الدخول أو أنشئ حساباً عبر Google أولاً ثم أكّد الطلب', 'error');
-    openCustomerAuthModal();
-    return;
-  }
-
   const name = document.getElementById('customerName').value.trim();
   const phone = document.getElementById('customerPhone').value.trim();
   const address = document.getElementById('customerAddress').value.trim();
@@ -2394,13 +2548,14 @@ function filterProducts(category) {
   const lng = lngRaw ? Number(lngRaw) : null;
   syncCouponRedeemQtyFromCart();
   const payWithCoupon = isPayingWithDigitalCoupon();
-  const couponBookNumber = (document.getElementById('couponBookNumber')?.value || '').trim().toUpperCase();
+  const couponBookNumber = payWithCoupon
+    ? (document.getElementById('couponBookNumber')?.value || '').trim().toUpperCase()
+    : '';
   const couponRedeemQty = payWithCoupon
     ? Math.max(0, Number.parseInt(document.getElementById('couponRedeemQty')?.value || '0', 10) || 0)
     : 0;
-  if (payWithCoupon && document.getElementById('payWithDigitalCoupon')) {
-    document.getElementById('payWithDigitalCoupon').checked = true;
-  }
+
+  // Guests may order freely (cash or coupon with booklet). Login is optional.
 
   const deliveryTimeElement = document.querySelector('input[name="deliveryTime"]:checked');
   const deliveryTimeValue = deliveryTimeElement ? deliveryTimeElement.value : 'asap';
@@ -2451,6 +2606,10 @@ function filterProducts(category) {
         'error'
       );
       return;
+    }
+    // Refresh guest booklet balance before validating locally.
+    if (couponBookNumber && (!getCustomerToken() || getEffectiveCouponAvailable() < refillQty)) {
+      await lookupCouponByBookNumber(couponBookNumber, { silent: true });
     }
     const availableCoupons = getEffectiveCouponAvailable();
     if (refillQty > availableCoupons) {
@@ -2797,14 +2956,17 @@ window.confirmOrder = confirmOrder;
         const target = document.querySelector(targetId);
         if (target) {
           // Close mobile menu if open
-          document.getElementById('mobileMenu').classList.remove('open');
-          document.body.style.overflow = '';
-          
+          if (typeof setMobileMenuOpen === 'function') setMobileMenuOpen(false);
+          else {
+            document.getElementById('mobileMenu')?.classList.remove('open');
+            document.body.style.overflow = '';
+          }
+
           // Smooth scroll with offset for fixed navbar
           const headerOffset = 100;
           const elementPosition = target.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-      
+
           window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth'
@@ -2850,8 +3012,12 @@ window.confirmOrder = confirmOrder;
       
       // Escape to close modals/menus
       if (e.key === 'Escape') {
-        document.getElementById('mobileMenu').classList.remove('open');
-        document.body.style.overflow = '';
+        if (typeof setMobileMenuOpen === 'function') setMobileMenuOpen(false);
+        else {
+          document.getElementById('mobileMenu')?.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+        closeCustomerAuthModal?.();
         const aiPage = document.getElementById('aiChatPage');
         if (aiPage && aiPage.classList.contains('active')) {
           showMain();

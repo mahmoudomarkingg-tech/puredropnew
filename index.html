@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta http-equiv="Permissions-Policy" content="geolocation=(self)" />
   <title>قطرة نقية | طلب مياه وثلج مع توصيل في الأردن - PureDrop</title>
   <meta name="description" content="قطرة نقية: طلب مياه معبأة وقوارير 18.9 لتر وثلج مع توصيل سريع في عمّان وجميع محافظات الأردن. أسعار واضحة وطلب إلكتروني مباشر." />
@@ -156,8 +156,20 @@
           </a>
         </div>
 
-        <!-- Tablet / Mobile actions: theme + cart + menu -->
+        <!-- Tablet / Mobile actions: account + theme + cart + menu -->
         <div class="xl:hidden flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            id="mobileNavAuthBtn"
+            onclick="openCustomerAuthModal('login')"
+            class="relative group"
+            aria-label="تسجيل الدخول أو إنشاء حساب"
+            title="تسجيل الدخول / إنشاء حساب"
+          >
+            <div class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
+              <i class="fas fa-user text-slate-300 group-hover:text-cyan-400 transition-colors text-lg"></i>
+            </div>
+          </button>
           <button
             type="button"
             id="themeToggleBtnMobile"
@@ -183,43 +195,30 @@
       </div>
     </nav>
 
+    <div id="mobileMenuBackdrop" class="mobile-menu-backdrop" hidden aria-hidden="true" onclick="toggleMobileMenu()"></div>
+
     <!-- Mobile Menu -->
-    <div id="mobileMenu" class="mobile-menu-premium fixed top-0 right-0 w-[min(24rem,86vw)] h-full z-[60] p-8 pt-24">
-      <button type="button" onclick="toggleMobileMenu()" class="absolute top-6 left-6 w-10 h-10 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors">
-        <i class="fas fa-times text-lg"></i>
-      </button>
-      <div class="flex flex-col gap-2 mt-4">
-        <a href="#home" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
-          <i class="fas fa-home text-cyan-400"></i> الرئيسية
-        </a>
-        <a href="#products" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
-          <i class="fas fa-boxes text-cyan-400"></i> المنتجات
-        </a>
-        <a href="#hydrationCalculator" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
-          <i class="fas fa-droplet text-cyan-400"></i> حاسبة الترطيب
-        </a>
-        <a href="#familyBottleAdvisor" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
-          <i class="fas fa-jug-detergent text-cyan-400"></i> مستشار القوارير
-        </a>
-        <a href="#about" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
-          <i class="fas fa-info-circle text-cyan-400"></i> من نحن
-        </a>
-        <a href="#contact" onclick="showMain(); toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
-          <i class="fas fa-phone-alt text-cyan-400"></i> تواصل معنا
-        </a>
-        <a href="#" onclick="showAIChat(); toggleMobileMenu(); return false;" class="px-4 py-3.5 rounded-xl text-slate-300 hover:text-cyan-400 hover:bg-white/5 transition-all flex items-center gap-3 font-medium">
-          <i class="fas fa-robot text-cyan-400"></i> المساعد الذكي
-        </a>
-        <a href="/admin/" target="_blank" rel="noopener" onclick="toggleMobileMenu();" class="px-4 py-3.5 rounded-xl text-amber-300 hover:text-amber-200 hover:bg-amber-500/10 transition-all flex items-center gap-3 font-medium border border-amber-500/20">
-          <i class="fas fa-user-shield text-amber-400"></i> لوحة الإدارة
-        </a>
+    <div id="mobileMenu" class="mobile-menu-premium" aria-hidden="true">
+      <div class="mobile-menu-toolbar">
+        <span class="mobile-menu-toolbar-title">القائمة</span>
+        <button type="button" onclick="toggleMobileMenu()" class="mobile-menu-close w-10 h-10 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors" aria-label="إغلاق القائمة">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+      <div class="mobile-menu-scroll" id="mobileMenuScroll">
+        <!-- Account first so login is always reachable without scrolling -->
         <div id="mobileCustomerBox" class="mobile-auth-card">
           <div id="mobileCustomerLoggedOut">
             <p class="mobile-auth-title">حساب العميل</p>
-            <p class="mobile-auth-text">سجّل الدخول أو أنشئ حساباً عبر Google لمتابعة الدفتر والكابونات</p>
-            <button type="button" onclick="openCustomerAuthModal(); toggleMobileMenu();" class="mobile-auth-google-btn">
-              <i class="fab fa-google"></i> دخول / إنشاء حساب
-            </button>
+            <p class="mobile-auth-text">ادخل لحسابك أو أنشئ حساباً جديداً</p>
+            <div class="mobile-auth-actions">
+              <button type="button" class="mobile-auth-login-btn" onclick="toggleMobileMenu(); openCustomerAuthModal('login')">
+                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+              </button>
+              <button type="button" class="mobile-auth-register-btn" onclick="toggleMobileMenu(); openCustomerAuthModal('register')">
+                <i class="fas fa-user-plus"></i> إنشاء حساب
+              </button>
+            </div>
           </div>
           <div id="mobileCustomerLoggedIn" class="is-hidden mobile-auth-logged">
             <div class="font-bold" id="mobileCustomerName">—</div>
@@ -228,24 +227,49 @@
             <button type="button" onclick="customerLogout(); toggleMobileMenu();" class="mobile-auth-logout">تسجيل الخروج</button>
           </div>
         </div>
-        <button type="button" onclick="showCart(); toggleMobileMenu();" class="mt-6 px-6 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-cyan-500/30 transition-all">
+
+        <a href="#home" onclick="showMain(); toggleMobileMenu();" class="mobile-menu-link">
+          <i class="fas fa-home text-cyan-400"></i> الرئيسية
+        </a>
+        <a href="#products" onclick="showMain(); toggleMobileMenu();" class="mobile-menu-link">
+          <i class="fas fa-boxes text-cyan-400"></i> المنتجات
+        </a>
+        <a href="#hydrationCalculator" onclick="showMain(); toggleMobileMenu();" class="mobile-menu-link">
+          <i class="fas fa-droplet text-cyan-400"></i> حاسبة الترطيب
+        </a>
+        <a href="#familyBottleAdvisor" onclick="showMain(); toggleMobileMenu();" class="mobile-menu-link">
+          <i class="fas fa-jug-detergent text-cyan-400"></i> مستشار القوارير
+        </a>
+        <a href="#about" onclick="showMain(); toggleMobileMenu();" class="mobile-menu-link">
+          <i class="fas fa-info-circle text-cyan-400"></i> من نحن
+        </a>
+        <a href="#contact" onclick="showMain(); toggleMobileMenu();" class="mobile-menu-link">
+          <i class="fas fa-phone-alt text-cyan-400"></i> تواصل معنا
+        </a>
+        <a href="#" onclick="showAIChat(); toggleMobileMenu(); return false;" class="mobile-menu-link">
+          <i class="fas fa-robot text-cyan-400"></i> المساعد الذكي
+        </a>
+        <a href="/admin/" target="_blank" rel="noopener" onclick="toggleMobileMenu();" class="mobile-menu-link mobile-menu-link-admin">
+          <i class="fas fa-user-shield text-amber-400"></i> لوحة الإدارة
+        </a>
+
+        <button type="button" onclick="showCart(); toggleMobileMenu();" class="mobile-menu-cart-btn">
           <i class="fas fa-shopping-cart"></i> سلة الطلبات
           <span id="mobileCartCount" class="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-bold hidden">0</span>
         </button>
-        <button type="button" onclick="toggleTheme()" class="mt-3 px-6 py-4 rounded-xl glass-elegant font-bold flex items-center justify-center gap-2 hover:bg-white/10 transition-all w-full">
+        <button type="button" onclick="toggleTheme()" class="mobile-menu-theme-btn">
           <i id="mobileThemeToggleIcon" class="fas fa-sun text-cyan-400 transition-colors text-lg"></i>
           <span>تبديل الوضع الليلي / النهاري</span>
         </button>
-      </div>
-      
-      <!-- Mobile Contact Info -->
-      <div class="mt-10 pt-6 border-t border-white/10">
-        <p class="text-xs text-slate-500 mb-3">للاستفسارات الفورية:</p>
-        <div class="flex items-center gap-3 text-sm">
-          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center">
-            <i class="fas fa-phone-alt text-cyan-400"></i>
+
+        <div class="mobile-menu-contact">
+          <p class="text-xs text-slate-500 mb-3">للاستفسارات الفورية:</p>
+          <div class="flex items-center gap-3 text-sm">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center">
+              <i class="fas fa-phone-alt text-cyan-400"></i>
+            </div>
+            <a class="font-medium" dir="ltr" href="tel:+962781936691">+962781936691</a>
           </div>
-          <span class="font-medium" dir="ltr">+962781936691</span>
         </div>
       </div>
     </div>
@@ -926,13 +950,13 @@
         <!-- Delivery Info Premium -->
         <div class="space-y-5 mb-8">
           <div id="cartLoginGate" class="cart-auth-gate">
-            <div class="cart-auth-gate-icon"><i class="fab fa-google"></i></div>
+            <div class="cart-auth-gate-icon"><i class="fas fa-user"></i></div>
             <div>
-              <p class="cart-auth-gate-title">حساب العميل مطلوب</p>
-              <p class="cart-auth-gate-text">سجّل الدخول أو أنشئ حساباً عبر Google قبل تأكيد الطلب لربط رقم الدفتر والكابونات.</p>
+              <p class="cart-auth-gate-title">الطلب متاح بدون تسجيل</p>
+              <p class="cart-auth-gate-text">املأ بياناتك وأكّد الطلب نقداً أو برقم الدفتر. الحساب اختياري لمتابعة الرصيد لاحقاً.</p>
             </div>
             <button type="button" onclick="openCustomerAuthModal()" class="cart-auth-gate-btn">
-              <i class="fab fa-google"></i> دخول / إنشاء حساب
+              <i class="fas fa-user-plus"></i> دخول اختياري
             </button>
           </div>
           <div id="cartAccountBalance" class="cart-auth-balance is-hidden">
@@ -948,7 +972,7 @@
           <div>
             <label class="block text-sm font-medium mb-2 text-slate-300">رقم الهاتف <span class="text-red-400">*</span></label>
             <input type="tel" id="customerPhone" required placeholder="07XXXXXXXXX" class="w-full px-4.5 py-3.5 rounded-xl bg-white/5 border border-slate-700 text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all" dir="ltr"/>
-            <p class="text-[11px] text-slate-500 mt-1">بعد تسجيل Google اربط رقم هاتفك هنا لربط الدفتر الرقمي</p>
+            <p class="text-[11px] text-slate-500 mt-1">رقم أردني يبدأ بـ 07 — يُستخدم للتوصيل وربط الدفتر عند الدفع بالكوبون</p>
           </div>
           <div id="digitalCouponPanel" class="coupon-panel rounded-2xl p-4 space-y-3">
             <div class="flex items-center justify-between gap-2">
@@ -1156,62 +1180,70 @@
   <div id="customerAuthModal" class="auth-modal is-hidden" aria-hidden="true">
     <div class="auth-modal-backdrop" onclick="closeCustomerAuthModal()"></div>
     <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
-      <button type="button" class="auth-modal-close" onclick="closeCustomerAuthModal()" aria-label="إغلاق">
-        <i class="fas fa-times"></i>
-      </button>
-      <div class="auth-modal-brand">
-        <div class="auth-modal-icon"><i class="fas fa-tint"></i></div>
-        <div>
-          <h2 id="authModalTitle">دخول أو إنشاء حساب</h2>
-          <p>بالبريد الإلكتروني أو Google — لمتابعة الدفتر والكابونات</p>
-        </div>
-      </div>
-      <ul class="auth-modal-benefits">
-        <li><i class="fas fa-book"></i> حفظ رقم الدفتر الرقمي</li>
-        <li><i class="fas fa-ticket"></i> عرض رصيد الكابونات المتبقي</li>
-        <li><i class="fas fa-bolt"></i> إتمام الطلب بسرعة وأمان</li>
-      </ul>
-
-      <div id="authGoogleBlock">
-        <button type="button" id="authModalGoogleBtn" class="auth-modal-google" onclick="startCustomerGoogleLogin()">
-          <i class="fab fa-google"></i>
-          المتابعة مع Google
+      <div class="auth-modal-topbar">
+        <h2 id="authModalTitle">دخول أو إنشاء حساب</h2>
+        <button type="button" class="auth-modal-close" onclick="closeCustomerAuthModal()" aria-label="إغلاق">
+          <i class="fas fa-times"></i>
         </button>
-        <p id="authGoogleHint" class="auth-google-hint is-hidden">Google غير مفعّل على الاستضافة بعد. يمكنك إنشاء حساب بالبريد أدناه فوراً، أو أضف <code>GOOGLE_CLIENT_ID</code> في إعدادات Render.</p>
-        <div class="auth-divider"><span>أو بالبريد</span></div>
       </div>
 
-      <div class="auth-mode-tabs">
-        <button type="button" class="auth-mode-tab active" id="authTabLogin" onclick="setCustomerAuthMode('login')">تسجيل الدخول</button>
-        <button type="button" class="auth-mode-tab" id="authTabRegister" onclick="setCustomerAuthMode('register')">إنشاء حساب</button>
+      <div class="auth-modal-scroll">
+        <div class="auth-modal-brand">
+          <div class="auth-modal-icon"><i class="fas fa-tint"></i></div>
+          <div>
+            <p class="auth-modal-lead">اختياري — يمكنك الطلب برقم الدفتر بدون حساب</p>
+          </div>
+        </div>
+        <ul class="auth-modal-benefits">
+          <li><i class="fas fa-book"></i> حفظ رقم الدفتر الرقمي</li>
+          <li><i class="fas fa-ticket"></i> عرض رصيد الكابونات المتبقي</li>
+          <li><i class="fas fa-bolt"></i> متابعة طلباتك بسهولة</li>
+        </ul>
+
+        <div id="authGoogleBlock">
+          <button type="button" id="authModalGoogleBtn" class="auth-modal-google" onclick="startCustomerGoogleLogin()">
+            <i class="fab fa-google"></i>
+            المتابعة مع Google
+          </button>
+          <p id="authGoogleHint" class="auth-google-hint is-hidden">Google غير مفعّل حالياً — أنشئ حساباً بالبريد أدناه.</p>
+          <div class="auth-divider"><span>أو بالبريد</span></div>
+        </div>
+
+        <div class="auth-mode-tabs">
+          <button type="button" class="auth-mode-tab active" id="authTabLogin" onclick="setCustomerAuthMode('login')">تسجيل الدخول</button>
+          <button type="button" class="auth-mode-tab" id="authTabRegister" onclick="setCustomerAuthMode('register')">إنشاء حساب</button>
+        </div>
+
+        <div id="authEmailFields" class="auth-email-fields">
+          <label id="authNameWrap" class="is-hidden">
+            الاسم الكامل
+            <input type="text" id="authEmailName" placeholder="اسمك كما في الطلبات" autocomplete="name" />
+          </label>
+          <label>
+            البريد الإلكتروني
+            <input type="email" id="authEmailAddress" placeholder="name@gmail.com" dir="ltr" autocomplete="email" />
+          </label>
+          <label>
+            كلمة المرور
+            <input type="password" id="authEmailPassword" placeholder="6 أحرف على الأقل" dir="ltr" autocomplete="current-password" />
+          </label>
+          <label id="authPhoneWrap" class="is-hidden">
+            رقم الهاتف (اختياري)
+            <input type="tel" id="authEmailPhone" placeholder="07XXXXXXXX" dir="ltr" autocomplete="tel" />
+          </label>
+          <p id="authEmailError" class="auth-email-error is-hidden"></p>
+        </div>
+
+        <div id="authDemoFields" class="auth-demo-fields is-hidden">
+          <p class="auth-demo-label">دخول تجريبي سريع (تطوير محلي)</p>
+          <button type="button" class="auth-demo-submit" onclick="submitDemoCustomerLogin()">دخول تجريبي</button>
+        </div>
+        <p class="auth-modal-note">بياناتك تُستخدم لربط الطلبات ودفتر الكابونات فقط.</p>
       </div>
 
-      <div id="authEmailFields" class="auth-email-fields">
-        <label id="authNameWrap" class="is-hidden">
-          الاسم الكامل
-          <input type="text" id="authEmailName" placeholder="اسمك كما في الطلبات" autocomplete="name" />
-        </label>
-        <label>
-          البريد الإلكتروني
-          <input type="email" id="authEmailAddress" placeholder="name@gmail.com" dir="ltr" autocomplete="email" />
-        </label>
-        <label>
-          كلمة المرور
-          <input type="password" id="authEmailPassword" placeholder="6 أحرف على الأقل" dir="ltr" autocomplete="current-password" />
-        </label>
-        <label id="authPhoneWrap" class="is-hidden">
-          رقم الهاتف (اختياري)
-          <input type="tel" id="authEmailPhone" placeholder="07XXXXXXXX" dir="ltr" autocomplete="tel" />
-        </label>
+      <div class="auth-modal-footer">
         <button type="button" class="auth-demo-submit" id="authEmailSubmitBtn" onclick="submitEmailCustomerAuth()">تسجيل الدخول</button>
-        <p id="authEmailError" class="auth-email-error is-hidden"></p>
       </div>
-
-      <div id="authDemoFields" class="auth-demo-fields is-hidden">
-        <p class="auth-demo-label">دخول تجريبي سريع (تطوير محلي)</p>
-        <button type="button" class="auth-demo-submit" onclick="submitDemoCustomerLogin()">دخول تجريبي</button>
-      </div>
-      <p class="auth-modal-note">بياناتك تُستخدم لربط الطلبات ودفتر الكابونات فقط.</p>
     </div>
   </div>
 

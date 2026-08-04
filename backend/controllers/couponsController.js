@@ -7,20 +7,57 @@ const {
 } = require('../utils/helpers');
 const {
   getBalancesForPhone,
+  getAccountByBookNumber,
+  getPendingReserved,
   listAccounts,
   getAccountLedger,
   adminAdjustAccount,
   getOrCreateAccount,
   DIGITAL_COUPON_PACKS,
-  serviceLabel
+  serviceLabel,
+  normalizeBookNumber
 } = require('../services/couponsService');
 const { run } = require('../db/query');
 const { broadcastAdminEvent } = require('../utils/sse');
 
 async function getPublicBalance(req, res) {
+  const bookRaw = req.query.bookNumber || req.body?.bookNumber || req.query.book || req.body?.book;
+  const bookNumber = normalizeBookNumber(bookRaw);
   const phone = normalizePhone(req.query.phone || req.body?.phone);
+
+  // Guests can look up balance by booklet number without login.
+  if (bookNumber) {
+    const account = await getAccountByBookNumber(bookNumber);
+    if (!account || account.status === 'blocked') {
+      return res.status(404).json({ success: false, error: 'لم يُعثر على دفتر بهذا الرقم' });
+    }
+    const pendingReserved = await getPendingReserved(account.id);
+    const available = Math.max(0, (Number(account.remaining) || 0) - pendingReserved);
+    return res.json({
+      success: true,
+      bookNumber: account.bookNumber,
+      phone: account.phone || null,
+      accounts: [
+        {
+          ...account,
+          serviceLabel: serviceLabel(account.serviceType),
+          pendingReserved,
+          available
+        }
+      ],
+      packs: Object.entries(DIGITAL_COUPON_PACKS).map(([productId, meta]) => ({
+        productId: Number(productId),
+        ...meta,
+        serviceLabel: serviceLabel(meta.serviceType)
+      }))
+    });
+  }
+
   if (!isValidJordanPhone(phone)) {
-    return res.status(400).json({ success: false, error: 'رقم الهاتف غير صالح' });
+    return res.status(400).json({
+      success: false,
+      error: 'أدخل رقم هاتف أردني صالح أو رقم الدفتر الرقمي'
+    });
   }
 
   const accounts = await getBalancesForPhone(phone);

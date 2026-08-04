@@ -20,6 +20,7 @@ router.delete('/orders/:id', asyncHandler(adminController.deleteOrder));
 router.post('/orders/:id/delete', asyncHandler(adminController.deleteOrder));
 
 router.get('/hub-summary', asyncHandler(adminController.getAdminHubSummary));
+router.post('/hub-ack', asyncHandler(adminController.ackAdminHubSection));
 router.get('/customers', asyncHandler(adminController.listSavedCustomers));
 
 router.get('/contact-messages', asyncHandler(adminController.listContactMessages));

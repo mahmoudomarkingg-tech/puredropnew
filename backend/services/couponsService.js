@@ -767,6 +767,7 @@ module.exports = {
   getAccountByBookNumber,
   issueCreditsFromOrderItems,
   getBalancesForPhone,
+  getPendingReserved,
   planCouponRedeemForOrder,
   applyPendingCouponRedeem,
   reverseAppliedCouponRedeem,

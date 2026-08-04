@@ -223,11 +223,30 @@ async function ensureDigitalCouponsTables() {
   }
 }
 
+async function ensureContactSupportStatuses() {
+  // Relax then tighten status values: new (unseen) | unreplied | replied
+  await pool.query(`ALTER TABLE contact_messages DROP CONSTRAINT IF EXISTS contact_messages_status_check`);
+  await pool.query(`
+    UPDATE contact_messages
+    SET status = CASE
+      WHEN status = 'replied' THEN 'replied'
+      WHEN status = 'new' THEN 'new'
+      ELSE 'unreplied'
+    END
+  `);
+  await pool.query(`
+    ALTER TABLE contact_messages
+    ADD CONSTRAINT contact_messages_status_check
+    CHECK (status IN ('new', 'unreplied', 'replied'))
+  `);
+}
+
 async function ensureDatabase() {
   await ensureSchema();
   await ensureOrderDeliveryColumns();
   await ensureCustomerUsersTable();
   await ensureDigitalCouponsTables();
+  await ensureContactSupportStatuses();
   await ensureDefaultSettings();
   await ensureAdminUser();
   await seedFromJsonIfEmpty();
