@@ -768,6 +768,14 @@
         showErr('أدخل الاسم لإنشاء الحساب');
         return;
       }
+      if (customerAuthMode === 'register') {
+        const jordanPhoneRegex = /^07\d{8,9}$/;
+        if (!phone || !jordanPhoneRegex.test(phone)) {
+          showErr('رقم الهاتف إلزامي ويجب أن يبدأ بـ 07 (10 أو 11 رقماً)');
+          document.getElementById('authEmailPhone')?.focus();
+          return;
+        }
+      }
 
       const original = submitBtn?.textContent;
       if (submitBtn) {
@@ -779,7 +787,7 @@
       try {
         const path = customerAuthMode === 'register' ? '/api/auth/register' : '/api/auth/login';
         const body = customerAuthMode === 'register'
-          ? { email, password, fullName, phone: phone || undefined }
+          ? { email, password, fullName, phone }
           : { email, password };
         const data = await puredropApiRequest(path, {
           method: 'POST',

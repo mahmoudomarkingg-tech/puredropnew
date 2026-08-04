@@ -1869,8 +1869,53 @@ select option:focus {
   min-width: 0;
 }
 
-#navbar > .max-w-7xl > a.group {
-  max-width: min(100%, 14rem);
+#navbar > .max-w-7xl > a.group,
+#navbar > .max-w-7xl > a.site-brand-link {
+  max-width: none;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.site-brand-name {
+  white-space: nowrap;
+  overflow: visible;
+  line-height: 1.15;
+}
+
+.site-brand-tagline {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.auth-modal-brand-name {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #ecfeff;
+  line-height: 1.2;
+}
+
+.auth-required-mark {
+  color: #f87171;
+  font-weight: 900;
+}
+
+@media (max-width: 640px) {
+  #navbar > .max-w-7xl > a.site-brand-link {
+    flex: 1 1 auto;
+    max-width: calc(100% - 11rem);
+    min-width: 8.5rem;
+  }
+
+  .site-brand-name {
+    font-size: 1.15rem !important;
+    letter-spacing: 0;
+  }
+
+  .site-brand-tagline {
+    display: none;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {
@@ -1890,6 +1935,10 @@ select option:focus {
   }
 
   #navbar > .max-w-7xl > a.group {
+    max-width: none;
+  }
+
+  #navbar > .max-w-7xl > a.site-brand-link {
     max-width: none;
   }
 
@@ -2868,6 +2917,10 @@ body.auth-modal-open {
 
 [data-theme="light"] .auth-modal-topbar h2,
 [data-theme="light"] .auth-modal-benefits li {
+  color: #0f172a;
+}
+
+[data-theme="light"] .auth-modal-brand-name {
   color: #0f172a;
 }
 

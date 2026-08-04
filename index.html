@@ -98,14 +98,14 @@
     <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
         <!-- Logo -->
-        <a href="#home" onclick="showMain()" class="flex items-center gap-2 sm:gap-3 group min-w-0 flex-shrink">
+        <a href="#home" onclick="showMain()" class="site-brand-link flex items-center gap-2 sm:gap-3 group min-w-0">
           <div class="w-11 h-11 sm:w-14 sm:h-14 flex-shrink-0 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative animate-pulse-glow-elegant">
             <i class="fas fa-tint text-xl sm:text-2xl text-white"></i>
             <div class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-cyan-400 rounded-full animate-pulse border-2 border-slate-900"></div>
           </div>
-          <div class="min-w-0">
-            <span class="text-xl sm:text-2xl font-black gradient-text-premium truncate block">قطرة نقية</span>
-            <p class="text-[10px] sm:text-[11px] text-slate-400 -mt-0.5 tracking-wide truncate">PureDrop Water Solutions</p>
+          <div class="site-brand-text min-w-0">
+            <span class="site-brand-name text-xl sm:text-2xl font-black gradient-text-premium block">قطرة نقية</span>
+            <p class="site-brand-tagline text-[10px] sm:text-[11px] text-slate-400 -mt-0.5 tracking-wide">PureDrop Water Solutions</p>
           </div>
         </a>
 
@@ -1191,7 +1191,8 @@
         <div class="auth-modal-brand">
           <div class="auth-modal-icon"><i class="fas fa-tint"></i></div>
           <div>
-            <p class="auth-modal-lead">اختياري — يمكنك الطلب برقم الدفتر بدون حساب</p>
+            <p class="auth-modal-brand-name">قطرة نقية</p>
+            <p class="auth-modal-lead">أنشئ حساباً لمتابعة الدفتر والكابونات</p>
           </div>
         </div>
         <ul class="auth-modal-benefits">
@@ -1228,8 +1229,8 @@
             <input type="password" id="authEmailPassword" placeholder="6 أحرف على الأقل" dir="ltr" autocomplete="current-password" />
           </label>
           <label id="authPhoneWrap" class="is-hidden">
-            رقم الهاتف (اختياري)
-            <input type="tel" id="authEmailPhone" placeholder="07XXXXXXXX" dir="ltr" autocomplete="tel" />
+            رقم الهاتف <span class="auth-required-mark">*</span>
+            <input type="tel" id="authEmailPhone" placeholder="07XXXXXXXX" dir="ltr" autocomplete="tel" required />
           </label>
           <p id="authEmailError" class="auth-email-error is-hidden"></p>
         </div>

@@ -114,15 +114,12 @@ async function registerWithEmail(req, res) {
     return res.status(400).json({ success: false, error: 'الاسم مطلوب لإنشاء الحساب' });
   }
 
-  let phone = null;
-  if (phoneRaw) {
-    phone = normalizePhone(phoneRaw);
-    if (phone && !isValidJordanPhone(phone)) {
-      return res.status(400).json({
-        success: false,
-        error: 'رقم الهاتف يجب أن يبدأ بـ 07 ويتكون من 10 أو 11 رقماً'
-      });
-    }
+  const phone = normalizePhone(phoneRaw);
+  if (!phone || !isValidJordanPhone(phone)) {
+    return res.status(400).json({
+      success: false,
+      error: 'رقم الهاتف إلزامي ويجب أن يبدأ بـ 07 ويتكون من 10 أو 11 رقماً'
+    });
   }
 
   const existing = await get(
