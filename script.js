@@ -732,6 +732,7 @@
         const scroller = modal.querySelector('.auth-modal-scroll');
         if (scroller) scroller.scrollTop = 0;
         modal.scrollTop = 0;
+        if (googleReady) renderGoogleSignInButton();
         const focusId = nextMode === 'register' ? 'authEmailName' : 'authEmailAddress';
         document.getElementById(focusId)?.focus?.({ preventScroll: true });
       });
@@ -948,6 +949,16 @@
       }
     }
 
+    function isMobileBrowser() {
+      return /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent || ''
+      ) || (Math.min(window.innerWidth || 9999, window.innerHeight || 9999) < 768);
+    }
+
+    function getGoogleRedirectUri() {
+      return `${window.location.origin}/api/auth/google/redirect`;
+    }
+
     function waitForGoogleIdentity(timeoutMs = 8000) {
       return new Promise((resolve) => {
         if (window.google?.accounts?.id) {
@@ -971,17 +982,39 @@
 
     function initializeGoogleIdentity() {
       if (!authConfig.googleClientId || !window.google?.accounts?.id) return false;
-      window.google.accounts.id.initialize({
+      const mobile = isMobileBrowser();
+      const config = {
         client_id: authConfig.googleClientId,
         callback: async (response) => {
           await handleGoogleCredential(response);
           closeCustomerAuthModal();
         },
         auto_select: false,
-        ux_mode: 'popup',
-        cancel_on_tap_outside: true
-      });
+        cancel_on_tap_outside: true,
+        use_fedcm_for_prompt: false,
+        // Mobile browsers often get stuck on a blank accounts.google.com page with popup/One Tap.
+        ux_mode: mobile ? 'redirect' : 'popup'
+      };
+      if (mobile) {
+        config.login_uri = getGoogleRedirectUri();
+      }
+      window.google.accounts.id.initialize(config);
       return true;
+    }
+
+    function renderGoogleSignInButton() {
+      const host = document.getElementById('authModalGoogleBtn');
+      if (!host || !authConfig.googleClientId || !window.google?.accounts?.id) return;
+      host.innerHTML = '';
+      setHiddenEl(host, false);
+      window.google.accounts.id.renderButton(host, {
+        theme: 'outline',
+        size: 'large',
+        shape: 'pill',
+        text: 'continue_with',
+        width: Math.max(220, Math.min(320, Math.floor(host.clientWidth || host.parentElement?.clientWidth || 280))),
+        locale: 'ar'
+      });
     }
 
     async function handleGoogleCredential(response) {
@@ -1018,25 +1051,21 @@
 
         initializeGoogleIdentity();
         openCustomerAuthModal('login');
+        renderGoogleSignInButton();
 
-        const host = document.getElementById('authModalGoogleBtn');
-        if (host) {
-          host.innerHTML = '';
-          setHiddenEl(host, false);
-          window.google.accounts.id.renderButton(host, {
-            theme: 'outline',
-            size: 'large',
-            shape: 'pill',
-            text: 'continue_with',
-            width: Math.max(220, Math.min(320, Math.floor(host.clientWidth || 280))),
-            locale: 'ar'
-          });
-        }
-
-        try {
-          window.google.accounts.id.prompt();
-        } catch (_) {
-          /* One Tap may be blocked; the button still works */
+        // Do NOT call prompt() on mobile — it opens a full-page Google flow that often ends blank.
+        if (!isMobileBrowser()) {
+          try {
+            window.google.accounts.id.prompt();
+          } catch (_) {
+            /* button still works */
+          }
+        } else {
+          showNotification(
+            '👆 اضغط زر Google',
+            'اضغط زر المتابعة مع Google داخل النافذة — سيتم إرجاعك للموقع تلقائياً بعد الموافقة.',
+            'info'
+          );
         }
       } catch (error) {
         openCustomerAuthModal('login');
@@ -1061,7 +1090,17 @@
         await waitForGoogleIdentity();
         initializeGoogleIdentity();
       }
-      await refreshCustomerSession();
+      // Returned from Google redirect login
+      if (new URLSearchParams(window.location.search).get('google') === '1') {
+        await refreshCustomerSession();
+        if (customerSession?.id) {
+          showNotification('✅ أهلاً بك', 'تم تسجيل الدخول عبر Google', 'success');
+        }
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl || '/');
+      } else {
+        await refreshCustomerSession();
+      }
     }
 
     window.startCustomerGoogleLogin = startCustomerGoogleLogin;

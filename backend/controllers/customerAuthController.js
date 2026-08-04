@@ -195,7 +195,7 @@ async function loginWithEmail(req, res) {
 }
 
 async function googleLogin(req, res) {
-  const credential = sanitizeText(req.body?.credential || req.body?.idToken, 5000);
+  const credential = String(req.body?.credential || req.body?.idToken || '').trim();
   const clientId = getGoogleClientId();
 
   if (!clientId) {
@@ -209,29 +209,11 @@ async function googleLogin(req, res) {
   }
 
   try {
-    const client = new OAuth2Client(clientId);
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: clientId
-    });
-    const payload = ticket.getPayload() || {};
-    if (!payload.sub || !payload.email) {
-      return res.status(401).json({ success: false, error: 'تعذر التحقق من حساب Google' });
-    }
-
-    const user = await upsertGoogleUser({
-      googleSub: payload.sub,
-      email: payload.email,
-      fullName: payload.name || payload.email,
-      avatarUrl: payload.picture || null
-    });
-    const withCoupons = await attachCoupons(user);
-    const token = signCustomerToken(user);
-
+    const result = await issueSessionFromGoogleCredential(credential, clientId);
     return res.json({
       success: true,
-      token,
-      customer: withCoupons
+      token: result.token,
+      customer: result.customer
     });
   } catch (error) {
     return res.status(401).json({
@@ -239,6 +221,70 @@ async function googleLogin(req, res) {
       error: 'فشل تسجيل الدخول عبر Google. حاول مرة أخرى'
     });
   }
+}
+
+/** Mobile redirect return: Google POSTs credential here, then we bounce back to the site. */
+async function googleRedirectLogin(req, res) {
+  const credential = String(req.body?.credential || '').trim();
+  const clientId = getGoogleClientId();
+  const origin = String(process.env.CORS_ORIGIN || '').split(',')[0].trim() || 'https://puredropnew.onrender.com';
+
+  const failHtml = (message) => `<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>فشل الدخول</title></head><body style="font-family:Tahoma,sans-serif;padding:24px;text-align:center">
+<p>${message}</p>
+<p><a href="${origin}/">العودة للموقع</a></p>
+</body></html>`;
+
+  if (!clientId) {
+    return res.status(503).type('html').send(failHtml('تسجيل Google غير مفعّل على السيرفر.'));
+  }
+  if (!credential) {
+    return res.status(400).type('html').send(failHtml('لم يصل رمز Google. أعد المحاولة من الموقع.'));
+  }
+
+  try {
+    const result = await issueSessionFromGoogleCredential(credential, clientId);
+    const tokenJson = JSON.stringify(result.token);
+    const html = `<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>جاري العودة…</title></head>
+<body style="font-family:Tahoma,sans-serif;padding:24px;text-align:center;background:#0f172a;color:#e2e8f0">
+<p>تم تسجيل الدخول عبر Google. جاري العودة للموقع…</p>
+<script>
+try {
+  localStorage.setItem('puredrop_customer_token', ${tokenJson});
+} catch (e) {}
+location.replace(${JSON.stringify(origin + '/?google=1')});
+</script>
+</body></html>`;
+    return res.status(200).type('html').send(html);
+  } catch (error) {
+    return res.status(401).type('html').send(failHtml('فشل التحقق من حساب Google. حاول مرة أخرى.'));
+  }
+}
+
+async function issueSessionFromGoogleCredential(credential, clientId) {
+  const client = new OAuth2Client(clientId);
+  const ticket = await client.verifyIdToken({
+    idToken: credential,
+    audience: clientId
+  });
+  const payload = ticket.getPayload() || {};
+  if (!payload.sub || !payload.email) {
+    const err = new Error('invalid_google_payload');
+    throw err;
+  }
+
+  const user = await upsertGoogleUser({
+    googleSub: payload.sub,
+    email: payload.email,
+    fullName: payload.name || payload.email,
+    avatarUrl: payload.picture || null
+  });
+  const withCoupons = await attachCoupons(user);
+  const token = signCustomerToken(user);
+  return { token, customer: withCoupons };
 }
 
 async function demoGoogleLogin(req, res) {
@@ -328,6 +374,7 @@ async function updateMe(req, res) {
 module.exports = {
   getAuthConfig,
   googleLogin,
+  googleRedirectLogin,
   demoGoogleLogin,
   registerWithEmail,
   loginWithEmail,
