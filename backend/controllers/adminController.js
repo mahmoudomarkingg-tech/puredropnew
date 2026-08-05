@@ -14,35 +14,71 @@ const {
 
 async function getAdminOrderItems(orderId) {
   return all(
-    `SELECT id,
-            product_id AS "productId",
-            product_option_id AS "productOptionId",
-            product_name_snapshot AS "productName",
-            option_label_snapshot AS "optionLabel",
-            quantity,
-            unit_price AS "unitPrice",
-            line_total AS "lineTotal",
-            created_at AS "createdAt"
-     FROM order_items
-     WHERE order_id = ?
-     ORDER BY id ASC`,
+    `SELECT oi.id,
+            oi.product_id AS "productId",
+            oi.product_option_id AS "productOptionId",
+            oi.product_name_snapshot AS "productName",
+            oi.option_label_snapshot AS "optionLabel",
+            oi.quantity,
+            oi.unit_price AS "unitPrice",
+            oi.line_total AS "lineTotal",
+            oi.created_at AS "createdAt",
+            p.category_id AS "categoryId"
+     FROM order_items oi
+     LEFT JOIN products p ON p.id = oi.product_id
+     WHERE oi.order_id = ?
+     ORDER BY oi.id ASC`,
     [orderId]
   );
 }
 
+function adminOrderRetentionDays() {
+  const n = Number.parseInt(process.env.ADMIN_ORDER_RETENTION_DAYS || '30', 10);
+  return Number.isFinite(n) && n > 0 ? Math.min(Math.max(n, 7), 365) : 30;
+}
+
+/** Hard-delete orders older than retention window (default 30 days). */
+async function purgeExpiredOrders() {
+  const days = adminOrderRetentionDays();
+  const now = Date.now();
+  if (global.__puredropLastOrderPurge && now - global.__puredropLastOrderPurge < 60 * 60 * 1000) {
+    return { deleted: 0, days, skipped: true };
+  }
+  global.__puredropLastOrderPurge = now;
+  const result = await run(
+    `DELETE FROM orders
+     WHERE created_at < NOW() - make_interval(days => ?::int)`,
+    [days]
+  );
+  const deleted = Number(result?.rowCount || 0);
+  if (deleted > 0) {
+    console.info(`[orders] purged ${deleted} orders older than ${days} days`);
+    broadcastAdminEvent('orders-updated', { purged: deleted, retentionDays: days });
+  }
+  return { deleted, days, skipped: false };
+}
+
 async function getAdminOrderStatusCounts() {
+  const retentionDays = adminOrderRetentionDays();
   const rows = await all(
     `SELECT os.status, os.label_ar AS "labelAr", os.color, os.sort_order AS "sortOrder",
             COALESCE(COUNT(o.id), 0)::int AS total
      FROM order_statuses os
      LEFT JOIN orders o ON o.status = os.status
+       AND o.created_at >= NOW() - make_interval(days => ?::int)
      GROUP BY os.status, os.label_ar, os.color, os.sort_order
-     ORDER BY os.sort_order ASC`
+     ORDER BY os.sort_order ASC`,
+    [retentionDays]
   );
 
   // Cancelled orders stay in history/filters, but are excluded from business KPIs.
   const allOrders = Number(
-    (await get("SELECT COUNT(*)::int AS total FROM orders WHERE status <> 'cancelled'"))?.total || 0
+    (await get(
+      `SELECT COUNT(*)::int AS total FROM orders
+       WHERE status <> 'cancelled'
+         AND created_at >= NOW() - make_interval(days => ?::int)`,
+      [retentionDays]
+    ))?.total || 0
   );
   const todayOrders = Number(
     (await get(
@@ -56,7 +92,9 @@ async function getAdminOrderStatusCounts() {
     (await get(
       `SELECT COALESCE(SUM(total), 0) AS total
        FROM orders
-       WHERE status <> 'cancelled'`
+       WHERE status <> 'cancelled'
+         AND created_at >= NOW() - make_interval(days => ?::int)`,
+      [retentionDays]
     ))?.total || 0
   );
   const deliveredOrders = Number(
@@ -64,7 +102,9 @@ async function getAdminOrderStatusCounts() {
       `SELECT COUNT(*)::int AS total
        FROM orders
        WHERE delivery_status = 'تم التسليم'
-         AND status <> 'cancelled'`
+         AND status <> 'cancelled'
+         AND created_at >= NOW() - make_interval(days => ?::int)`,
+      [retentionDays]
     ))?.total || 0
   );
   const notDeliveredOrders = Number(
@@ -72,11 +112,18 @@ async function getAdminOrderStatusCounts() {
       `SELECT COUNT(*)::int AS total
        FROM orders
        WHERE delivery_status = 'لم يتم التسليم'
-         AND status <> 'cancelled'`
+         AND status <> 'cancelled'
+         AND created_at >= NOW() - make_interval(days => ?::int)`,
+      [retentionDays]
     ))?.total || 0
   );
   const cancelledOrders = Number(
-    (await get("SELECT COUNT(*)::int AS total FROM orders WHERE status = 'cancelled'"))?.total || 0
+    (await get(
+      `SELECT COUNT(*)::int AS total FROM orders
+       WHERE status = 'cancelled'
+         AND created_at >= NOW() - make_interval(days => ?::int)`,
+      [retentionDays]
+    ))?.total || 0
   );
 
   return {
@@ -86,16 +133,23 @@ async function getAdminOrderStatusCounts() {
     delivered: deliveredOrders,
     notDelivered: notDeliveredOrders,
     cancelled: cancelledOrders,
+    retentionDays,
     byStatus: rows
   };
 }
 
 async function listOrders(req, res) {
+  const purgeInfo = await purgeExpiredOrders();
   const params = [];
   const where = [];
   const status = sanitizeText(req.query.status, 80);
   const queryText = sanitizeText(req.query.q, 160);
-  const limit = Math.min(Math.max(Number.parseInt(req.query.limit || '100', 10) || 100, 1), 500);
+  const retentionDays = adminOrderRetentionDays();
+  const limit = Math.min(Math.max(Number.parseInt(req.query.limit || '500', 10) || 500, 1), 1000);
+
+  // Keep admin list within retention window (matches auto-delete policy).
+  where.push('o.created_at >= NOW() - make_interval(days => ?::int)');
+  params.push(retentionDays);
 
   if (status && status !== 'all') {
     where.push('o.status = ?');
@@ -236,6 +290,8 @@ async function listOrders(req, res) {
   res.json({
     success: true,
     generatedAt: new Date().toISOString(),
+    retentionDays,
+    purged: purgeInfo?.deleted || 0,
     counts: await getAdminOrderStatusCounts(),
     statuses,
     orders

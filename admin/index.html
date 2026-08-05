@@ -554,6 +554,59 @@
       .portal-grid { grid-template-columns: 1fr 1fr; }
     }
     .cards-view { display: none; padding: 10px; gap: 8px; }
+    .day-blocks { display: grid; gap: 18px; }
+    .desktop-day-blocks { display: grid; }
+    .mobile-day-blocks { display: none; }
+    .day-block {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.35);
+    }
+    .day-block-head {
+      padding: 12px 14px;
+      font-weight: 800;
+      font-size: 15px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8, 145, 178, 0.12);
+    }
+    .day-block table { width: 100%; border-collapse: collapse; }
+    .day-summary {
+      margin: 0;
+      padding: 14px;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.08), rgba(15, 23, 42, 0.2));
+    }
+    .day-summary-title {
+      font-weight: 900;
+      margin-bottom: 10px;
+      color: #6ee7b7;
+    }
+    .day-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .day-summary-grid > div {
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      display: grid;
+      gap: 4px;
+    }
+    .day-summary-grid span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .day-summary-grid strong {
+      font-size: 16px;
+    }
+    @media (max-width: 920px) {
+      .desktop-day-blocks { display: none !important; }
+      .mobile-day-blocks { display: grid !important; }
+      .day-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
     .order-card {
       background: var(--panel-2);
       border: 1px solid var(--line);
@@ -1190,8 +1243,8 @@
       <section class="orders-panel">
         <div class="panel-head">
           <div>
-            <h2>الطلبات</h2>
-            <p id="lastUpdate">لم يتم التحميل بعد</p>
+            <h2>الطلبات حسب اليوم</h2>
+            <p id="lastUpdate">تُحفظ الطلبات 30 يوماً ثم تُحذف تلقائياً. في نهاية كل يوم يظهر ملخص المبيعات والقوارير والكابونات.</p>
           </div>
           <div class="muted" id="ordersCount">0 طلب</div>
         </div>
@@ -1295,6 +1348,7 @@
       activeSection: null,
       statuses: [],
       counts: { all: 0, today: 0, totalSales: 0, byStatus: [] },
+      retentionDays: 30,
       activeStatus: 'all',
       search: '',
       isLoading: false,
@@ -1728,15 +1782,17 @@
       state.isLoading = true;
       if (showLoading) ordersTableEl.innerHTML = '<div class="loading">جاري تحميل الطلبات...</div>';
       try {
-        const params = new URLSearchParams({ limit: '200' });
+        const params = new URLSearchParams({ limit: '500' });
         if (state.activeStatus !== 'all') params.set('status', state.activeStatus);
         if (state.search.trim()) params.set('q', state.search.trim());
         const data = await requestJson(`/api/admin/orders?${params.toString()}`);
         state.orders = data.orders || [];
         state.statuses = data.statuses && data.statuses.length ? data.statuses : statusFallback;
         state.counts = data.counts || state.counts;
+        state.retentionDays = data.retentionDays || data.counts?.retentionDays || 30;
         render();
-        lastUpdateEl.textContent = `آخر تحديث: ${fmtDate(data.generatedAt)}`;
+        const purgedNote = data.purged > 0 ? ` • تم حذف ${data.purged} طلب أقدم من ${state.retentionDays} يوماً` : '';
+        lastUpdateEl.textContent = `آخر تحديث: ${fmtDate(data.generatedAt)} • الحفظ ${state.retentionDays} يوماً${purgedNote}`;
       } catch (error) {
         ordersTableEl.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
         showToast(error.message, 'error');
@@ -2067,66 +2123,203 @@
       });
     }
 
+    function orderDayKey(order) {
+      const d = new Date(order.createdAt);
+      if (Number.isNaN(d.getTime())) return 'unknown';
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function orderDayLabel(dayKey) {
+      if (!dayKey || dayKey === 'unknown') return 'تاريخ غير معروف';
+      const d = new Date(`${dayKey}T12:00:00`);
+      if (Number.isNaN(d.getTime())) return dayKey;
+      return d.toLocaleDateString('ar-JO', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    function countOrderBottles(order) {
+      return (order.items || []).reduce((sum, item) => {
+        const id = Number(item.productId);
+        const name = String(item.productName || '');
+        const cat = String(item.categoryId || '');
+        const isBottle =
+          cat === 'bottle' ||
+          id === 6 ||
+          id === 7 ||
+          id === 21 ||
+          /قارورة/.test(name);
+        return sum + (isBottle ? Number(item.quantity) || 0 : 0);
+      }, 0);
+    }
+
+    function summarizeDayOrders(orders) {
+      let orderCount = 0;
+      let salesTotal = 0;
+      let cashSales = 0;
+      let couponSales = 0;
+      let couponsUsed = 0;
+      let bottlesTotal = 0;
+      let bottlesCash = 0;
+      let bottlesCoupon = 0;
+
+      for (const order of orders) {
+        if (order.status === 'cancelled') continue;
+        orderCount += 1;
+        const total = Number(order.total) || 0;
+        const coupons = Number(order.couponsRedeemed) || 0;
+        const bottles = countOrderBottles(order);
+        salesTotal += total;
+        bottlesTotal += bottles;
+        couponsUsed += coupons;
+
+        if (coupons > 0) {
+          couponSales += total;
+          const couponBottles = Math.min(bottles, coupons);
+          bottlesCoupon += couponBottles;
+          bottlesCash += Math.max(0, bottles - couponBottles);
+        } else {
+          cashSales += total;
+          bottlesCash += bottles;
+        }
+      }
+
+      return {
+        orderCount,
+        salesTotal,
+        cashSales,
+        couponSales,
+        couponsUsed,
+        bottlesTotal,
+        bottlesCash,
+        bottlesCoupon
+      };
+    }
+
+    function daySummaryHtml(dayKey, orders) {
+      const s = summarizeDayOrders(orders);
+      return `
+        <div class="day-summary">
+          <div class="day-summary-title">📊 ملخص يوم ${escapeHtml(orderDayLabel(dayKey))}</div>
+          <div class="day-summary-grid">
+            <div><span>عدد الطلبات</span><strong>${s.orderCount}</strong></div>
+            <div><span>إجمالي القوارير</span><strong>${s.bottlesTotal}</strong></div>
+            <div><span>قوارير كاش</span><strong>${s.bottlesCash}</strong></div>
+            <div><span>قوارير كابون</span><strong>${s.bottlesCoupon}</strong></div>
+            <div><span>كابونات مستخدمة</span><strong>${s.couponsUsed}</strong></div>
+            <div><span>مبيعات كاش</span><strong class="price">${money(s.cashSales)}</strong></div>
+            <div><span>مبيعات/طلبات كابون</span><strong class="price">${money(s.couponSales)}</strong></div>
+            <div><span>إجمالي المبيعات</span><strong class="price">${money(s.salesTotal)}</strong></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function orderRowHtml(order) {
+      return `
+        <tr class="order-row" data-order-id="${order.id}">
+          <td>
+            ${orderMetaHtml(order)}
+            ${orderExtraHtml(order)}
+          </td>
+          <td class="customer">
+            ${customerHtml(order)}
+            <div class="muted one-line">${escapeHtml(order.customerAddress || '')}</div>
+          </td>
+          <td><ul class="items-list">${itemsHtml(order)}</ul></td>
+          <td><span class="price">${money(order.total, order.currency)}</span></td>
+          <td>
+            <span class="status-pill"><span class="status-dot" style="background:${escapeHtml(order.statusColor || '#06b6d4')}"></span>${escapeHtml(order.statusLabel)}</span>
+            <div class="muted" style="margin-top:4px">${escapeHtml(order.deliveryStatus || 'لم يتم التسليم')}</div>
+          </td>
+          <td>${manageOrderHtml(order)}</td>
+        </tr>
+      `;
+    }
+
+    function orderCardHtml(order) {
+      return `
+        <article class="order-card" data-order-id="${order.id}">
+          <div class="order-card-head">
+            <div>${orderMetaHtml(order)}</div>
+            <span class="status-pill"><span class="status-dot" style="background:${escapeHtml(order.statusColor || '#06b6d4')}"></span>${escapeHtml(order.statusLabel)}</span>
+          </div>
+          <div class="order-card-grid">
+            <div class="customer">${customerHtml(order)}</div>
+            <div class="muted">${escapeHtml(order.customerAddress || '')}</div>
+            <div class="location-actions">${locationButtonHtml(order)}</div>
+            <ul class="items-list">${itemsHtml(order)}</ul>
+            <div class="price">${money(order.total, order.currency)}</div>
+          </div>
+          ${orderExtraHtml(order)}
+          ${manageOrderHtml(order)}
+        </article>
+      `;
+    }
+
     function renderOrders() {
-      ordersCountEl.textContent = `${state.orders.length} طلب`;
+      const retention = state.retentionDays || 30;
+      ordersCountEl.textContent = `${state.orders.length} طلب • حفظ ${retention} يوماً`;
       if (!state.orders.length) {
         ordersTableEl.innerHTML = '<div class="empty">لا توجد طلبات مطابقة حالياً. عند إرسال أي عميل طلباً من الموقع سيظهر هنا مباشرة.</div>';
         return;
       }
 
+      const groups = new Map();
+      for (const order of state.orders) {
+        const key = orderDayKey(order);
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(order);
+      }
+      const dayKeys = Array.from(groups.keys()).sort((a, b) => (a < b ? 1 : a > b ? -1 : 0));
+
+      const desktopBlocks = dayKeys.map((dayKey) => {
+        const dayOrders = groups.get(dayKey) || [];
+        return `
+          <section class="day-block">
+            <div class="day-block-head">📅 ${escapeHtml(orderDayLabel(dayKey))} <span class="muted">(${dayOrders.length} طلب)</span></div>
+            <table>
+              <thead>
+                <tr>
+                  <th>الطلب</th>
+                  <th>العميل</th>
+                  <th>المنتجات</th>
+                  <th>الإجمالي</th>
+                  <th>الحالة</th>
+                  <th>إدارة</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${dayOrders.map(orderRowHtml).join('')}
+              </tbody>
+            </table>
+            ${daySummaryHtml(dayKey, dayOrders)}
+          </section>
+        `;
+      }).join('');
+
+      const mobileBlocks = dayKeys.map((dayKey) => {
+        const dayOrders = groups.get(dayKey) || [];
+        return `
+          <section class="day-block">
+            <div class="day-block-head">📅 ${escapeHtml(orderDayLabel(dayKey))} <span class="muted">(${dayOrders.length} طلب)</span></div>
+            <div class="cards-view" style="display:grid">
+              ${dayOrders.map(orderCardHtml).join('')}
+            </div>
+            ${daySummaryHtml(dayKey, dayOrders)}
+          </section>
+        `;
+      }).join('');
+
       ordersTableEl.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>الطلب</th>
-              <th>العميل</th>
-              <th>المنتجات</th>
-              <th>الإجمالي</th>
-              <th>الحالة</th>
-              <th>إدارة</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${state.orders.map(order => `
-              <tr class="order-row" data-order-id="${order.id}">
-                <td>
-                  ${orderMetaHtml(order)}
-                  ${orderExtraHtml(order)}
-                </td>
-                <td class="customer">
-                  ${customerHtml(order)}
-                  <div class="muted one-line">${escapeHtml(order.customerAddress || '')}</div>
-                </td>
-                <td><ul class="items-list">${itemsHtml(order)}</ul></td>
-                <td><span class="price">${money(order.total, order.currency)}</span></td>
-                <td>
-                  <span class="status-pill"><span class="status-dot" style="background:${escapeHtml(order.statusColor || '#06b6d4')}"></span>${escapeHtml(order.statusLabel)}</span>
-                  <div class="muted" style="margin-top:4px">${escapeHtml(order.deliveryStatus || 'لم يتم التسليم')}</div>
-                </td>
-                <td>${manageOrderHtml(order)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <div class="cards-view">
-          ${state.orders.map(order => `
-            <article class="order-card" data-order-id="${order.id}">
-              <div class="order-card-head">
-                <div>${orderMetaHtml(order)}</div>
-                <span class="status-pill"><span class="status-dot" style="background:${escapeHtml(order.statusColor || '#06b6d4')}"></span>${escapeHtml(order.statusLabel)}</span>
-              </div>
-              <div class="order-card-grid">
-                <div class="customer">${customerHtml(order)}</div>
-                <div class="muted">${escapeHtml(order.customerAddress || '')}</div>
-                <div class="location-actions">${locationButtonHtml(order)}</div>
-                <ul class="items-list">${itemsHtml(order)}</ul>
-                <div class="price">${money(order.total, order.currency)}</div>
-              </div>
-              ${orderExtraHtml(order)}
-              ${manageOrderHtml(order)}
-            </article>
-          `).join('')}
-        </div>
+        <div class="day-blocks desktop-day-blocks">${desktopBlocks}</div>
+        <div class="day-blocks mobile-day-blocks">${mobileBlocks}</div>
       `;
 
       bindOrderActions(ordersTableEl);
