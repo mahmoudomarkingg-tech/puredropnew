@@ -342,11 +342,96 @@ body {
 }
 
 /* ===== NAVBAR ===== */
+/* Always visible bar — some browsers ignore backdrop-filter and left the bar looking "invisible". */
+#navbar {
+  background: rgba(10, 15, 29, 0.94);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
 .nav-scrolled-premium {
-  background: rgba(10, 15, 29, 0.96) !important;
+  background: rgba(10, 15, 29, 0.98) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
   backdrop-filter: blur(16px) !important;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Desktop chrome only on wide screens; tablets/phones use compact icons + drawer */
+.site-nav-desktop {
+  display: none !important;
+}
+
+.site-nav-compact {
+  display: flex !important;
+}
+
+@media (min-width: 1400px) {
+  .site-nav-desktop {
+    display: flex !important;
+  }
+
+  .site-nav-compact {
+    display: none !important;
+  }
+}
+
+.nav-compact-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(30, 41, 59, 0.92);
+  color: #e2e8f0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.05rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-compact-btn i {
+  color: #e2e8f0 !important;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.nav-compact-btn:hover,
+.nav-compact-btn:focus-visible {
+  color: #22d3ee;
+  border-color: rgba(34, 211, 238, 0.45);
+  background: rgba(14, 116, 144, 0.35);
+}
+
+.nav-compact-btn:hover i,
+.nav-compact-btn:focus-visible i {
+  color: #22d3ee !important;
+}
+
+[data-theme="light"] .nav-compact-btn {
+  background: #ffffff;
+  border-color: rgba(148, 163, 184, 0.45);
+  color: #334155;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .nav-compact-btn i {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .nav-compact-btn:hover,
+[data-theme="light"] .nav-compact-btn:focus-visible {
+  background: #f0f9ff;
+  border-color: rgba(14, 165, 233, 0.45);
+}
+
+[data-theme="light"] .nav-compact-btn:hover i,
+[data-theme="light"] .nav-compact-btn:focus-visible i {
+  color: #0284c7 !important;
 }
 
 [data-theme="light"] .nav-scrolled-premium {
@@ -2225,22 +2310,28 @@ select option:focus {
   flex-shrink: 0;
 }
 
-@media (min-width: 1280px) and (max-width: 1500px) {
+@media (min-width: 1400px) and (max-width: 1600px) {
   .site-nav-links .nav-link {
-    padding: 0.5rem 0.5rem !important;
-    font-size: 0.8rem !important;
+    padding: 0.5rem 0.45rem !important;
+    font-size: 0.78rem !important;
   }
 
   .nav-admin-btn span,
-  .customer-login-btn span {
-    display: none;
+  .customer-login-btn span,
+  .nav-order-cta {
+    display: none !important;
   }
 
   .nav-admin-btn,
   .customer-login-btn {
     width: 2.75rem;
+    min-width: 2.75rem;
     padding: 0;
     justify-content: center;
+  }
+
+  .site-nav-actions {
+    gap: 0.4rem !important;
   }
 }
 
@@ -2846,8 +2937,9 @@ body.auth-modal-open {
 }
 
 [data-theme="light"] #navbar {
-  background: rgba(238, 246, 255, 0.88);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(248, 250, 252, 0.97) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
 }
 
 [data-theme="light"] .site-nav-links .nav-link {

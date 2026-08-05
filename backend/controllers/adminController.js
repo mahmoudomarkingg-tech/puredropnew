@@ -405,6 +405,25 @@ async function updateOrderStatus(req, res) {
     broadcastAdminEvent('coupons-updated', { orderId, status: newStatus });
   }
 
+  let smsResult = null;
+  if (newStatus === 'delivered' && order.status !== 'delivered') {
+    try {
+      const { notifyCustomerDelivered } = require('../services/smsService');
+      const full = await get(
+        `SELECT o.order_number AS "orderNumber",
+                COALESCE(o.customer_phone_snapshot, c.phone) AS "customerPhone"
+         FROM orders o
+         LEFT JOIN customers c ON c.id = o.customer_id
+         WHERE o.id = ?`,
+        [orderId]
+      );
+      smsResult = await notifyCustomerDelivered(full || { orderNumber: order.order_number });
+    } catch (error) {
+      console.error('[sms] after status update:', error.message);
+      smsResult = { ok: false, reason: error.message };
+    }
+  }
+
   return res.json({
     success: true,
     orderId,
@@ -413,7 +432,8 @@ async function updateOrderStatus(req, res) {
     newStatus,
     statusLabel: translateOrderStatus(newStatus),
     deliveryStatus,
-    couponApplyResult
+    couponApplyResult,
+    smsResult
   });
 }
 
@@ -529,6 +549,25 @@ async function updateOrderDeliveryStatus(req, res) {
     broadcastAdminEvent('coupons-updated', { orderId, deliveryStatus });
   }
 
+  let smsResult = null;
+  if (deliveryStatus === 'تم التسليم' && order.status !== 'delivered') {
+    try {
+      const { notifyCustomerDelivered } = require('../services/smsService');
+      const full = await get(
+        `SELECT o.order_number AS "orderNumber",
+                COALESCE(o.customer_phone_snapshot, c.phone) AS "customerPhone"
+         FROM orders o
+         LEFT JOIN customers c ON c.id = o.customer_id
+         WHERE o.id = ?`,
+        [orderId]
+      );
+      smsResult = await notifyCustomerDelivered(full || { orderNumber: order.order_number });
+    } catch (error) {
+      console.error('[sms] after delivery update:', error.message);
+      smsResult = { ok: false, reason: error.message };
+    }
+  }
+
   return res.json({
     success: true,
     orderId,
@@ -537,7 +576,8 @@ async function updateOrderDeliveryStatus(req, res) {
     deliveryNotes: deliveryNotes || null,
     status: nextStatus,
     statusLabel: translateOrderStatus(nextStatus),
-    couponApplyResult
+    couponApplyResult,
+    smsResult
   });
 }
 

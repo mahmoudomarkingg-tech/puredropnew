@@ -61,8 +61,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" /></noscript>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <meta name="google-signin-client_id" content="" id="googleClientMeta" />
@@ -109,8 +108,8 @@
           </div>
         </a>
 
-        <!-- Desktop Nav -->
-        <div class="hidden xl:flex items-center gap-1 flex-1 min-w-0 justify-center site-nav-links">
+        <!-- Desktop Nav (wide screens only — tablets use compact bar) -->
+        <div class="site-nav-links site-nav-desktop">
           <a href="#home" onclick="showMain()" class="nav-link">الرئيسية</a>
           <a href="#products" onclick="showMain()" class="nav-link">المنتجات</a>
           <a href="#hydrationCalculator" onclick="showMain()" class="nav-link">حاسبة الترطيب</a>
@@ -121,7 +120,7 @@
         </div>
 
         <!-- Desktop actions -->
-        <div class="hidden xl:flex items-center gap-2 flex-shrink-0 site-nav-actions">
+        <div class="site-nav-actions site-nav-desktop">
           <div id="customerAccountChip" class="customer-account-menu is-hidden">
             <button type="button" id="customerMenuToggle" class="customer-account-trigger" aria-expanded="false" aria-haspopup="true">
               <img id="customerAvatar" alt="" class="customer-avatar is-hidden" />
@@ -157,39 +156,33 @@
         </div>
 
         <!-- Tablet / Mobile actions: account + theme + cart + menu -->
-        <div class="xl:hidden flex items-center gap-2 flex-shrink-0">
+        <div class="site-nav-compact flex items-center gap-2 flex-shrink-0">
           <button
             type="button"
             id="mobileNavAuthBtn"
             onclick="openCustomerAuthModal('login')"
-            class="relative group"
+            class="nav-compact-btn"
             aria-label="تسجيل الدخول أو إنشاء حساب"
             title="تسجيل الدخول / إنشاء حساب"
           >
-            <div class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
-              <i class="fas fa-user text-slate-300 group-hover:text-cyan-400 transition-colors text-lg"></i>
-            </div>
+            <i class="fas fa-user" aria-hidden="true"></i>
           </button>
           <button
             type="button"
             id="themeToggleBtnMobile"
             onclick="toggleTheme()"
-            class="relative group"
+            class="nav-compact-btn"
             aria-label="تبديل الوضع الليلي/الفاتح"
             title="تبديل الوضع الليلي/الفاتح"
           >
-            <div class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
-              <i id="themeToggleIconCompact" class="fas fa-sun text-slate-300 group-hover:text-cyan-400 transition-colors text-lg"></i>
-            </div>
+            <i id="themeToggleIconCompact" class="fas fa-sun" aria-hidden="true"></i>
           </button>
-          <button type="button" onclick="showCart()" class="relative group" aria-label="سلة الطلبات">
-            <div class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
-              <i class="fas fa-shopping-cart text-slate-300 group-hover:text-cyan-400 transition-colors text-lg"></i>
-            </div>
+          <button type="button" onclick="showCart()" class="nav-compact-btn relative" aria-label="سلة الطلبات">
+            <i class="fas fa-shopping-cart" aria-hidden="true"></i>
             <span id="cartCountCompact" class="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-[10px] font-bold flex items-center justify-center hidden border-2 border-slate-900 cart-badge-premium">0</span>
           </button>
-          <button type="button" onclick="toggleMobileMenu()" class="w-11 h-11 rounded-xl glass-elegant flex items-center justify-center hover:bg-white/10 transition-colors" aria-label="فتح القائمة">
-            <i class="fas fa-bars text-lg"></i>
+          <button type="button" onclick="toggleMobileMenu()" class="nav-compact-btn" aria-label="فتح القائمة">
+            <i class="fas fa-bars" aria-hidden="true"></i>
           </button>
         </div>
       </div>

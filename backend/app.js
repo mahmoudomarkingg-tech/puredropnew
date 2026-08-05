@@ -69,6 +69,7 @@ app.use('/api', couponsRoutes);
 app.use('/api/auth', customerAuthRoutes);
 app.use('/api/admin', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/staff', require('./routes/staff'));
 
 const staticCache = (res, filePath) => {
   // Avoid long browser caches for site shell so Render updates appear quickly.
@@ -91,9 +92,22 @@ app.use('/admin', express.static(path.join(ROOT_DIR, 'admin'), {
   setHeaders: staticCache
 }));
 
+app.use('/staff', express.static(path.join(ROOT_DIR, 'staff'), {
+  index: 'index.html',
+  redirect: true,
+  setHeaders: staticCache
+}));
+
 app.get(['/admin', '/admin/'], (req, res, next) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.sendFile(path.join(ROOT_DIR, 'admin', 'index.html'), (err) => {
+    if (err) next(err);
+  });
+});
+
+app.get(['/staff', '/staff/'], (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.sendFile(path.join(ROOT_DIR, 'staff', 'index.html'), (err) => {
     if (err) next(err);
   });
 });
@@ -118,6 +132,10 @@ app.use((req, res, next) => {
   if (req.path === '/admin' || req.path.startsWith('/admin/')) {
     res.setHeader('Cache-Control', 'no-cache');
     return res.sendFile(path.join(ROOT_DIR, 'admin', 'index.html'));
+  }
+  if (req.path === '/staff' || req.path.startsWith('/staff/')) {
+    res.setHeader('Cache-Control', 'no-cache');
+    return res.sendFile(path.join(ROOT_DIR, 'staff', 'index.html'));
   }
   res.setHeader('Cache-Control', 'no-cache');
   return res.sendFile(path.join(ROOT_DIR, 'index.html'));

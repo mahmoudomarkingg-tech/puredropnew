@@ -982,8 +982,8 @@
 
     function initializeGoogleIdentity() {
       if (!authConfig.googleClientId || !window.google?.accounts?.id) return false;
-      const mobile = isMobileBrowser();
-      const config = {
+      // Always use redirect: popup/One Tap fails on many tablets and laptops (blank page / blocked popup).
+      window.google.accounts.id.initialize({
         client_id: authConfig.googleClientId,
         callback: async (response) => {
           await handleGoogleCredential(response);
@@ -992,13 +992,9 @@
         auto_select: false,
         cancel_on_tap_outside: true,
         use_fedcm_for_prompt: false,
-        // Mobile browsers often get stuck on a blank accounts.google.com page with popup/One Tap.
-        ux_mode: mobile ? 'redirect' : 'popup'
-      };
-      if (mobile) {
-        config.login_uri = getGoogleRedirectUri();
-      }
-      window.google.accounts.id.initialize(config);
+        ux_mode: 'redirect',
+        login_uri: getGoogleRedirectUri()
+      });
       return true;
     }
 
@@ -1052,21 +1048,11 @@
         initializeGoogleIdentity();
         openCustomerAuthModal('login');
         renderGoogleSignInButton();
-
-        // Do NOT call prompt() on mobile — it opens a full-page Google flow that often ends blank.
-        if (!isMobileBrowser()) {
-          try {
-            window.google.accounts.id.prompt();
-          } catch (_) {
-            /* button still works */
-          }
-        } else {
-          showNotification(
-            '👆 اضغط زر Google',
-            'اضغط زر المتابعة مع Google داخل النافذة — سيتم إرجاعك للموقع تلقائياً بعد الموافقة.',
-            'info'
-          );
-        }
+        showNotification(
+          '👆 اضغط زر Google',
+          'اضغط زر المتابعة مع Google داخل النافذة — سيتم إرجاعك للموقع تلقائياً بعد الموافقة.',
+          'info'
+        );
       } catch (error) {
         openCustomerAuthModal('login');
         showNotification('❌ تعذر Google', (error.message || 'استخدم الدخول بالبريد'), 'error');

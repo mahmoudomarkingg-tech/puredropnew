@@ -41,7 +41,7 @@ async function login(req, res) {
 
   const expiresIn = process.env.JWT_EXPIRES_IN || '8h';
   const token = jwt.sign(
-    { username: admin.username },
+    { username: admin.username, role: 'admin' },
     getJwtSecret(),
     { subject: String(admin.id), expiresIn }
   );
@@ -52,7 +52,8 @@ async function login(req, res) {
     expiresIn,
     admin: {
       id: admin.id,
-      username: admin.username
+      username: admin.username,
+      role: 'admin'
     }
   });
 }

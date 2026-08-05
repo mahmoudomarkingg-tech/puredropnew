@@ -29,21 +29,54 @@ function authenticateToken(req, res, next) {
     }
 
     const payload = jwt.verify(token, getJwtSecret());
-    if (payload.role === 'customer') {
+    if (payload.role === 'customer' || payload.role === 'staff') {
       return res.status(403).json({
         success: false,
-        error: 'هذا التوكن خاص بالعملاء وليس لوحة الإدارة'
+        error: 'هذا التوكن غير مسموح للوحة الإدارة'
       });
     }
     req.admin = {
       id: payload.sub || payload.id || null,
-      username: payload.username
+      username: payload.username,
+      role: payload.role || 'admin'
     };
     return next();
   } catch (error) {
     return res.status(401).json({
       success: false,
       error: 'التوكن غير صالح أو منتهي الصلاحية'
+    });
+  }
+}
+
+function authenticateStaff(req, res, next) {
+  try {
+    const token = readBearerToken(req);
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        error: 'يلزم تسجيل دخول الموظف'
+      });
+    }
+
+    const payload = jwt.verify(token, getJwtSecret());
+    if (payload.role !== 'staff') {
+      return res.status(403).json({
+        success: false,
+        error: 'هذا الحساب ليس حساب موظف توصيل'
+      });
+    }
+
+    req.staff = {
+      id: payload.sub || 'staff',
+      username: payload.username || 'staff',
+      role: 'staff'
+    };
+    return next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      error: 'جلسة الموظف غير صالحة أو منتهية'
     });
   }
 }
@@ -103,6 +136,7 @@ function optionalCustomer(req, res, next) {
 
 module.exports = {
   authenticateToken,
+  authenticateStaff,
   authenticateCustomer,
   optionalCustomer,
   getJwtSecret
