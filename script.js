@@ -658,6 +658,102 @@
       if (toggle) toggle.setAttribute('aria-expanded', 'false');
     }
 
+    function formatOrderDate(value) {
+      if (!value) return '—';
+      try {
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return String(value);
+        return d.toLocaleString('ar-JO', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch {
+        return String(value);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function closeMyOrdersModal() {
+      const modal = document.getElementById('myOrdersModal');
+      setHiddenEl(modal, true);
+      if (modal) modal.setAttribute('aria-hidden', 'true');
+      const authModal = document.getElementById('customerAuthModal');
+      if (!authModal || authModal.classList.contains('is-hidden')) {
+        document.body.style.overflow = '';
+        document.body.classList.remove('auth-modal-open');
+      }
+    }
+
+    async function openMyOrdersModal() {
+      if (!customerSession?.id) {
+        openCustomerAuthModal('login');
+        showNotification('ℹ️ سجّل الدخول أولاً', 'سجل الدخول لعرض طلباتك خلال آخر 14 يوماً', 'info');
+        return;
+      }
+      closeCustomerMenu();
+      const modal = document.getElementById('myOrdersModal');
+      const list = document.getElementById('myOrdersList');
+      const hint = document.getElementById('myOrdersHint');
+      if (!modal || !list) return;
+      setHiddenEl(modal, false);
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('auth-modal-open');
+      list.innerHTML = '<div class="my-orders-loading">جاري التحميل…</div>';
+      if (hint) hint.textContent = 'تظهر هنا طلباتك خلال آخر 14 يوماً فقط.';
+
+      try {
+        const data = await puredropApiRequest('/api/auth/my-orders');
+        const days = data.days || 14;
+        if (hint) {
+          hint.textContent = data.hint
+            ? `تظهر الطلبات لآخر ${days} يوماً. ${data.hint}`
+            : `تظهر هنا طلباتك خلال آخر ${days} يوماً فقط، ثم تختفي من هذه القائمة تلقائياً.`;
+        }
+        const orders = data.orders || [];
+        if (!orders.length) {
+          list.innerHTML = '<div class="my-orders-empty">لا توجد طلبات خلال الفترة الحالية</div>';
+          return;
+        }
+        list.innerHTML = orders.map((o) => {
+          const delivered = Boolean(o.isDelivered);
+          const badgeClass = delivered ? 'my-order-badge done' : 'my-order-badge';
+          const badgeText = delivered ? 'تم الاستلام' : escapeHtml(o.statusLabel || o.status || 'قيد المعالجة');
+          const receivedLine = delivered
+            ? `<div class="my-order-row"><strong>وقت الاستلام:</strong> ${escapeHtml(formatOrderDate(o.deliveredAt || o.createdAt))}</div>`
+            : `<div class="my-order-row"><strong>الحالة:</strong> لم يُستلم بعد — ${escapeHtml(o.statusLabel || '')}</div>`;
+          return `
+            <article class="my-order-item">
+              <div class="my-order-head">
+                <div class="my-order-num">${escapeHtml(o.orderNumber || '')}</div>
+                <span class="${badgeClass}">${badgeText}</span>
+              </div>
+              <div class="my-order-row"><strong>ماذا طلبت:</strong> ${escapeHtml(o.itemsSummary || '—')}</div>
+              <div class="my-order-row"><strong>تاريخ الطلب:</strong> ${escapeHtml(formatOrderDate(o.createdAt))}</div>
+              ${receivedLine}
+              <div class="my-order-row"><strong>الإجمالي:</strong> ${escapeHtml(String(o.total ?? '—'))} ${escapeHtml(o.currency || 'JOD')}</div>
+            </article>
+          `;
+        }).join('');
+      } catch (error) {
+        list.innerHTML = `<div class="my-orders-empty">${escapeHtml(error.message || 'تعذر تحميل الطلبات')}</div>`;
+      }
+    }
+
+    window.openMyOrdersModal = openMyOrdersModal;
+    window.closeMyOrdersModal = closeMyOrdersModal;
+
     function toggleCustomerMenu(event) {
       event?.stopPropagation?.();
       const dropdown = document.getElementById('customerMenuDropdown');
@@ -1201,9 +1297,18 @@
         ? 'fas fa-moon theme-toggle-icon'
         : 'fas fa-sun theme-toggle-icon';
 
-      if (desktopIcon) desktopIcon.className = iconClass;
-      if (compactIcon) compactIcon.className = iconClass;
-      if (mobileIcon) mobileIcon.className = iconClass;
+      if (desktopIcon && desktopIcon.tagName === 'I') desktopIcon.className = iconClass;
+      if (mobileIcon && mobileIcon.tagName === 'I') mobileIcon.className = iconClass;
+      if (compactIcon && compactIcon.tagName === 'svg') {
+        if (safeTheme === 'light') {
+          compactIcon.innerHTML = '<path d="M20.5 14.2A8.2 8.2 0 0 1 9.8 3.5 7 7 0 1 0 20.5 14.2Z"/>';
+          compactIcon.setAttribute('viewBox', '0 0 24 24');
+        } else {
+          compactIcon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>';
+        }
+      } else if (compactIcon && compactIcon.tagName === 'I') {
+        compactIcon.className = iconClass;
+      }
 
       if (typeof refreshBubbleThemeCache === 'function') {
         refreshBubbleThemeCache();

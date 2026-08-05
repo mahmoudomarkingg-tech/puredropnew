@@ -169,8 +169,8 @@ async function createOrder(req, res) {
           customer_name_snapshot, customer_phone_snapshot, customer_address_snapshot,
           location_lat, location_lng, location_maps_url,
           subtotal, delivery_fee, tax, coupon_discount, coupons_redeemed, coupon_service_type,
-          total, currency, source, payment_method, payment_status, notes)
-         VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NULL, ?, 'JOD', 'website', 'cash_on_delivery', 'unpaid', ?)
+          total, currency, source, payment_method, payment_status, notes, customer_user_id)
+         VALUES (?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NULL, ?, 'JOD', 'website', 'cash_on_delivery', 'unpaid', ?, ?)
          RETURNING id`,
         [
           orderNumber,
@@ -186,7 +186,8 @@ async function createOrder(req, res) {
           deliveryFee,
           tax,
           money(subtotal + deliveryFee + tax),
-          customer.notes
+          customer.notes,
+          req.customer?.id || null
         ],
         client
       );

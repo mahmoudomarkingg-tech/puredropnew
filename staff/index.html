@@ -91,7 +91,7 @@
 
     <section id="loginView" class="card">
       <h2 style="margin:0 0 8px;font-size:1.1rem">تسجيل دخول الموظف</h2>
-      <p class="muted" style="margin-top:0">صلاحيات محدودة: عرض الطلبات + تم التسليم + الموقع فقط.</p>
+      <p class="muted" style="margin-top:0">طلبات اليوم فقط: رقم العميل + الموقع + تم التسليم. بلا حذف أو إلغاء.</p>
       <label for="username">اسم المستخدم</label>
       <input id="username" autocomplete="username" />
       <label for="password">كلمة المرور</label>
@@ -162,7 +162,7 @@
     function renderOrders(orders) {
       const root = $('ordersList');
       if (!orders.length) {
-        root.innerHTML = '<div class="card empty">لا توجد طلبات بانتظار التسليم حالياً</div>';
+        root.innerHTML = '<div class="card empty">لا توجد طلبات جديدة اليوم بانتظار التسليم</div>';
         return;
       }
       root.innerHTML = orders.map((o) => `
@@ -197,8 +197,16 @@
       if (!confirm('تأكيد: تم تسليم هذا الطلب للعميل؟')) return;
       btn.disabled = true;
       try {
-        await api(`/orders/${id}/deliver`, { method: 'POST', body: '{}' });
-        showToast('تم تعليم الطلب كمُسلَّم');
+        const data = await api(`/orders/${id}/deliver`, { method: 'POST', body: '{}' });
+        let msg = 'تم تعليم الطلب كمُسلَّم';
+        const sms = data.smsResult;
+        if (sms?.ok && !sms.skipped) msg += ' — تم إرسال SMS';
+        else if (sms?.skipped || sms?.ok === false) {
+          msg += sms.provider === 'log' || !sms.provider
+            ? ' — SMS غير مفعّل على السيرفر'
+            : ` — SMS: ${sms.reason || 'لم يُرسل'}`;
+        }
+        showToast(msg);
         await loadOrders();
       } catch (e) {
         showToast(e.message || 'فشل التحديث');

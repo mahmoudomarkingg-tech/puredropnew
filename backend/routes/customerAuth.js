@@ -2,6 +2,7 @@
 
 const express = require('express');
 const { authenticateCustomer } = require('../middleware/auth');
+const { asyncHandler } = require('../utils/helpers');
 const {
   getAuthConfig,
   googleLogin,
@@ -10,7 +11,8 @@ const {
   registerWithEmail,
   loginWithEmail,
   getMe,
-  updateMe
+  updateMe,
+  listMyOrders
 } = require('../controllers/customerAuthController');
 
 const router = express.Router();
@@ -27,5 +29,6 @@ router.post('/register', registerWithEmail);
 router.post('/login', loginWithEmail);
 router.get('/me', authenticateCustomer, getMe);
 router.patch('/me', authenticateCustomer, updateMe);
+router.get('/my-orders', authenticateCustomer, asyncHandler(listMyOrders));
 
 module.exports = router;

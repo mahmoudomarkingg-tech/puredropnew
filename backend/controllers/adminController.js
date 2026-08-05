@@ -926,8 +926,12 @@ async function getAdminHubSummary(req, res) {
       ?.total || 0
   );
 
+  const { getSmsConfigStatus } = require('../services/smsService');
+  const sms = getSmsConfigStatus();
+
   return res.json({
     success: true,
+    sms,
     sections: {
       orders: { newCount: pendingOrders, label: 'طلبات بانتظار المعالجة' },
       support: { newCount: newSupport, label: 'رسائل دعم جديدة' },

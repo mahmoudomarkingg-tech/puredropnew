@@ -512,12 +512,46 @@
     }
     .form-error.show { display: block; }
     .login-hint {
-      margin: 16px 0 0;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
+      margin: 14px 0 0;
       font-size: 12px;
-      line-height: 1.7;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .portal-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .portal-tile {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      text-align: right;
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      background: rgba(15, 23, 42, 0.55);
+      color: inherit;
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .portal-tile:hover {
+      transform: translateY(-2px);
+      border-color: rgba(34, 211, 238, 0.55);
+      background: rgba(8, 145, 178, 0.18);
+    }
+    .portal-tile.staff:hover {
+      border-color: rgba(16, 185, 129, 0.55);
+      background: rgba(16, 185, 129, 0.14);
+    }
+    .portal-tile strong { font-size: 17px; }
+    .portal-tile span:last-child { font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .portal-emoji { font-size: 28px; line-height: 1; }
+    @media (min-width: 560px) {
+      .portal-grid { grid-template-columns: 1fr 1fr; }
     }
     .cards-view { display: none; padding: 10px; gap: 8px; }
     .order-card {
@@ -1019,12 +1053,38 @@
   </style>
 </head>
 <body>
-  <div class="login-gate" id="loginGate">
+  <div class="login-gate" id="portalGate">
+    <div class="login-card portal-card">
+      <div class="login-brand">
+        <div class="brand-icon" aria-hidden="true">💧</div>
+        <div>
+          <h2>قطرة نقية</h2>
+          <p>اختر نوع الدخول</p>
+        </div>
+      </div>
+      <p class="lead">قسمان منفصلان: الإدارة الكاملة، أو موظفو التوصيل (طلبات اليوم + GPS + تم التسليم فقط).</p>
+      <div class="portal-grid">
+        <button type="button" class="portal-tile admin" id="chooseAdminPortal">
+          <span class="portal-emoji" aria-hidden="true">🛡️</span>
+          <strong>قسم الإدارة</strong>
+          <span>كل الصلاحيات: الطلبات، الدعم، العملاء، الكابونات</span>
+        </button>
+        <button type="button" class="portal-tile staff" id="chooseStaffPortal">
+          <span class="portal-emoji" aria-hidden="true">🚚</span>
+          <strong>قسم الموظفين</strong>
+          <span>طلبات اليوم فقط — رقم العميل، الموقع، وتم التسليم</span>
+        </button>
+      </div>
+      <p class="login-hint" style="margin-top:14px"><a href="/" style="color:inherit">← العودة للموقع</a></p>
+    </div>
+  </div>
+
+  <div class="login-gate hidden" id="loginGate">
     <form class="login-card" id="loginForm" novalidate autocomplete="off">
       <div class="login-brand">
         <div class="brand-icon" aria-hidden="true">💧</div>
         <div>
-          <h2>دخول محمي</h2>
+          <h2>دخول الإدارة</h2>
           <p>لوحة إدارة قطرة نقية</p>
         </div>
       </div>
@@ -1042,6 +1102,7 @@
         </div>
       </div>
       <button class="btn primary" type="submit" id="loginSubmit">تسجيل الدخول</button>
+      <button class="btn" type="button" id="backToPortalFromAdmin" style="width:100%;margin-top:8px">← رجوع للاختيار</button>
       <p class="login-hint">بدون بيانات صحيحة لن يتم فتح لوحة الإدارة. الجلسة تنتهي تلقائياً بعد انتهاء صلاحية التوكن.</p>
     </form>
   </div>
@@ -1052,6 +1113,7 @@
         <div>
           <h2>لوحة إدارة قطرة نقية</h2>
           <p class="lead">اختر القسم المناسب. الشارة الحمراء تعني عناصر جديدة تحتاج متابعة فورية.</p>
+          <p id="hubSmsHint" class="lead" style="margin-top:8px;font-size:13px;color:#fbbf24">جاري فحص إعداد SMS…</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <span class="admin-chip" id="hubAdminChip">الأدمن</span>
@@ -1348,6 +1410,16 @@
         setHubBadge('hubBadgeOrders', state.hub.orders);
         setHubBadge('hubBadgeSupport', state.hub.support);
         setHubBadge('hubBadgeCustomers', customersBadge);
+        const smsHint = document.getElementById('hubSmsHint');
+        if (smsHint) {
+          if (data.sms?.ready) {
+            smsHint.textContent = '✅ ' + (data.sms.hint || 'SMS مفعّل');
+            smsHint.style.color = '#34d399';
+          } else {
+            smsHint.textContent = '⚠️ ' + (data.sms?.hint || 'SMS غير مفعّل — لن تصل رسالة للعميل بعد التسليم.');
+            smsHint.style.color = '#fbbf24';
+          }
+        }
       } catch (error) {
         console.warn(error.message);
       }
@@ -1379,6 +1451,7 @@
         return;
       }
       state.activeSection = null;
+      document.getElementById('portalGate')?.classList.add('hidden');
       document.getElementById('loginGate').classList.add('hidden');
       document.getElementById('hubGate').classList.remove('hidden');
       const dash = document.getElementById('dashboard');
@@ -1396,6 +1469,7 @@
         return;
       }
       state.activeSection = section;
+      document.getElementById('portalGate')?.classList.add('hidden');
       document.getElementById('loginGate').classList.add('hidden');
       document.getElementById('hubGate').classList.add('hidden');
       const dash = document.getElementById('dashboard');
@@ -1484,6 +1558,7 @@
     }
 
     function showLogin() {
+      const portal = document.getElementById('portalGate');
       const gate = document.getElementById('loginGate');
       const dash = document.getElementById('dashboard');
       const hub = document.getElementById('hubGate');
@@ -1492,7 +1567,8 @@
       dash.style.display = 'none';
       dash.setAttribute('aria-hidden', 'true');
       hub?.classList.add('hidden');
-      gate.classList.remove('hidden');
+      gate.classList.add('hidden');
+      portal?.classList.remove('hidden');
       state.activeSection = null;
       state.orders = [];
       if (ordersTableEl) ordersTableEl.innerHTML = '';
@@ -1501,6 +1577,12 @@
       clearLoginFields();
       setTimeout(clearLoginFields, 50);
       setTimeout(clearLoginFields, 300);
+    }
+
+    function showAdminLoginForm() {
+      document.getElementById('portalGate')?.classList.add('hidden');
+      document.getElementById('loginGate')?.classList.remove('hidden');
+      clearLoginFields();
     }
 
     function stopPolling() {
@@ -2199,14 +2281,36 @@
       panel.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
     }
 
+    function smsToastMessage(smsResult) {
+      if (!smsResult) return '';
+      if (smsResult.ok && !smsResult.skipped) return ' وتم إرسال SMS للعميل.';
+      if (smsResult.skipped) {
+        const reasons = {
+          no_phone: ' (SMS لم يُرسل: لا يوجد رقم هاتف للعميل)',
+          invalid_phone: ' (SMS لم يُرسل: رقم الهاتف غير صالح)',
+          twilio_env_missing: ' (SMS غير مفعّل: أكمل إعدادات Twilio في Render)',
+          sms_api_url_missing: ' (SMS غير مفعّل: أضف SMS_API_URL في Render)',
+          unknown_provider: ' (SMS غير مفعّل: SMS_PROVIDER غير معروف)',
+          empty_message: ' (SMS لم يُرسل: رسالة فارغة)'
+        };
+        if (smsResult.provider === 'log' || !smsResult.provider) {
+          return ' (تنبيه: SMS غير مفعّل على السيرفر — أضف SMS_PROVIDER في Render)';
+        }
+        return reasons[smsResult.reason] || ` (SMS لم يُرسل: ${smsResult.reason || 'تخطّي'})`;
+      }
+      return ` (فشل SMS: ${smsResult.reason || 'خطأ'})`;
+    }
+
     async function applyQuickStatus(orderId, status, anchor) {
       const run = async () => {
         try {
-          await requestJson(`/api/admin/orders/${orderId}/status`, {
+          const result = await requestJson(`/api/admin/orders/${orderId}/status`, {
             method: 'PATCH',
             body: JSON.stringify({ status, changedBy: 'لوحة الإدارة' })
           });
-          showToast(status === 'delivered' ? 'تم تعليم الطلب كمُسلَّم' : 'تم تحديث حالة الطلب');
+          const base = status === 'delivered' ? 'تم تعليم الطلب كمُسلَّم' : 'تم تحديث حالة الطلب';
+          const extra = status === 'delivered' ? smsToastMessage(result.smsResult) : '';
+          showToast(base + extra, result.smsResult?.ok && !result.smsResult?.skipped ? 'success' : undefined);
           await loadOrders(false);
         } catch (error) {
           showToast(error.message, 'error');
@@ -2234,11 +2338,12 @@
       const note = box.querySelector('[data-field="note"]').value.trim();
       const run = async () => {
         try {
-          await requestJson(`/api/admin/orders/${orderId}/status`, {
+          const result = await requestJson(`/api/admin/orders/${orderId}/status`, {
             method: 'PATCH',
             body: JSON.stringify({ status, note, changedBy: 'لوحة الإدارة' })
           });
-          showToast('تم تحديث حالة الطلب بنجاح');
+          const extra = status === 'delivered' ? smsToastMessage(result.smsResult) : '';
+          showToast('تم تحديث حالة الطلب بنجاح' + extra);
           await loadOrders(false);
         } catch (error) {
           showToast(error.message, 'error');
@@ -2264,11 +2369,12 @@
       const deliveryStatus = box.querySelector('[data-field="delivery"]').value;
       const deliveryNotes = box.querySelector('[data-field="delivery-note"]').value.trim();
       try {
-        await requestJson(`/api/admin/orders/${orderId}/delivery`, {
+        const result = await requestJson(`/api/admin/orders/${orderId}/delivery`, {
           method: 'PATCH',
           body: JSON.stringify({ deliveryStatus, deliveryNotes, changedBy: 'لوحة الإدارة' })
         });
-        showToast('تم تحديث التسليم ومزامنة حالة الطلب');
+        const extra = deliveryStatus === 'تم التسليم' ? smsToastMessage(result.smsResult) : '';
+        showToast('تم تحديث التسليم ومزامنة حالة الطلب' + extra);
         await loadOrders(false);
       } catch (error) {
         showToast(error.message, 'error');
@@ -2389,6 +2495,12 @@
         showToast(error.message, 'error');
       }
     });
+    document.getElementById('chooseAdminPortal')?.addEventListener('click', () => showAdminLoginForm());
+    document.getElementById('chooseStaffPortal')?.addEventListener('click', () => {
+      window.location.href = '/staff/';
+    });
+    document.getElementById('backToPortalFromAdmin')?.addEventListener('click', () => showLogin());
+
     document.getElementById('logoutBtn').addEventListener('click', () => logout());
     document.getElementById('togglePassword').addEventListener('click', () => {
       const input = document.getElementById('loginPassword');

@@ -131,9 +131,40 @@ async function notifyCustomerDelivered(order) {
   });
 }
 
+function getSmsConfigStatus() {
+  const provider = String(process.env.SMS_PROVIDER || '').trim().toLowerCase() || 'log';
+  let ready = false;
+  let hint = 'لم يُضبط مزوّد SMS — الرسائل لن تُرسل للعملاء.';
+
+  if (provider === 'twilio') {
+    ready = Boolean(
+      process.env.TWILIO_ACCOUNT_SID &&
+        process.env.TWILIO_AUTH_TOKEN &&
+        process.env.TWILIO_FROM
+    );
+    hint = ready
+      ? 'Twilio جاهز لإرسال SMS بعد التسليم.'
+      : 'SMS_PROVIDER=twilio لكن ينقص TWILIO_ACCOUNT_SID أو TWILIO_AUTH_TOKEN أو TWILIO_FROM.';
+  } else if (provider === 'http') {
+    ready = Boolean(process.env.SMS_API_URL);
+    hint = ready
+      ? 'بوابة HTTP جاهزة لإرسال SMS بعد التسليم.'
+      : 'SMS_PROVIDER=http لكن SMS_API_URL فارغ.';
+  } else if (provider === 'log' || provider === 'off' || provider === 'none') {
+    ready = false;
+    hint =
+      'SMS متوقف (SMS_PROVIDER غير مفعّل). ضع SMS_PROVIDER=twilio أو http في Render Environment.';
+  } else {
+    hint = `مزوّد غير معروف: ${provider}`;
+  }
+
+  return { provider, ready, hint };
+}
+
 module.exports = {
   sendSms,
   notifyCustomerDelivered,
   toE164Jordan,
-  buildDeliverySms
+  buildDeliverySms,
+  getSmsConfigStatus
 };

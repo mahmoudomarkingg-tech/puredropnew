@@ -3,12 +3,13 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
-const { get, run } = require('../db/query');
+const { get, run, all } = require('../db/query');
 const { getJwtSecret } = require('../middleware/auth');
 const {
   sanitizeText,
   normalizePhone,
-  isValidJordanPhone
+  isValidJordanPhone,
+  translateOrderStatus
 } = require('../utils/helpers');
 const { getBalancesForPhone } = require('../services/couponsService');
 
@@ -371,6 +372,88 @@ async function updateMe(req, res) {
   return res.json({ success: true, customer: await attachCoupons(user) });
 }
 
+function customerHistoryDays() {
+  const n = Number.parseInt(process.env.CUSTOMER_ORDER_HISTORY_DAYS || '14', 10);
+  return Number.isFinite(n) && n > 0 ? Math.min(n, 90) : 14;
+}
+
+/** Customer-facing order history (last N days only — not deleted from admin DB). */
+async function listMyOrders(req, res) {
+  const days = customerHistoryDays();
+  const user = await get(
+    `SELECT id, phone FROM customer_users WHERE id = ?`,
+    [req.customer.id]
+  );
+  if (!user) {
+    return res.status(401).json({ success: false, error: 'الحساب غير موجود' });
+  }
+
+  const phone = normalizePhone(user.phone || '');
+  const whereParts = [
+    `o.created_at >= NOW() - make_interval(days => ?::int)`,
+    `(o.customer_user_id = ?${phone ? ' OR o.customer_phone_snapshot = ?' : ''})`
+  ];
+  const params = phone ? [days, user.id, phone] : [days, user.id];
+
+  const rows = await all(
+    `SELECT o.id,
+            o.order_number AS "orderNumber",
+            o.status,
+            COALESCE(os.label_ar, o.status) AS "statusLabel",
+            COALESCE(o.delivery_status, 'لم يتم التسليم') AS "deliveryStatus",
+            o.total,
+            o.currency,
+            o.created_at AS "createdAt",
+            o.delivered_at AS "deliveredAt",
+            o.customer_address_snapshot AS "address",
+            (
+              SELECT STRING_AGG(
+                oi.product_name_snapshot
+                  || CASE
+                       WHEN oi.option_label_snapshot IS NOT NULL AND BTRIM(oi.option_label_snapshot) <> ''
+                       THEN ' (' || oi.option_label_snapshot || ')'
+                       ELSE ''
+                     END
+                  || ' ×' || oi.quantity::text,
+                '، '
+              )
+              FROM order_items oi
+              WHERE oi.order_id = o.id
+            ) AS "itemsSummary"
+     FROM orders o
+     LEFT JOIN order_statuses os ON os.status = o.status
+     WHERE ${whereParts.join(' AND ')}
+     ORDER BY o.created_at DESC
+     LIMIT 50`,
+    params
+  );
+
+  const orders = (rows || []).map((row) => ({
+    id: row.id,
+    orderNumber: row.orderNumber,
+    status: row.status,
+    statusLabel: row.statusLabel || translateOrderStatus(row.status),
+    deliveryStatus: row.deliveryStatus,
+    total: Number(row.total),
+    currency: row.currency || 'JOD',
+    createdAt: row.createdAt,
+    deliveredAt: row.deliveredAt,
+    address: row.address || '',
+    itemsSummary: row.itemsSummary || '',
+    isDelivered: row.status === 'delivered' || row.deliveryStatus === 'تم التسليم'
+  }));
+
+  return res.json({
+    success: true,
+    days,
+    orders,
+    count: orders.length,
+    hint: phone
+      ? null
+      : 'أضف رقم هاتفك في الحساب لربط الطلبات السابقة برقم الهاتف.'
+  });
+}
+
 module.exports = {
   getAuthConfig,
   googleLogin,
@@ -379,5 +462,6 @@ module.exports = {
   registerWithEmail,
   loginWithEmail,
   getMe,
-  updateMe
+  updateMe,
+  listMyOrders
 };

@@ -61,14 +61,19 @@ function mapsUrlFor(row) {
   return null;
 }
 
-/** Limited order list for delivery staff — no coupons/admin notes/delete. */
+/** Limited order list for delivery staff — today's undelivered orders only. */
 async function listOrders(req, res) {
   const limit = Math.min(Math.max(Number.parseInt(req.query.limit || '80', 10) || 80, 1), 200);
   const onlyActive = String(req.query.active || '1') !== '0';
+  const todayOnly = String(req.query.today || '1') !== '0';
 
   const where = ["o.status <> 'cancelled'"];
   if (onlyActive) {
     where.push("o.status <> 'delivered'");
+  }
+  if (todayOnly) {
+    where.push("o.created_at >= date_trunc('day', NOW())");
+    where.push("o.created_at < date_trunc('day', NOW()) + interval '1 day'");
   }
 
   const rows = await all(

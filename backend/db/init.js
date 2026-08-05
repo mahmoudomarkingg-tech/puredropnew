@@ -241,10 +241,32 @@ async function ensureContactSupportStatuses() {
   `);
 }
 
+async function ensureOrderCustomerUserLink() {
+  await pool.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS customer_user_id INTEGER`);
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'orders_customer_user_id_fkey'
+      ) THEN
+        ALTER TABLE orders
+          ADD CONSTRAINT orders_customer_user_id_fkey
+          FOREIGN KEY (customer_user_id) REFERENCES customer_users(id) ON DELETE SET NULL;
+      END IF;
+    EXCEPTION WHEN others THEN
+      NULL; -- ignore if customer_users missing momentarily
+    END $$;
+  `);
+  await pool.query(
+    'CREATE INDEX IF NOT EXISTS idx_orders_customer_user_id ON orders(customer_user_id)'
+  );
+}
+
 async function ensureDatabase() {
   await ensureSchema();
   await ensureOrderDeliveryColumns();
   await ensureCustomerUsersTable();
+  await ensureOrderCustomerUserLink();
   await ensureDigitalCouponsTables();
   await ensureContactSupportStatuses();
   await ensureDefaultSettings();
