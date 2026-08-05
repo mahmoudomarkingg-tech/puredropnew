@@ -461,16 +461,18 @@
       animation: drift 12s ease-in-out infinite alternate-reverse;
     }
     .login-card {
-      width: min(440px, 100%);
-      background: var(--panel);
-      border: 1px solid var(--line);
+      width: min(460px, 100%);
+      background: linear-gradient(165deg, rgba(15, 23, 42, 0.96), rgba(8, 18, 34, 0.94));
+      border: 1px solid rgba(148, 163, 184, 0.22);
       border-radius: 24px;
       padding: 28px;
       box-shadow: var(--shadow);
       position: relative;
       z-index: 1;
       animation: fadeUp 0.4s ease;
+      backdrop-filter: blur(12px);
     }
+    .login-card.portal-card { width: min(640px, 100%); }
     .login-brand {
       display: flex;
       align-items: center;
@@ -479,26 +481,68 @@
     }
     .login-brand h2 { margin: 0; font-size: 24px; }
     .login-brand p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
-    .login-card > p.lead { margin: 0 0 18px; color: var(--muted); }
-    .login-card label { display: block; margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 700; }
+    .login-card > p.lead { margin: 0 0 18px; color: var(--muted); line-height: 1.7; }
+    .login-card label { display: block; margin: 0 0 6px; font-size: 13px; color: #cbd5e1; font-weight: 700; }
     .field { margin-bottom: 14px; }
+    .login-card input[type="text"],
+    .login-card input[type="password"],
+    .login-card input:not([type]),
+    .login-card input {
+      width: 100%;
+      color: #f8fafc !important;
+      background: #0b1220 !important;
+      border: 1px solid rgba(148, 163, 184, 0.35) !important;
+      border-radius: 12px !important;
+      padding: 12px 14px !important;
+      outline: 0;
+      font-family: inherit;
+      font-size: 15px !important;
+      box-shadow: none !important;
+      caret-color: #67e8f9;
+    }
+    .login-card input::placeholder { color: #64748b; }
+    .login-card input:focus {
+      border-color: rgba(6, 182, 212, 0.7) !important;
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.18) !important;
+    }
+    .login-card input:-webkit-autofill,
+    .login-card input:-webkit-autofill:hover,
+    .login-card input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #f8fafc !important;
+      caret-color: #67e8f9;
+      transition: background-color 9999s ease-in-out 0s;
+      box-shadow: 0 0 0 1000px #0b1220 inset !important;
+      border: 1px solid rgba(148, 163, 184, 0.35) !important;
+    }
     .password-wrap { position: relative; }
-    .password-wrap input { padding-left: 52px; }
+    .password-wrap input { padding-left: 64px !important; }
     .toggle-pass {
       position: absolute;
       left: 8px;
       top: 50%;
       transform: translateY(-50%);
       border: 0;
-      background: transparent;
-      color: var(--muted);
+      background: rgba(148, 163, 184, 0.12);
+      color: #cbd5e1;
       cursor: pointer;
       font-family: inherit;
       font-weight: 800;
       font-size: 12px;
-      padding: 6px 8px;
+      padding: 6px 10px;
+      border-radius: 8px;
     }
-    .login-card .btn { width: 100%; margin-top: 4px; }
+    .toggle-pass:hover { color: #67e8f9; background: rgba(6, 182, 212, 0.15); }
+    .login-card .btn { width: 100%; margin-top: 4px; min-height: 46px; font-size: 15px; }
+    .login-card .btn.ghost-back {
+      margin-top: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      color: #e2e8f0;
+    }
+    .login-card .btn.ghost-back:hover {
+      border-color: rgba(6, 182, 212, 0.45);
+      color: #67e8f9;
+    }
     .form-error {
       display: none;
       margin: 0 0 14px;
@@ -533,7 +577,7 @@
       padding: 18px;
       border-radius: 18px;
       border: 1px solid rgba(148, 163, 184, 0.28);
-      background: linear-gradient(160deg, rgba(15, 23, 42, 0.75), rgba(8, 47, 73, 0.45));
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.85), rgba(8, 47, 73, 0.4));
       color: inherit;
       cursor: pointer;
       transition: transform .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
@@ -545,14 +589,31 @@
       background: rgba(8, 145, 178, 0.2);
       box-shadow: 0 12px 28px rgba(6, 182, 212, 0.18);
     }
+    .portal-tile.staff {
+      border-color: rgba(16, 185, 129, 0.28);
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.85), rgba(6, 78, 59, 0.35));
+    }
     .portal-tile.staff:hover {
       border-color: rgba(16, 185, 129, 0.55);
       background: rgba(16, 185, 129, 0.16);
       box-shadow: 0 12px 28px rgba(16, 185, 129, 0.16);
     }
-    .portal-tile strong { font-size: 17px; }
-    .portal-tile span:last-child { font-size: 13px; color: var(--muted); line-height: 1.55; }
-    .portal-emoji { font-size: 28px; line-height: 1; }
+    .portal-tile strong { font-size: 17px; color: #f8fafc; }
+    .portal-tile span:last-child { font-size: 13px; color: #94a3b8; line-height: 1.55; }
+    .portal-emoji {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      background: rgba(6, 182, 212, 0.14);
+      border: 1px solid rgba(6, 182, 212, 0.28);
+    }
+    .portal-tile.staff .portal-emoji {
+      background: rgba(16, 185, 129, 0.14);
+      border-color: rgba(16, 185, 129, 0.28);
+    }
     @media (min-width: 560px) {
       .portal-grid { grid-template-columns: 1fr 1fr; }
     }
@@ -1126,7 +1187,7 @@
           <span>كل الصلاحيات: الطلبات، الدعم، العملاء، الكابونات</span>
         </button>
         <button type="button" class="portal-tile staff" id="chooseStaffPortal">
-          <span class="portal-emoji" aria-hidden="true">🚚</span>
+          <span class="portal-emoji" aria-hidden="true">🚛</span>
           <strong>قسم الموظفين</strong>
           <span>طلبات اليوم فقط — رقم العميل، الموقع، وتم التسليم</span>
         </button>
@@ -1158,8 +1219,8 @@
         </div>
       </div>
       <button class="btn primary" type="submit" id="loginSubmit">تسجيل الدخول</button>
-      <button class="btn" type="button" id="backToPortalFromAdmin" style="width:100%;margin-top:8px">← رجوع للاختيار</button>
-      <p class="login-hint">بدون بيانات صحيحة لن يتم فتح لوحة الإدارة. الجلسة تنتهي تلقائياً بعد انتهاء صلاحية التوكن.</p>
+      <button class="btn ghost-back" type="button" id="backToPortalFromAdmin">← رجوع للاختيار</button>
+      <p class="login-hint">بدون بيانات صحيحة لن يتم فتح لوحة الإدارة. الجلسة محمية وتنتهي عند الخروج أو إغلاق التبويب.</p>
     </form>
   </div>
 
