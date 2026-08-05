@@ -28,7 +28,7 @@ async function login(req, res) {
     return res.status(401).json({ success: false, error: 'بيانات الدخول غير صحيحة' });
   }
 
-  const expiresIn = process.env.STAFF_JWT_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '12h';
+  const expiresIn = process.env.STAFF_JWT_EXPIRES_IN || '4h';
   const token = jwt.sign(
     { username, role: 'staff' },
     getJwtSecret(),
@@ -233,18 +233,6 @@ async function markDelivered(req, res) {
     broadcastAdminEvent('coupons-updated', { orderId, status: 'delivered' });
   }
 
-  let smsResult = null;
-  try {
-    const { notifyCustomerDelivered } = require('../services/smsService');
-    smsResult = await notifyCustomerDelivered({
-      orderNumber: order.order_number,
-      customerPhone: order.customerPhone
-    });
-  } catch (error) {
-    console.error('[sms] staff deliver:', error.message);
-    smsResult = { ok: false, reason: error.message };
-  }
-
   return res.json({
     success: true,
     orderId,
@@ -252,8 +240,7 @@ async function markDelivered(req, res) {
     status: 'delivered',
     statusLabel: translateOrderStatus('delivered'),
     deliveryStatus,
-    couponApplyResult,
-    smsResult
+    couponApplyResult
   });
 }
 

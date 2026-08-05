@@ -527,25 +527,28 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 6px;
+      gap: 8px;
       text-align: right;
       width: 100%;
-      padding: 16px;
-      border-radius: 16px;
+      padding: 18px;
+      border-radius: 18px;
       border: 1px solid rgba(148, 163, 184, 0.28);
-      background: rgba(15, 23, 42, 0.55);
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.75), rgba(8, 47, 73, 0.45));
       color: inherit;
       cursor: pointer;
-      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
+      min-height: 150px;
     }
     .portal-tile:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px);
       border-color: rgba(34, 211, 238, 0.55);
-      background: rgba(8, 145, 178, 0.18);
+      background: rgba(8, 145, 178, 0.2);
+      box-shadow: 0 12px 28px rgba(6, 182, 212, 0.18);
     }
     .portal-tile.staff:hover {
       border-color: rgba(16, 185, 129, 0.55);
-      background: rgba(16, 185, 129, 0.14);
+      background: rgba(16, 185, 129, 0.16);
+      box-shadow: 0 12px 28px rgba(16, 185, 129, 0.16);
     }
     .portal-tile strong { font-size: 17px; }
     .portal-tile span:last-child { font-size: 13px; color: var(--muted); line-height: 1.55; }
@@ -1166,7 +1169,6 @@
         <div>
           <h2>لوحة إدارة قطرة نقية</h2>
           <p class="lead">اختر القسم المناسب. الشارة الحمراء تعني عناصر جديدة تحتاج متابعة فورية.</p>
-          <p id="hubSmsHint" class="lead" style="margin-top:8px;font-size:13px;color:#fbbf24">جاري فحص إعداد SMS…</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <span class="admin-chip" id="hubAdminChip">الأدمن</span>
@@ -1332,6 +1334,27 @@
   <script>
     const TOKEN_KEY = 'puredrop_admin_token';
     const ADMIN_KEY = 'puredrop_admin_user';
+    const AWAY_KEY = 'puredrop_admin_away_at';
+    const SESSION_IDLE_MS = 3 * 60 * 1000; // 3 minutes away → must login again
+
+    function authStoreGet(key) {
+      return sessionStorage.getItem(key) || '';
+    }
+    function authStoreSet(key, value) {
+      sessionStorage.setItem(key, value);
+      try { localStorage.removeItem(key); } catch (_) { /* ignore */ }
+    }
+    function authStoreClear(key) {
+      sessionStorage.removeItem(key);
+      try { localStorage.removeItem(key); } catch (_) { /* ignore */ }
+    }
+
+    // Migrate away from persistent localStorage tokens (security hardening).
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(ADMIN_KEY);
+    } catch (_) { /* ignore */ }
+
     const state = {
       orders: [],
       contactMessages: [],
@@ -1355,8 +1378,8 @@
       isLoadingSupport: false,
       isLoadingCoupons: false,
       isLoadingCustomers: false,
-      token: localStorage.getItem(TOKEN_KEY) || '',
-      adminUsername: localStorage.getItem(ADMIN_KEY) || '',
+      token: authStoreGet(TOKEN_KEY),
+      adminUsername: authStoreGet(ADMIN_KEY),
       events: null,
       pollTimer: null
     };
@@ -1464,16 +1487,6 @@
         setHubBadge('hubBadgeOrders', state.hub.orders);
         setHubBadge('hubBadgeSupport', state.hub.support);
         setHubBadge('hubBadgeCustomers', customersBadge);
-        const smsHint = document.getElementById('hubSmsHint');
-        if (smsHint) {
-          if (data.sms?.ready) {
-            smsHint.textContent = '✅ ' + (data.sms.hint || 'SMS مفعّل');
-            smsHint.style.color = '#34d399';
-          } else {
-            smsHint.textContent = '⚠️ ' + (data.sms?.hint || 'SMS غير مفعّل — لن تصل رسالة للعميل بعد التسليم.');
-            smsHint.style.color = '#fbbf24';
-          }
-        }
       } catch (error) {
         console.warn(error.message);
       }
@@ -1649,15 +1662,16 @@
     function logout(showMessage = true) {
       state.token = '';
       state.adminUsername = '';
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(ADMIN_KEY);
+      authStoreClear(TOKEN_KEY);
+      authStoreClear(ADMIN_KEY);
+      authStoreClear(AWAY_KEY);
       stopPolling();
       if (state.events) {
-        state.events.close();
+        try { state.events.close(); } catch (_) { /* ignore */ }
         state.events = null;
       }
       showLogin();
-      if (showMessage) showToast('تم تسجيل الخروج');
+      if (showMessage) showToast('تم تسجيل الخروج — يلزم الدخول مجدداً');
     }
 
     async function login(username, password) {
@@ -1672,8 +1686,8 @@
       }
       state.token = data.token;
       state.adminUsername = data.admin?.username || username;
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(ADMIN_KEY, state.adminUsername);
+      authStoreSet(TOKEN_KEY, data.token);
+      authStoreSet(ADMIN_KEY, state.adminUsername);
       showDashboard();
       connectLiveUpdates();
       startPolling();
@@ -1703,7 +1717,7 @@
         const data = await requestJson('/api/admin/me');
         if (!data?.success) throw new Error('unauthorized');
         state.adminUsername = data.admin?.username || state.adminUsername || '';
-        localStorage.setItem(ADMIN_KEY, state.adminUsername);
+        authStoreSet(ADMIN_KEY, state.adminUsername);
         connectLiveUpdates();
         startPolling();
         showHub();
@@ -2474,36 +2488,14 @@
       panel.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
     }
 
-    function smsToastMessage(smsResult) {
-      if (!smsResult) return '';
-      if (smsResult.ok && !smsResult.skipped) return ' وتم إرسال SMS للعميل.';
-      if (smsResult.skipped) {
-        const reasons = {
-          no_phone: ' (SMS لم يُرسل: لا يوجد رقم هاتف للعميل)',
-          invalid_phone: ' (SMS لم يُرسل: رقم الهاتف غير صالح)',
-          twilio_env_missing: ' (SMS غير مفعّل: أكمل إعدادات Twilio في Render)',
-          sms_api_url_missing: ' (SMS غير مفعّل: أضف SMS_API_URL في Render)',
-          unknown_provider: ' (SMS غير مفعّل: SMS_PROVIDER غير معروف)',
-          empty_message: ' (SMS لم يُرسل: رسالة فارغة)'
-        };
-        if (smsResult.provider === 'log' || !smsResult.provider) {
-          return ' (تنبيه: SMS غير مفعّل على السيرفر — أضف SMS_PROVIDER في Render)';
-        }
-        return reasons[smsResult.reason] || ` (SMS لم يُرسل: ${smsResult.reason || 'تخطّي'})`;
-      }
-      return ` (فشل SMS: ${smsResult.reason || 'خطأ'})`;
-    }
-
     async function applyQuickStatus(orderId, status, anchor) {
       const run = async () => {
         try {
-          const result = await requestJson(`/api/admin/orders/${orderId}/status`, {
+          await requestJson(`/api/admin/orders/${orderId}/status`, {
             method: 'PATCH',
             body: JSON.stringify({ status, changedBy: 'لوحة الإدارة' })
           });
-          const base = status === 'delivered' ? 'تم تعليم الطلب كمُسلَّم' : 'تم تحديث حالة الطلب';
-          const extra = status === 'delivered' ? smsToastMessage(result.smsResult) : '';
-          showToast(base + extra, result.smsResult?.ok && !result.smsResult?.skipped ? 'success' : undefined);
+          showToast(status === 'delivered' ? 'تم تعليم الطلب كمُسلَّم' : 'تم تحديث حالة الطلب');
           await loadOrders(false);
         } catch (error) {
           showToast(error.message, 'error');
@@ -2531,12 +2523,11 @@
       const note = box.querySelector('[data-field="note"]').value.trim();
       const run = async () => {
         try {
-          const result = await requestJson(`/api/admin/orders/${orderId}/status`, {
+          await requestJson(`/api/admin/orders/${orderId}/status`, {
             method: 'PATCH',
             body: JSON.stringify({ status, note, changedBy: 'لوحة الإدارة' })
           });
-          const extra = status === 'delivered' ? smsToastMessage(result.smsResult) : '';
-          showToast('تم تحديث حالة الطلب بنجاح' + extra);
+          showToast('تم تحديث حالة الطلب بنجاح');
           await loadOrders(false);
         } catch (error) {
           showToast(error.message, 'error');
@@ -2562,12 +2553,11 @@
       const deliveryStatus = box.querySelector('[data-field="delivery"]').value;
       const deliveryNotes = box.querySelector('[data-field="delivery-note"]').value.trim();
       try {
-        const result = await requestJson(`/api/admin/orders/${orderId}/delivery`, {
+        await requestJson(`/api/admin/orders/${orderId}/delivery`, {
           method: 'PATCH',
           body: JSON.stringify({ deliveryStatus, deliveryNotes, changedBy: 'لوحة الإدارة' })
         });
-        const extra = deliveryStatus === 'تم التسليم' ? smsToastMessage(result.smsResult) : '';
-        showToast('تم تحديث التسليم ومزامنة حالة الطلب' + extra);
+        showToast('تم تحديث التسليم ومزامنة حالة الطلب');
         await loadOrders(false);
       } catch (error) {
         showToast(error.message, 'error');
@@ -2722,6 +2712,35 @@
       } finally {
         loginSubmit.disabled = false;
         loginSubmit.textContent = 'دخول';
+      }
+    });
+
+    // Leave admin → must login again
+    document.querySelectorAll('a[href="/"]').forEach((link) => {
+      link.addEventListener('click', () => {
+        if (!link.target || link.target === '_self') logout(false);
+      });
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (!state.token) return;
+      if (document.visibilityState === 'hidden') {
+        sessionStorage.setItem(AWAY_KEY, String(Date.now()));
+        return;
+      }
+      const awayAt = Number(sessionStorage.getItem(AWAY_KEY) || 0);
+      if (awayAt && Date.now() - awayAt >= SESSION_IDLE_MS) {
+        logout(true);
+        showToast('انتهت الجلسة بسبب المغادرة — سجّل الدخول مجدداً', 'error');
+      }
+      sessionStorage.removeItem(AWAY_KEY);
+    });
+
+    window.addEventListener('pagehide', () => {
+      // Closing the tab/window clears sessionStorage automatically.
+      // Also clear if user navigates away within the same tab history.
+      if (state.token && performance.getEntriesByType) {
+        /* keep token on soft refresh; sessionStorage already handles tab close */
       }
     });
 
